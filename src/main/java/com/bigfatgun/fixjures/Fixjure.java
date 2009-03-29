@@ -15,6 +15,8 @@
  */
 package com.bigfatgun.fixjures;
 
+import java.util.logging.Logger;
+
 /**
  * Main fixjures entry point that provides builder-like semantics for setting up
  * and creating fixtures.
@@ -25,8 +27,11 @@ package com.bigfatgun.fixjures;
  */
 public class Fixjure {
 
+	/** Logger. */
+	public static final Logger LOGGER = Logger.getLogger("com.bigfatgun.fixjures");
+
 	/**
-	 * Empty private utility constructor. 
+	 * Empty private utility constructor.
 	 */
 	private Fixjure() {
 		// utility constructor is empty
@@ -41,14 +46,5 @@ public class Fixjure {
 	 */
 	public static <T> FixtureBuilder<T> of(final Class<T> cls) {
 		return new FixtureBuilder<T>(cls);
-	}
-
-	/**
-	 * TODO implement this better. This prints a warning message to {@code System.err}.
-	 *
-	 * @param warning warning text to print
-	 */
-	public static void warn(final String warning) {
-		System.err.println("Fixjure WARN: " + warning);
 	}
 }

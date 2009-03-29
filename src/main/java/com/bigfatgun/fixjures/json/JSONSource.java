@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.bigfatgun.fixjures.Fixjure.warn;
+import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureBuilder;
 import com.bigfatgun.fixjures.FixtureHandler;
 import com.bigfatgun.fixjures.FixtureSource;
@@ -167,11 +167,8 @@ public final class JSONSource extends FixtureSource {
 		try {
 			//noinspection unchecked
 			return (T) findValue(type, new JSONObject(loadTextFromChannel(jsonSource)), "ROOT");
-		} catch (JSONException e) {
-			warn("JSON error: " + e.getMessage());
-			return null;
-		} catch (IOException e) {
-			warn("Read error: " + e.getMessage());
+		} catch (Exception e) {
+			Fixjure.LOGGER.severe(e.getMessage());
 			return null;
 		}
 	}
@@ -236,7 +233,7 @@ public final class JSONSource extends FixtureSource {
 		} else { // if (JSONArray.class.isAssignableFrom(value.getClass())) {
 			final JSONArray array = (JSONArray) value;
 			if (!type.isArray() && typeParams == null) {
-				warn("Only generic collections or arrays are supported, failed to stub " + name + " in " + type);
+				Fixjure.LOGGER.warning(String.format("Only generic collections or arrays are supported, failed to stub %s in %s", name, type));
 				return null;
 			} else if (type.isArray()) {
 				final Class< ? > collectionType = type.getComponentType();
@@ -306,8 +303,7 @@ public final class JSONSource extends FixtureSource {
 			}
 			object = ctor.newInstance();
 		} catch (Exception e) {
-			warn("Error instantiating object of type: " + cls);
-			e.printStackTrace();
+			Fixjure.LOGGER.severe(String.format("Error instantiating object of type: %s", cls));
 			return null;
 		}
 
@@ -334,7 +330,7 @@ public final class JSONSource extends FixtureSource {
 			final String key = objIterator.next().toString();
 			final Stub stub = getterValueStub(cls, key, jsonObject.get(key));
 			if (stub == null) {
-				warn("Key [" + key + "] found in JSON but could not stub. Could be its name or value type doesn't match methods in " + cls);
+				Fixjure.LOGGER.warning(String.format("Key [%s] found in JSON but could not stub. Could be its name or value type doesn't match methods in %s", key, cls));
 			} else {
 				mock.stubs().method(getterName(key).toString()).will(stub);
 			}
@@ -358,9 +354,9 @@ public final class JSONSource extends FixtureSource {
 
 			setter.invoke(object, findValue(getter.getGenericReturnType(), value, getterName(key).toString()));
 		} catch (NoSuchMethodException e) {
-			warn("No getter and setter found in " + cls + " for " + key);
+			Fixjure.LOGGER.warning(String.format("No getter and setter found in %s for %s", cls, key));
 		} catch (Exception e) {
-			warn("Exception while attempting setter in " + cls + " for " + key);
+			Fixjure.LOGGER.warning(String.format("Exception while attempting setter in %s for %s", cls, key));
 		}
 	}
 

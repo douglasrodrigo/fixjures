@@ -15,6 +15,7 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureHandler;
 
 /**
@@ -42,7 +43,7 @@ public final class BooleanFixtureHandler implements FixtureHandler<Object, Boole
 			//noinspection unchecked
 			return (Boolean) rawValue;
 		} else {
-			com.bigfatgun.fixjures.Fixjure.warn("Type mismatch, stubbing " + name + " to return null.");
+			Fixjure.LOGGER.warning(String.format("Type mismatch, stubbing %s to return null.", name));
 			return null;
 		}
 	}

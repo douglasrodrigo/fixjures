@@ -93,18 +93,18 @@ public abstract class SourcedFixtureBuilder<T, SourceType extends FixtureSource>
 				//noinspection unchecked
 				return (T) obj;
 			} else {
-				Fixjure.warn("Invalid class! Expect " + getType() + " but got " + obj.getClass());
+				Fixjure.LOGGER.severe(String.format("Invalid class! Expect %s but got %s", getType(), obj.getClass()));
 				return null;
 			}
 		} catch (Exception e) {
-			Fixjure.warn("Error: " + e.getMessage());
+			Fixjure.LOGGER.warning(e.getMessage());
 			return null;
 		} finally {
 //			if (!(fixtureSource instanceof FixtureStream)) {
 				try {
 					fixtureSource.close();
 				} catch (IOException e) {
-					Fixjure.warn("Source close error: " + e.getMessage());
+					Fixjure.LOGGER.warning(String.format("Source close error: %s", e.getMessage()));
 				}
 //			}
 		}
