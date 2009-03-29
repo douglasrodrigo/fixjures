@@ -58,6 +58,7 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.5</version>
+            <scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>
@@ -75,13 +76,13 @@
 				<artifactId>cobertura-maven-plugin</artifactId>
 				<configuration>
 					<check>
-						<branchRate>91</branchRate>
+						<branchRate>100</branchRate>
 						<lineRate>95</lineRate>
 						<haltOnFailure>true</haltOnFailure>
-						<totalBranchRate>94</totalBranchRate>
-						<totalLineRate>96</totalLineRate>
-						<packageLineRate>95</packageLineRate>
-						<packageBranchRate>91</packageBranchRate>
+						<totalBranchRate>100</totalBranchRate>
+						<totalLineRate>98</totalLineRate>
+						<packageLineRate>96</packageLineRate>
+						<packageBranchRate>100</packageBranchRate>
 					</check>
 				</configuration>
 				<executions>
