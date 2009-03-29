@@ -1,37 +1,66 @@
+/*
+ * Copyright (C) 2009 bigfatgun.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.bigfatgun.fixjures;
 
-import java.util.IdentityHashMap;
+import java.io.IOException;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
 /**
  * A "sourced" fixture builder, meaning it has at least the necessary state to begin
  * reading fixtures from some type of data.
  *
  * @param <T> fixture object type
+ * @param <SourceType> fixture source type
  */
-public abstract class SourcedFixtureBuilder<T> extends FixtureBuilder<T> {
+public abstract class SourcedFixtureBuilder<T, SourceType extends FixtureSource> extends FixtureBuilder<T> {
 
 	/**
 	 * Map of desired value type to fixture handler.
 	 */
-	private final IdentityHashMap<Class, FixtureHandler> handlers;
+	private ImmutableMap<Class, FixtureHandler> handlers;
+
+	/**
+	 * Fixture data source.
+	 */
+	private final SourceType fixtureSource;
 
 	/**
 	 * Protected constructor that stores the given builder's state.
 	 *
 	 * @param builder builder to copy
+	 * @param source fixture data source
 	 */
-	protected SourcedFixtureBuilder(final FixtureBuilder<T> builder) {
+	protected SourcedFixtureBuilder(final FixtureBuilder<T> builder, final SourceType source) {
 		super(builder.getType());
-		handlers = Maps.newIdentityHashMap();
+		fixtureSource = source;
+		handlers = ImmutableMap.of();
+	}
+
+	/**
+	 * @return fixture data source
+	 */
+	protected final SourceType getSource() {
+		return fixtureSource;
 	}
 
 	/**
 	 * Creates a new fixture object. This methid is implemented by subclasses which
 	 * have an explicit knowledge of the fixture source format, such as the
-	 * {@link com.bigfatgun.fixjures.json.JSONFixture}.
+	 * {@link com.bigfatgun.fixjures.json.JSONSource}.
 	 *
 	 * @param handlers fixture handlers
 	 * @return new object from fixture source
@@ -45,8 +74,8 @@ public abstract class SourcedFixtureBuilder<T> extends FixtureBuilder<T> {
 	 * @param handler handler to add
 	 * @return this
 	 */
-	public SourcedFixtureBuilder<T> with(final FixtureHandler handler) {
-		handlers.put(handler.getType(), handler);
+	public SourcedFixtureBuilder<T, SourceType> with(final FixtureHandler handler) {
+		handlers = ImmutableMap.<Class, FixtureHandler>builder().putAll(handlers).put(handler.getType(), handler).build();
 		return this;
 	}
 
@@ -59,7 +88,7 @@ public abstract class SourcedFixtureBuilder<T> extends FixtureBuilder<T> {
 	 */
 	public final T create() {
 		try {
-			final Object obj = createFixtureObject(ImmutableMap.copyOf(handlers));
+			final Object obj = createFixtureObject(handlers);
 			if (getType().isAssignableFrom(obj.getClass())) {
 				//noinspection unchecked
 				return (T) obj;
@@ -70,6 +99,14 @@ public abstract class SourcedFixtureBuilder<T> extends FixtureBuilder<T> {
 		} catch (Exception e) {
 			Fixjure.warn("Error: " + e.getMessage());
 			return null;
+		} finally {
+//			if (!(fixtureSource instanceof FixtureStream)) {
+				try {
+					fixtureSource.close();
+				} catch (IOException e) {
+					Fixjure.warn("Source close error: " + e.getMessage());
+				}
+//			}
 		}
 	}
 }

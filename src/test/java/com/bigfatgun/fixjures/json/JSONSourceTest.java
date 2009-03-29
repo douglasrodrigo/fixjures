@@ -1,6 +1,7 @@
 package com.bigfatgun.fixjures.json;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-public class JSONFixtureTest {
+public class JSONSourceTest {
 
 	private static interface Foo {
 
@@ -63,28 +64,28 @@ public class JSONFixtureTest {
 
 	@Test
 	public void simpleStringLiteralToInterface() {
-		final Foo foo = Fixjure.of(Foo.class).from(new JSONFixture("{ \"bar\" : \"" + toString() + "\" }")).create();
+		final Foo foo = Fixjure.of(Foo.class).from(new JSONSource("{ \"bar\" : \"" + toString() + "\" }")).create();
 		assertNotNull(foo);
 		assertEquals(toString(), foo.getBar());
 	}
 
 	@Test
 	public void simpleStringLiteralToConcrete() {
-		final FooTwo foo = Fixjure.of(FooTwo.class).from(new JSONFixture("{ \"electric\" : \"boogaloo\" }")).create();
+		final FooTwo foo = Fixjure.of(FooTwo.class).from(new JSONSource("{ \"electric\" : \"boogaloo\" }")).create();
 		assertNotNull(foo);
 		assertEquals("boogaloo", foo.getElectric());
 	}
 
 	@Test
 	public void simpleStringLiteralToConcreteWithPrivateConstructor() {
-		final FooThree foo = Fixjure.of(FooThree.class).from(new JSONFixture("{ \"electric\" : \"boogaloo\" }")).create();
+		final FooThree foo = Fixjure.of(FooThree.class).from(new JSONSource("{ \"electric\" : \"boogaloo\" }")).create();
 		assertNotNull(foo);
 		assertEquals("boogaloo", foo.getElectric());
 	}
 
 	@Test
-	public void complexFromFile() {
-		final Complex complex = Fixjure.of(Complex.class).from(new JSONFixture(new File("src/test/resources/json1.txt"))).create();
+	public void complexFromFile() throws FileNotFoundException {
+		final Complex complex = Fixjure.of(Complex.class).from(new JSONSource(new File("src/test/resources/json1.txt"))).create();
 		assertEquals("Some String!", complex.getStr());
 		assertEquals((byte) 4, complex.getByte());
 		assertEquals((Double) 1e14, complex.getDouble());
@@ -101,7 +102,7 @@ public class JSONFixtureTest {
 	@Test
 	public void complexWithFixtureHandler() {
 		final Complex complex = Fixjure.of(Complex.class)
-				  .from(new JSONFixture(" { \"str\" : \"val\" } "))
+				  .from(new JSONSource(" { \"str\" : \"val\" } "))
 				  .with(new FixtureHandler<String, String>() {
 					  public Class<String> getType() {
 						  return String.class;
@@ -117,7 +118,7 @@ public class JSONFixtureTest {
 
 	@Test
 	public void unsupportedJSONValue() {
-		assertNull(Fixjure.of(Boolean.class).from(new JSONFixture(" true ")).create());
+		assertNull(Fixjure.of(Boolean.class).from(new JSONSource(" true ")).create());
 	}
 
 	public static interface WithNonGenericList {
@@ -126,19 +127,18 @@ public class JSONFixtureTest {
 
 	@Test
 	public void nonGenericList() {
-		final WithNonGenericList foo = Fixjure.of(WithNonGenericList.class).from(new JSONFixture("{ \"foo\" : [ 1, 2 ] }")).create();
+		final WithNonGenericList foo = Fixjure.of(WithNonGenericList.class).from(new JSONSource("{ \"foo\" : [ 1, 2 ] }")).create();
 		assertNull(foo.getFoo());
 	}
 
-	@Test
-	public void fromBadFileFailsSilentlyWhichIsBadAndShouldBeFixed() {
-		new JSONFixture(new File("foo"));
-		assertTrue(true); // well, it is
+	@Test(expected = FileNotFoundException.class)
+	public void fileNotFoundOnBadFile() throws FileNotFoundException {
+		new JSONSource(new File("foo"));
 	}
 
 	@Test(expected = DynamicMockError.class)
 	public void youGetErrorsWhenYouUseAFixtureHandlerToHijackYourStuff() {
-		final Complex c = Fixjure.of(Complex.class).from(new JSONFixture("{ str : \"str\"}")).with(new FixtureHandler() {
+		final Complex c = Fixjure.of(Complex.class).from(new JSONSource("{ str : \"str\"}")).with(new FixtureHandler() {
 			public Class getType() {
 				return String.class;
 			}
@@ -152,7 +152,7 @@ public class JSONFixtureTest {
 
 	@Test
 	public void attemptToConvertListToUnknownCollectionType() {
-		assertNull(Fixjure.of(Complex.class).from(new JSONFixture("{ str : [1, 2] }")).create().getStr());
+		assertNull(Fixjure.of(Complex.class).from(new JSONSource("{ str : [1, 2] }")).create().getStr());
 	}
 
 	private static class BadCtor {
@@ -163,7 +163,7 @@ public class JSONFixtureTest {
 
 	@Test
 	public void exceptionOnConcreteCtor() {
-		assertNull(Fixjure.of(BadCtor.class).from(new JSONFixture("{ 1: 2 }")).create());
+		assertNull(Fixjure.of(BadCtor.class).from(new JSONSource("{ 1: 2 }")).create());
 	}
 
 	private static class BadGettersAndSetters {
@@ -188,7 +188,7 @@ public class JSONFixtureTest {
 
 	@Test
 	public void badGettersAndSetters() {
-		BadGettersAndSetters bgas = Fixjure.of(BadGettersAndSetters.class).from(new JSONFixture("{ \"unknown\" : 1, \"bar\" : 2, \"foo\" : 3 }")).create();
+		BadGettersAndSetters bgas = Fixjure.of(BadGettersAndSetters.class).from(new JSONSource("{ \"unknown\" : 1, \"bar\" : 2, \"foo\" : 3 }")).create();
 		assertNotNull(bgas);
 		assertNull(bgas.getFoo());
 		assertNull(bgas.getBar());

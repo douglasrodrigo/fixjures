@@ -18,7 +18,7 @@ public class FixtureSourceTest {
 			}
 
 			@Override
-			public <T> SourcedFixtureBuilder<T> build(final FixtureBuilder<T> builder) {
+			public <T> SourcedFixtureBuilder<T, FixtureSource> build(final FixtureBuilder<T> builder) {
 				throw new RuntimeException("Not meant to be invoked.");
 			}
 		}.close();

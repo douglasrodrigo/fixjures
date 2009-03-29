@@ -1,16 +1,34 @@
+/*
+ * Copyright (C) 2009 bigfatgun.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.bigfatgun.fixjures.json;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.Constructor;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.IdentityHashMap;
@@ -19,14 +37,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.bigfatgun.fixjures.Fixjure.warn;
+import com.bigfatgun.fixjures.FixtureBuilder;
 import com.bigfatgun.fixjures.FixtureHandler;
 import com.bigfatgun.fixjures.FixtureSource;
-import com.bigfatgun.fixjures.FixtureBuilder;
 import com.bigfatgun.fixjures.SourcedFixtureBuilder;
-import com.bigfatgun.fixjures.handlers.NumberFixtureHandler;
 import com.bigfatgun.fixjures.handlers.BooleanFixtureHandler;
+import com.bigfatgun.fixjures.handlers.NumberFixtureHandler;
 import com.bigfatgun.fixjures.handlers.StringFixtureHandler;
-import static com.bigfatgun.fixjures.Fixjure.warn;
 import com.bigfatgun.fixjures.mock.MockHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -50,44 +68,55 @@ import org.json.JSONObject;
  *
  * @author stever
  */
-public final class JSONFixture extends FixtureSource {
+public final class JSONSource extends FixtureSource {
+
+	/** Charset to use when reading byte streams and channels. */
+	private static final String CHARSET = "UTF-8";
 
 	/**
-	 * Loads all text from a file.
+	 * Reads the entire contents of the given byte channel into a string builder. The channel is
+	 * still open after this method returns.
 	 *
-	 * @param file file to load
-	 * @return text in file, null if IO error occurs
+	 * @param channel channel to read, will NOT be closed before the method returns
+	 * @return string contents of channel
+	 * @throws IOException if there are any IO errors while reading or closing the given channel
 	 */
-	private static String loadTextFromFile(final File file) {
+	private static String loadTextFromChannel(final ReadableByteChannel channel) throws IOException {
 		try {
-			final RandomAccessFile raf = new RandomAccessFile(file, "r");
 			final ByteBuffer buf = ByteBuffer.allocate(Short.MAX_VALUE);
-			final Charset cset = Charset.forName("UTF-8");
-			final CharsetDecoder decoder = cset.newDecoder();
-			final StringBuilder string = new StringBuilder((int) Math.min(Integer.MAX_VALUE, file.length()) / 2);
-			final FileChannel channel = raf.getChannel();
+			final CharsetDecoder decoder = Charset.forName(CHARSET).newDecoder();
+			final StringBuilder string = new StringBuilder();
 
-			try {
-				while (channel.read(buf) != -1) {
-					buf.flip();
-					string.append(decoder.decode(buf));
-					buf.clear();
-				}
-			} finally {
-				channel.close();
+			while (channel.read(buf) != -1) {
+				buf.flip();
+				string.append(decoder.decode(buf));
+				buf.clear();
 			}
 
 			return string.toString();
-		} catch (IOException e) {
-			warn("Could not load JSON fixture data: " + e.getMessage());
-			return null;
+		} finally {
+			channel.close();
+		}
+	}
+
+	/**
+	 * Converts the given string into a UTF-8 encoded byte array.
+	 *
+	 * @param str string to convert
+	 * @return byte array
+	 */
+	private static byte[] getBytes(final String str) {
+		try {
+			return str.getBytes(CHARSET);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException("JSONSource requires UTF-8.");
 		}
 	}
 
 	/**
 	 * Raw JSON.
 	 */
-	private final String rawJson;
+	private final ReadableByteChannel jsonSource;
 
 	/**
 	 * Map of json value type to fixture handler.
@@ -99,20 +128,25 @@ public final class JSONFixture extends FixtureSource {
 	 */
 	private ImmutableMap<Class, FixtureHandler> fixtureHandlers;
 
-	/**
-	 * @param raw raw JSON
-	 */
-	public JSONFixture(final String raw) {
-		rawJson = raw;
+	public JSONSource(final ReadableByteChannel source) {
+		jsonSource = source;
 		jsonValueFixtureHandlers = Maps.newIdentityHashMap();
 		installDefaultHandlers();
 	}
 
 	/**
-	 * @param jsonFile file with JSON
+	 * @param raw raw JSON
 	 */
-	public JSONFixture(final File jsonFile) {
-		this(loadTextFromFile(jsonFile));
+	public JSONSource(final String raw) {
+		this(Channels.newChannel(new ByteArrayInputStream(getBytes(raw))));
+	}
+
+	/**
+	 * @param jsonFile file with JSON
+	 * @throws FileNotFoundException if the file does not exist
+	 */
+	public JSONSource(final File jsonFile) throws FileNotFoundException {
+		this(new RandomAccessFile(jsonFile, "r").getChannel());
 	}
 
 	/**
@@ -129,18 +163,15 @@ public final class JSONFixture extends FixtureSource {
 	 * @param <T> type of object to proxy
 	 * @return proxied object
 	 */
-	@SuppressWarnings({ "unchecked" })
 	public <T> T createFixture(final Class<? super T> type) {
 		try {
-			final Object obj = findValue(type, new JSONObject(rawJson), "ROOT");
-			if (type.isAssignableFrom(obj.getClass())) {
-				return (T) obj;
-			} else {
-				warn("Invalid class! Expect " + type + " but got " + obj.getClass());
-				return null;
-			}
+			//noinspection unchecked
+			return (T) findValue(type, new JSONObject(loadTextFromChannel(jsonSource)), "ROOT");
 		} catch (JSONException e) {
 			warn("JSON error: " + e.getMessage());
+			return null;
+		} catch (IOException e) {
+			warn("Read error: " + e.getMessage());
 			return null;
 		}
 	}
@@ -202,7 +233,7 @@ public final class JSONFixture extends FixtureSource {
 			} else {
 				return generateObject(type, (JSONObject) value);
 			}
-		} else if (JSONArray.class.isAssignableFrom(value.getClass())) {
+		} else { // if (JSONArray.class.isAssignableFrom(value.getClass())) {
 			final JSONArray array = (JSONArray) value;
 			if (!type.isArray() && typeParams == null) {
 				warn("Only generic collections or arrays are supported, failed to stub " + name + " in " + type);
@@ -229,17 +260,14 @@ public final class JSONFixture extends FixtureSource {
 				} else if (Set.class.isAssignableFrom(type)) {
 					//noinspection unchecked
 					return ImmutableSet.copyOf(source);
-				} else if (Multiset.class.isAssignableFrom(type)) {
+				} else { // if (Multiset.class.isAssignableFrom(type)) {
 					//noinspection unchecked
 					return ImmutableMultiset.copyOf(source);
-				} else {
-					warn("Don't know what to do with collection of type " + collectionType);
-					return null;
+//				} else {
+//					warn("Don't know what to do with collection of type " + collectionType);
+//					return null;
 				}
 			}
-		} else {
-			warn("Value type not yet supported: " + value.getClass().getName());
-			return null;
 		}
 	}
 
@@ -370,23 +398,34 @@ public final class JSONFixture extends FixtureSource {
 		return MockHelper.returnValue(findValue(getter.getGenericReturnType(), value, getterName));
 	}
 
+	/**
+	 * Builds a new {@link com.bigfatgun.fixjures.json.JSONSourcedFixtureBuilder}.
+	 *
+	 * @param builder the builder to convert
+	 * @param <T> fixture object type
+	 * @return json-sourced fixture builder
+	 */
 	@Override
-	public <T> SourcedFixtureBuilder<T> build(final FixtureBuilder<T> builder) {
-		return new SourcedFixtureBuilder<T>(builder) {
-			@Override
-			protected Object createFixtureObject(final ImmutableMap<Class, FixtureHandler> handlers) {
-				JSONFixture.this.fixtureHandlers = handlers;
-				try {
-					return JSONFixture.this.<T>createFixture(getType());
-				} finally {
-					close();
-				}
-			}
-		};
+	public <T> SourcedFixtureBuilder<T, JSONSource> build(final FixtureBuilder<T> builder) {
+		return new JSONSourcedFixtureBuilder<T>(this, builder);
 	}
 
+	/**
+	 * Closes the {@code ReadableByteChannel}.
+	 * <p>
+	 * {@inheritDoc}
+	 */
 	@Override
-	public void close() {
-		// do nothing and don't throw exception
+	public void close() throws IOException {
+		jsonSource.close();
+	}
+
+	/**
+	 * Sets fixture handlers.
+	 *
+	 * @param handlers handlers
+	 */
+	public void setFixtureHandlers(final ImmutableMap<Class, FixtureHandler> handlers) {
+		fixtureHandlers = handlers;
 	}
 }
