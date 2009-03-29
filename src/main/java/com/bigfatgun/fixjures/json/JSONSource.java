@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -45,7 +44,11 @@ import com.bigfatgun.fixjures.SourcedFixtureBuilder;
 import com.bigfatgun.fixjures.handlers.BooleanFixtureHandler;
 import com.bigfatgun.fixjures.handlers.NumberFixtureHandler;
 import com.bigfatgun.fixjures.handlers.StringFixtureHandler;
-import com.bigfatgun.fixjures.mock.MockHelper;
+import com.bigfatgun.fixjures.proxy.ConcreteReflectionProxy;
+import com.bigfatgun.fixjures.proxy.InterfaceProxy;
+import com.bigfatgun.fixjures.proxy.ObjectProxy;
+import com.bigfatgun.fixjures.proxy.ValueStub;
+import com.bigfatgun.fixjures.proxy.ValueStubImpl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
@@ -53,8 +56,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
-import org.jmock.Mock;
-import org.jmock.core.Stub;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -278,100 +279,36 @@ public final class JSONSource extends FixtureSource {
 	 * @throws JSONException if there is bad JSON
 	 */
 	private <T> T generateObject(final Class<T> cls, final JSONObject jsonObject) throws JSONException {
-		if (cls.isInterface()) {
-			return proxyJSONObject(cls, jsonObject);
-		} else {
-			return instantiateJSONObject(cls, jsonObject);
-		}
+		final ObjectProxy<T> proxy = createObjectProxy(cls);
+		configureProxy(proxy, jsonObject);
+		return proxy.create();
 	}
 
-	/**
-	 * Instantiates an object and invokes setters to set values.
-	 *
-	 * @param cls type of object
-	 * @param jsonObject json value
-	 * @param <T> type of object
-	 * @return instantiated object
-	 * @throws JSONException if there is a JSON error
-	 */
-	private <T> T instantiateJSONObject(final Class<T> cls, final JSONObject jsonObject) throws JSONException {
-		final T object;
-		try {
-			final Constructor<T> ctor = cls.getDeclaredConstructor();
-			if (!ctor.isAccessible()) {
-				ctor.setAccessible(true);
-			}
-			object = ctor.newInstance();
-		} catch (Exception e) {
-			Fixjure.LOGGER.severe(String.format("Error instantiating object of type: %s", cls));
-			return null;
-		}
-
-		for (final Iterator objIterator = jsonObject.keys(); objIterator.hasNext();) {
+	private <T> void configureProxy(final ObjectProxy<T> proxy, final JSONObject obj) throws JSONException {
+		for (final Iterator objIterator = obj.keys(); objIterator.hasNext();) {
 			final String key = objIterator.next().toString();
-			setInstanceValue(cls, object, key, jsonObject.get(key));
-		}
-
-		return object;
-	}
-
-	/**
-	 * Converts JSON to an object.
-	 *
-	 * @param cls object type
-	 * @param jsonObject json
-	 * @param <T> object type
-	 * @return converted object
-	 * @throws JSONException if there is an error with the JSON
-	 */
-	private <T> T proxyJSONObject(final Class<T> cls, final JSONObject jsonObject) throws JSONException {
-		final Mock mock = new Mock(cls);
-		for (final Iterator objIterator = jsonObject.keys(); objIterator.hasNext();) {
-			final String key = objIterator.next().toString();
-			final Stub stub = getterValueStub(cls, key, jsonObject.get(key));
+			final ValueStub stub = getterValueStub(proxy.getType(), key, obj.get(key));
 			if (stub == null) {
-				Fixjure.LOGGER.warning(String.format("Key [%s] found in JSON but could not stub. Could be its name or value type doesn't match methods in %s", key, cls));
+				Fixjure.LOGGER.warning(String.format("Key [%s] found in JSON but could not stub. Could be its name or value type doesn't match methods in %s", key, proxy.getType()));
 			} else {
-				mock.stubs().method(getterName(key).toString()).will(stub);
+				proxy.addValueStub(getterName(key), stub);
 			}
 		}
-		return cls.cast(mock.proxy());
 	}
 
-	/**
-	 * Sets a bean value.
-	 * @param cls type of bean
-	 * @param object bean instance
-	 * @param key value key
-	 * @param value value
-	 * @param <T> bean type
-	 * @throws JSONException if there is bad JSON
-	 */
-	private <T> void setInstanceValue(final Class<T> cls, final T object, final String key, final Object value) throws JSONException {
-		try {
-			final Method getter = cls.getMethod(getterName(key).toString());
-			final Method setter = cls.getMethod(setterName(key).toString(), getter.getReturnType());
-
-			setter.invoke(object, findValue(getter.getGenericReturnType(), value, getterName(key).toString()));
-		} catch (NoSuchMethodException e) {
-			Fixjure.LOGGER.warning(String.format("No getter and setter found in %s for %s", cls, key));
-		} catch (Exception e) {
-			Fixjure.LOGGER.warning(String.format("Exception while attempting setter in %s for %s", cls, key));
+	private <T> ObjectProxy<T> createObjectProxy(final Class<T> cls) {
+		if (cls.isInterface()) {
+			return new InterfaceProxy<T>(cls);
+		} else {
+			return new ConcreteReflectionProxy<T>(cls);
 		}
 	}
 
-	private CharSequence getterName(final String propertyName) {
+	private String getterName(final String propertyName) {
 		final StringBuilder builder = new StringBuilder("get");
 		builder.append(Character.toUpperCase(propertyName.charAt(0)));
 		builder.append(propertyName.substring(1));
-		return builder;
-	}
-
-	private CharSequence setterName(final String propertyName) {
-		final StringBuilder builder = new StringBuilder("set");
-		builder.append(Character.toUpperCase(propertyName.charAt(0)));
-		builder.append(propertyName.substring(1));
-		return builder;
+		return builder.toString();
 	}
 
 	/**
@@ -383,15 +320,15 @@ public final class JSONSource extends FixtureSource {
 	 * @return value stub
 	 * @throws JSONException if there is a JSON related error
 	 */
-	private Stub getterValueStub(final Class parentCls, final String keyName, final Object value) throws JSONException {
-		final String getterName = getterName(keyName).toString();
+	private ValueStub getterValueStub(final Class parentCls, final String keyName, final Object value) throws JSONException {
+		final String getterName = getterName(keyName);
 		final Method getter;
 		try {
 			getter = parentCls.getMethod(getterName);
+			return new ValueStubImpl(findValue(getter.getGenericReturnType(), value, getterName));
 		} catch (NoSuchMethodException e) {
 			return null;
 		}
-		return MockHelper.returnValue(findValue(getter.getGenericReturnType(), value, getterName));
 	}
 
 	/**

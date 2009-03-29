@@ -50,11 +50,6 @@
 			<version>20090211</version>
 		</dependency>
 		<dependency>
-			<groupId>jmock</groupId>
-			<artifactId>jmock</artifactId>
-			<version>1.2.0</version>
-		</dependency>
-		<dependency>
 			<groupId>com.google.collections</groupId>
 			<artifactId>google-collections</artifactId>
 			<version>0.9</version>

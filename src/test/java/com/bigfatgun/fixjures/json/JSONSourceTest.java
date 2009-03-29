@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
-import org.jmock.core.DynamicMockError;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -136,9 +135,9 @@ public class JSONSourceTest {
 		new JSONSource(new File("foo"));
 	}
 
-	@Test(expected = DynamicMockError.class)
+	@Test(expected = ClassCastException.class)
 	public void youGetErrorsWhenYouUseAFixtureHandlerToHijackYourStuff() {
-		final Complex c = Fixjure.of(Complex.class).from(new JSONSource("{ str : \"str\"}")).with(new FixtureHandler() {
+		Fixjure.of(Complex.class).from(new JSONSource("{ str : \"str\"}")).with(new FixtureHandler() {
 			public Class getType() {
 				return String.class;
 			}
@@ -146,8 +145,7 @@ public class JSONSourceTest {
 			public Object deserialize(final Class desiredType, final Object rawValue, final String name) {
 				return 1;
 			}
-		}).create();
-		assertNull(c.getStr());
+		}).create().getStr();
 	}
 
 	@Test
