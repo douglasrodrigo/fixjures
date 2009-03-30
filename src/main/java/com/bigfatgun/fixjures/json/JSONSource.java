@@ -204,6 +204,7 @@ public final class JSONSource extends FixtureSource {
 			return (T) findValue(type, rawValue, "ROOT");
 		} catch (Exception e) {
 			Fixjure.LOGGER.severe(e.getMessage());
+			e.printStackTrace();
 		}
 		return null;
 	}

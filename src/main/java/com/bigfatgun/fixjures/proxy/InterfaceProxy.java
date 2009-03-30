@@ -19,7 +19,11 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.base.Function;
+import com.google.common.base.Nullable;
 
 /**
  * Simple interface getter proxy using {@code java.lang.reflect.Proxy}. This will only proxy methods that
@@ -59,9 +63,25 @@ public final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements I
 	 * 	hasn't been stubbed is invoked
 	 */
 	public Object invoke(final Object object, final Method method, final Object[] objects) throws Throwable {
+		if (objects != null && objects.length == 1 && method.getName().equals("equals")) {
+			return object == objects[0];
+		}
+
 		if (objects != null) {
 			throw new RuntimeException("Proxied methods shall take no arguments. Call: " + callToString(method, objects));
-		} else if (!getStubs().containsKey(method.getName())) {
+		}
+
+		if (method.getName().equals("hashCode")) {
+			return Sets.newHashSet(Iterables.transform(getStubs().values(), new Function<ValueStub, Object>() {
+				public Object apply(@Nullable final ValueStub valueStub) {
+					return valueStub.invoke();
+				}
+			})).hashCode();
+		} else if (method.getName().equals("toString")) {
+			return "Proxy of " + getType();
+		}
+
+		if (!getStubs().containsKey(method.getName())) {
 			throw new RuntimeException("Method has not been stubbed. Call: " + callToString(method, objects));
 		}
 
@@ -76,6 +96,6 @@ public final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements I
 	 * @return stringified method call
 	 */
 	private String callToString(final Method method, final Object... objects) {
-		return String.format("%s.%s(%s)", getType().getName(), method.getName(), Lists.newArrayList(objects));
+		return String.format("%s.%s(%s)", getType().getName(), method.getName(), (objects == null ) ? "" : Lists.newArrayList(objects));
 	}
 }
