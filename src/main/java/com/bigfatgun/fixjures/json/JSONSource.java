@@ -69,7 +69,20 @@ import org.json.JSONObject;
  *
  * @author stever
  */
+
 public final class JSONSource extends FixtureSource {
+
+	/**
+	 * An enumeration of source types.
+	 */
+	public static enum SourceType {
+
+		/** String literal. */
+		LITERAL,
+
+		/** File. */
+		FILE
+	}
 
 	/** Charset to use when reading byte streams and channels. */
 	private static final String CHARSET = "UTF-8";
@@ -129,6 +142,12 @@ public final class JSONSource extends FixtureSource {
 	 */
 	private ImmutableMap<Class, FixtureHandler> fixtureHandlers;
 
+	/**
+	 * Creates a new JSON source from the given {@code ReadableByteChannel}. The channel isn't read
+	 * until the fixture object is created.
+	 *
+	 * @param source byte source
+	 */
 	public JSONSource(final ReadableByteChannel source) {
 		jsonSource = source;
 		jsonValueFixtureHandlers = Maps.newIdentityHashMap();
@@ -166,12 +185,27 @@ public final class JSONSource extends FixtureSource {
 	 */
 	public <T> T createFixture(final Class<? super T> type) {
 		try {
+			final String sourceJson = loadTextFromChannel(jsonSource);
+			Object rawValue = null;
+			final String sourceJsonTrimmed = sourceJson.trim();
+			if (sourceJsonTrimmed.startsWith("{")) {
+				rawValue = new JSONObject(sourceJsonTrimmed);
+			} else if (sourceJsonTrimmed.startsWith("[")) {
+				rawValue = new JSONArray(sourceJsonTrimmed);
+			} else {
+				try {
+					rawValue = Double.parseDouble(sourceJsonTrimmed);
+				} catch (Exception e1) {
+					rawValue = String.valueOf(sourceJsonTrimmed);
+				}
+			}
+
 			//noinspection unchecked
-			return (T) findValue(type, new JSONObject(loadTextFromChannel(jsonSource)), "ROOT");
+			return (T) findValue(type, rawValue, "ROOT");
 		} catch (Exception e) {
 			Fixjure.LOGGER.severe(e.getMessage());
-			return null;
 		}
+		return null;
 	}
 
 	/**
@@ -296,6 +330,16 @@ public final class JSONSource extends FixtureSource {
 		}
 	}
 
+	/**
+	 * Creates a proxy object based on the class. If the class is an interface, a
+	 * {@link com.bigfatgun.fixjures.proxy.InterfaceProxy} is returned, otherwise a
+	 * {@link com.bigfatgun.fixjures.proxy.ConcreteReflectionProxy} is assumed to be the appropriate
+	 * proxy.
+	 *
+	 * @param cls proxy object type
+	 * @param <T> proxy object type
+	 * @return object proxy
+	 */
 	private <T> ObjectProxy<T> createObjectProxy(final Class<T> cls) {
 		if (cls.isInterface()) {
 			return new InterfaceProxy<T>(cls);
@@ -304,6 +348,13 @@ public final class JSONSource extends FixtureSource {
 		}
 	}
 
+	/**
+	 * Converts a property name from JSON into a getter name. For example, "firstName" will be transformed into
+	 * "getFirstName".
+	 *
+	 * @param propertyName property name
+	 * @return getter name
+	 */
 	private String getterName(final String propertyName) {
 		final StringBuilder builder = new StringBuilder("get");
 		builder.append(Character.toUpperCase(propertyName.charAt(0)));

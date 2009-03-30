@@ -1,0 +1,7 @@
+{
+    foo : "value of foo parent",
+    bar : 4321,
+    parent : {
+        foo : "value of foo grandparent"
+    }
+}

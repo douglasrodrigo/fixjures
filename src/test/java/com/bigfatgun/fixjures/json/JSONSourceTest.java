@@ -84,7 +84,7 @@ public class JSONSourceTest {
 
 	@Test
 	public void complexFromFile() throws FileNotFoundException {
-		final Complex complex = Fixjure.of(Complex.class).from(new JSONSource(new File("src/test/resources/json1.txt"))).create();
+		final Complex complex = Fixjure.of(Complex.class).from(new JSONSource(new File("src/test/resources/dummy1.json"))).create();
 		assertEquals("Some String!", complex.getStr());
 		assertEquals((byte) 4, complex.getByte());
 		assertEquals((Double) 1e14, complex.getDouble());
@@ -190,5 +190,15 @@ public class JSONSourceTest {
 		assertNotNull(bgas);
 		assertNull(bgas.getFoo());
 		assertNull(bgas.getBar());
+	}
+
+	@Test
+	public void simpleArrayOfNumbers() {
+		int[] ints = new int[0];
+		ints = Fixjure.of(ints.getClass()).from(new JSONSource("[ 1, 2, 3 ]")).create();
+		assertNotNull(ints.length);
+		assertEquals(1, ints[0]);
+		assertEquals(2, ints[1]);
+		assertEquals(3, ints[2]);
 	}
 }
