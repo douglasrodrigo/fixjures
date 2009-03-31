@@ -43,7 +43,7 @@ public class JSONFixtureHelperTest {
 		JSONFixtureHelper.scan(new BadBean1());
 	}
 
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void badMarkup2() throws InvocationTargetException, FileNotFoundException, IllegalAccessException {
 		JSONFixtureHelper.scan(new BadBean2());
 	}

@@ -183,10 +183,10 @@ public final class JSONSource extends FixtureSource {
 	 * @param <T> type of object to proxy
 	 * @return proxied object
 	 */
-	public <T> T createFixture(final Class<? super T> type) {
+	public <T> T createFixture(final Class<T> type) {
 		try {
 			final String sourceJson = loadTextFromChannel(jsonSource);
-			Object rawValue = null;
+			Object rawValue;
 			final String sourceJsonTrimmed = sourceJson.trim();
 			if (sourceJsonTrimmed.startsWith("{")) {
 				rawValue = new JSONObject(sourceJsonTrimmed);
@@ -217,7 +217,7 @@ public final class JSONSource extends FixtureSource {
 	 * @throws JSONException if there is an error loading JSON data
 	 */
 	private Object findValue(final Type type, final Object value, final String name) throws JSONException {
-		final Class< ? > getterClass;
+		final Class getterClass;
 		final Type[] typeParams;
 		if (type instanceof ParameterizedType) {
 			//noinspection unchecked
@@ -240,13 +240,13 @@ public final class JSONSource extends FixtureSource {
 	 * @return proxied object
 	 * @throws JSONException if there is an error reading JSON
 	 */
-	private Object findValue(final Class< ? > type, final Type[] typeParams, final Object value, final String name) throws JSONException {
+	private Object findValue(final Class type, final Type[] typeParams, final Object value, final String name) throws JSONException {
 		if (fixtureHandlers.containsKey(type)) {
 			//noinspection unchecked
 			return fixtureHandlers.get(type).deserialize(type, value, name);
 		}
 
-		for (final Class< ? > key : jsonValueFixtureHandlers.keySet()) {
+		for (final Class key : jsonValueFixtureHandlers.keySet()) {
 			if (key.isAssignableFrom(value.getClass())) {
 				//noinspection unchecked
 				return jsonValueFixtureHandlers.get(key).deserialize(type, value, name);
@@ -272,7 +272,7 @@ public final class JSONSource extends FixtureSource {
 				Fixjure.LOGGER.warning(String.format("Only generic collections or arrays are supported, failed to stub %s in %s", name, type));
 				return null;
 			} else if (type.isArray()) {
-				final Class< ? > collectionType = type.getComponentType();
+				final Class collectionType = type.getComponentType();
 				final Object actualArray = Array.newInstance(collectionType, array.length());
 				for (int i = 0; i < array.length(); i++) {
 					Array.set(actualArray, i, findValue(collectionType, array.get(i), name + "[" + i + "]"));
@@ -280,7 +280,7 @@ public final class JSONSource extends FixtureSource {
 				return actualArray;
 			} else {
 				final Multiset source = LinkedHashMultiset.create();
-				final Class< ? > collectionType = (Class< ? >) typeParams[0];
+				final Class collectionType = (Class) typeParams[0];
 
 				for (int i = 0; i < array.length(); i++) {
 					//noinspection unchecked

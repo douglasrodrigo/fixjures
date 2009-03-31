@@ -45,8 +45,8 @@ import com.google.common.collect.ImmutableMap;
 	 * @return fixture object
 	 */
 	@Override
-	protected Object createFixtureObject(final ImmutableMap<Class, FixtureHandler> handlers) {
+	protected T createFixtureObject(final ImmutableMap<Class, FixtureHandler> handlers) {
 		getSource().setFixtureHandlers(handlers);
-		return getSource().<T>createFixture(getType());
+		return getSource().createFixture(getType());
 	}
 }

@@ -66,7 +66,7 @@ public abstract class SourcedFixtureBuilder<T, SourceType extends FixtureSource>
 	 * @return new object from fixture source
 	 * @throws Exception if there is any sort of error reading the next object
 	 */
-	protected abstract Object createFixtureObject(final ImmutableMap<Class, FixtureHandler> handlers) throws Exception;
+	protected abstract T createFixtureObject(final ImmutableMap<Class, FixtureHandler> handlers) throws Exception;
 
 	/**
 	 * Adds a fixture handler to this builder.
@@ -88,14 +88,7 @@ public abstract class SourcedFixtureBuilder<T, SourceType extends FixtureSource>
 	 */
 	public final T create() {
 		try {
-			final Object obj = createFixtureObject(handlers);
-			if (getType().isAssignableFrom(obj.getClass())) {
-				//noinspection unchecked
-				return (T) obj;
-			} else {
-				Fixjure.LOGGER.severe(String.format("Invalid class! Expect %s but got %s", getType(), obj.getClass()));
-				return null;
-			}
+			return createFixtureObject(handlers);
 		} catch (Exception e) {
 			Fixjure.LOGGER.warning(e.getMessage());
 			return null;
