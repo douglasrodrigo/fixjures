@@ -65,7 +65,7 @@ public class JSONFixtureHelperTest {
 			return foo;
 		}
 
-		@JSONFixture(type = String.class, location = JSONSource.SourceType.LITERAL, value = "value of foo")
+		@JSONFixture(type = JSONSource.SourceType.LITERAL, value = "value of foo")
 		public void setFoo(final String foo) {
 			this.foo = foo;
 		}
@@ -74,7 +74,7 @@ public class JSONFixtureHelperTest {
 			return bar;
 		}
 
-		@JSONFixture(type = Integer.class, value = "1234")
+		@JSONFixture(value = "1234")
 		public void setBar(final Integer bar) {
 			this.bar = bar;
 		}
@@ -83,7 +83,7 @@ public class JSONFixtureHelperTest {
 			return parent;
 		}
 
-		@JSONFixture(type = MyBean.class, location = JSONSource.SourceType.FILE, value = "src/test/resources/JSONFixtureHelper.MyBean.json")
+		@JSONFixture(type = JSONSource.SourceType.FILE, value = "src/test/resources/JSONFixtureHelper.MyBean.json")
 		public void setParent(final MyBean parent) {
 			this.parent = parent;
 		}
@@ -97,7 +97,7 @@ public class JSONFixtureHelperTest {
 			return foo;
 		}
 
-		@JSONFixture(type = String.class, value = "foo")
+		@JSONFixture(value = "foo")
 		public void setFoo(final String value, final boolean oopsie) {
 			foo = value;
 		}
@@ -111,7 +111,7 @@ public class JSONFixtureHelperTest {
 			return foo;
 		}
 
-		@JSONFixture(type = Integer.class, value = "1234")
+		@JSONFixture(value = "1234")
 		public void setFoo(final String value) {
 			foo = value;
 		}
@@ -125,7 +125,7 @@ public class JSONFixtureHelperTest {
 			return foo;
 		}
 
-		@JSONFixture(type = Integer.class, value = "1234")
+		@JSONFixture(value = "1234")
 		public BadBean3 setFoo(final String value) {
 			foo = value;
 			return this;

@@ -35,7 +35,7 @@ public final class JSONFixtureHelper {
 	 * provides enough information to create a JSON-sourced fixture object, which is then passed to the annotated
 	 * method.
 	 * <p>
-	 * <code>@JSONFixture(type = Person.class, value = "{ firstName : \"Steve\", lastName : \"Reed\" }")
+	 * <code>@JSONFixture(value = "{ firstName : \"Steve\", lastName : \"Reed\" }")
 	 * public void setAuthor(final Person person) {
 	 *    // impl
 	 * }
@@ -57,19 +57,16 @@ public final class JSONFixtureHelper {
 				if (paramTypes.length == 1 && m.getReturnType() == Void.TYPE) {
 					// we're cool
 					final JSONFixture fixture = m.getAnnotation(JSONFixture.class);
-					if (fixture.type().isAssignableFrom(paramTypes[0])) {
-						// we're still cool
-						final JSONSource fixtureSource;
-						if (fixture.location() == JSONSource.SourceType.FILE) {
-							//noinspection UnusedAssignment
-							fixtureSource = new JSONSource(new File(fixture.value()));
-						} else {
-							//noinspection UnusedAssignment
-							fixtureSource = new JSONSource(fixture.value());
-						}
-						//noinspection unchecked,RedundantArrayCreation
-						m.invoke(obj, new Object[] { Fixjure.of(fixture.type()).from(fixtureSource).create() });
+					final JSONSource fixtureSource;
+					if (fixture.type() == JSONSource.SourceType.FILE) {
+						//noinspection UnusedAssignment
+						fixtureSource = new JSONSource(new File(fixture.value()));
+					} else {
+						//noinspection UnusedAssignment
+						fixtureSource = new JSONSource(fixture.value());
 					}
+					//noinspection unchecked,RedundantArrayCreation
+					m.invoke(obj, new Object[] { Fixjure.of(paramTypes[0]).from(fixtureSource).create() });
 				}
 			}
       }

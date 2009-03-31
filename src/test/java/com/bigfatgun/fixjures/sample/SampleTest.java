@@ -19,7 +19,7 @@ public class SampleTest {
 
 	private League league;
 
-	@JSONFixture(type = League.class, location = JSONSource.SourceType.FILE, value = "src/test/java/com/bigfatgun/fixjures/sample/fakeLeague.json")
+	@JSONFixture(type = JSONSource.SourceType.FILE, value = "src/test/java/com/bigfatgun/fixjures/sample/fakeLeague.json")
 	public void setLeague(final League value) {
 		league = value;
 	}

@@ -40,11 +40,5 @@ public @interface JSONFixture {
 	 * Fixture source type, either a string literal or a file.
 	 * @return fixture source type
 	 */
-	JSONSource.SourceType location() default JSONSource.SourceType.LITERAL;
-
-	/**
-	 * Fixture object type.
-	 * @return fixture object type
-	 */
-	Class type();
+	JSONSource.SourceType type() default JSONSource.SourceType.LITERAL;
 }
