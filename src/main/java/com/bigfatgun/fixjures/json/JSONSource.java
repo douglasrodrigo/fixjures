@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 bigfatgun.com
+ * Copyright (C) 2009 Steve Reed
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,13 +49,12 @@ import com.bigfatgun.fixjures.proxy.InterfaceProxy;
 import com.bigfatgun.fixjures.proxy.ObjectProxy;
 import com.bigfatgun.fixjures.proxy.ValueStub;
 import com.bigfatgun.fixjures.proxy.ValueStubImpl;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultiset;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultiset;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -262,7 +261,7 @@ public final class JSONSource extends FixtureSource {
 					Object keyValue = jsonObj.get(String.valueOf(key));
 					builder = builder.put(key, keyValue);
 				}
-				return builder.build();
+				return Maps.newHashMap(builder.build());
 			} else {
 				return generateObject(type, (JSONObject) value);
 			}
@@ -289,13 +288,13 @@ public final class JSONSource extends FixtureSource {
 
 				if (List.class.isAssignableFrom(type)) {
 					//noinspection unchecked
-					return ImmutableList.copyOf(source);
+					return Lists.newArrayList(source);
 				} else if (Set.class.isAssignableFrom(type)) {
 					//noinspection unchecked
-					return ImmutableSet.copyOf(source);
+					return Sets.newHashSet(source);
 				} else { // if (Multiset.class.isAssignableFrom(type)) {
 					//noinspection unchecked
-					return ImmutableMultiset.copyOf(source);
+					return source;
 //				} else {
 //					warn("Don't know what to do with collection of type " + collectionType);
 //					return null;
