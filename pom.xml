@@ -36,10 +36,9 @@
     <ciManagement />
     <mailingLists />
     <scm>
-        <connection>scm:svn:http://fixjures.googlecode.com/svn/branches/alpha</connection>
-        <developerConnection>scm:svn:https://fixjures.googlecode.com/svn/branches/alpha</developerConnection>
-        <tag>HEAD</tag>
-        <url>http://code.google.com/p/fixjures/source/browse/branches/alpha</url>
+        <connection>scm:svn:http://fixjures.googlecode.com/svn/trunk/</connection>
+        <developerConnection>scm:svn:https://fixjures.googlecode.com/svn/trunk/</developerConnection>
+        <url>http://code.google.com/p/fixjures/source/browse/</url>
     </scm>
     <prerequisites />
     <dependencies>
