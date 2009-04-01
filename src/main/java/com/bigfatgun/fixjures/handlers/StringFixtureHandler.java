@@ -20,6 +20,8 @@ import com.bigfatgun.fixjures.FixtureHandler;
 
 /**
  * Handles strings.
+ *
+ * @author Steve Reed
  */
 public final class StringFixtureHandler implements FixtureHandler<Object, String> {
 

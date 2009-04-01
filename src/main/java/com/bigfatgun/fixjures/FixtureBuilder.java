@@ -21,6 +21,7 @@ package com.bigfatgun.fixjures;
  * in order to create a {@link SourcedFixtureBuilder}.
  *
  * @param <T> fixture object type
+ * @author Steve Reed
  */
 public class FixtureBuilder<T> {
 

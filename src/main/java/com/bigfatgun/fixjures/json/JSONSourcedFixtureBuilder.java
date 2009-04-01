@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
  * A fixture builder with a {@link JSONSource} source.
  *
  * @param <T> fixture object type
+ * @author Steve Reed
  */
 /* package */ final class JSONSourcedFixtureBuilder<T> extends SourcedFixtureBuilder<T, JSONSource> {
 

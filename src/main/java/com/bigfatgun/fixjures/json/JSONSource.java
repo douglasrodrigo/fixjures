@@ -66,9 +66,8 @@ import org.json.JSONObject;
  * <p/>
  * Time: 8:48:25 AM
  *
- * @author stever
+ * @author Steve Reed
  */
-
 public final class JSONSource extends FixtureSource {
 
 	/**

@@ -21,6 +21,8 @@ import java.io.IOException;
 /**
  * Abstract fixture source which provides a no-op implementation of
  * {@code java.io.Closeable.close()}.
+ *
+ * @author Steve Reed
  */
 public abstract class FixtureSource implements Closeable {
 

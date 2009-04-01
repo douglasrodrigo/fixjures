@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableMap;
  *
  * @param <T> fixture object type
  * @param <SourceType> fixture source type
+ * @author Steve Reed
  */
 public abstract class SourcedFixtureBuilder<T, SourceType extends FixtureSource> extends FixtureBuilder<T> {
 

@@ -19,6 +19,8 @@ import com.bigfatgun.fixjures.FixtureHandler;
 
 /**
  * Handles {@code Number}s.
+ *
+ * @author Steve Reed
  */
 public final class NumberFixtureHandler implements FixtureHandler<Number, Number> {
 

@@ -19,8 +19,8 @@ package com.bigfatgun.fixjures.proxy;
  * This interface is implemented by any class that can produce a proxy object of some sort based on a
  * pre-configured map of property accessor name to {@link com.bigfatgun.fixjures.proxy.ValueStub}.
  *
- * @author Steve Reed
  * @param <T> proxy object type
+ * @author Steve Reed
  */
 public interface ObjectProxy<T> {
 

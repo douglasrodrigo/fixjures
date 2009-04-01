@@ -20,6 +20,8 @@ import com.bigfatgun.fixjures.FixtureHandler;
 
 /**
  * Handles booleans.
+ *
+ * @author Steve Reed
  */
 public final class BooleanFixtureHandler implements FixtureHandler<Object, Boolean> {
 
