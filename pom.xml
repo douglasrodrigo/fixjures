@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.bigfatgun</groupId>
     <artifactId>fixjures</artifactId>
@@ -22,27 +21,27 @@
         <developer>
             <id>stever</id>
             <name>Steve Reed</name>
-            <url/>
-            <organization/>
-            <organizationUrl/>
+            <url />
+            <organization />
+            <organizationUrl />
             <roles>
                 <role>developer</role>
             </roles>
         </developer>
     </developers>
-    <contributors/>
+    <contributors />
     <issueManagement>
         <url>http://code.google.com/p/fixjures/issues/list</url>
     </issueManagement>
-    <ciManagement/>
-    <mailingLists/>
+    <ciManagement />
+    <mailingLists />
     <scm>
-        <connection>scm:svn:http://fixjures.googlecode.com/svn/trunk/</connection>
-        <developerConnection>scm:svn:https://fixjures.googlecode.com/svn/trunk/</developerConnection>
+        <connection>scm:svn:http://fixjures.googlecode.com/svn/branches/alpha</connection>
+        <developerConnection>scm:svn:https://fixjures.googlecode.com/svn/branches/alpha</developerConnection>
         <tag>HEAD</tag>
-        <url>http://code.google.com/p/fixjures/source/browse/</url>
+        <url>http://code.google.com/p/fixjures/source/browse/branches/alpha</url>
     </scm>
-    <prerequisites/>
+    <prerequisites />
     <dependencies>
         <dependency>
             <groupId>org.json</groupId>
@@ -117,16 +116,16 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <footer>&lt;script type="text/javascript">
+                    <footer>&lt;script type="text/javascript"&gt;
                         var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
                         document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js'
                         type='text/javascript'%3E%3C/script%3E"));
-                        &lt;/script>
-                        &lt;script type="text/javascript">
+                        &lt;/script&gt;
+                        &lt;script type="text/javascript"&gt;
                         try {
                         var pageTracker = _gat._getTracker("UA-68864-4");
                         pageTracker._trackPageview();
-                        } catch(err) {}&lt;/script>
+                        } catch(err) {}&lt;/script&gt;
                     </footer>
                 </configuration>
             </plugin>
