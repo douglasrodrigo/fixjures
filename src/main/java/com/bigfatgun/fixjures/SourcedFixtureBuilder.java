@@ -85,7 +85,7 @@ public abstract class SourcedFixtureBuilder<T, SourceType extends FixtureSource>
 				try {
 					fixtureSource.close();
 				} catch (IOException e) {
-					Fixjure.zLOGGER.warning(String.format("Source close error: %s", e.getMessage()));
+					Fixjure.LOGGER.warning(String.format("Source close error: %s", e.getMessage()));
 				}
 //			}
 		}

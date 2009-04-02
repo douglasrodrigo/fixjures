@@ -259,7 +259,7 @@ public final class JSONSource extends FixtureSource {
 		} else { // if (JSONArray.class.isAssignableFrom(value.getClass())) {
 			final JSONArray array = (JSONArray) value;
 			if (!type.isArray() && typeParams.isEmpty()) {
-				Fixjure.zLOGGER.warning(String.format("Only generic collections or arrays are supported, failed to stub %s in %s", name, type));
+				Fixjure.LOGGER.warning(String.format("Only generic collections or arrays are supported, failed to stub %s in %s", name, type));
 				throw new RuntimeException("generic plz");
 			} else if (type.isArray()) {
 				final Class collectionType = type.getComponentType();
@@ -315,7 +315,7 @@ public final class JSONSource extends FixtureSource {
 			final ValueStub stub = getterValueStub(proxy.getType(), key, obj.get(key));
 			if (stub == null) {
 
-				Fixjure.zLOGGER.warning(String.format("Key [%s] found in JSON but could not stub. Could be its name or value type doesn't match methods in %s", key, proxy.getType()));
+				Fixjure.LOGGER.warning(String.format("Key [%s] found in JSON but could not stub. Could be its name or value type doesn't match methods in %s", key, proxy.getType()));
 				throw new RuntimeException("no stub");
 			} else {
 				proxy.addValueStub(getterName(key), stub);

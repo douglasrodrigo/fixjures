@@ -32,7 +32,7 @@ import com.google.common.collect.Multiset;
 public class Fixjure {
 
 	/** Logger. */
-	public static final Logger zLOGGER = Logger.getLogger("com.bigfatgun.fixjures");
+	public static final Logger LOGGER = Logger.getLogger("com.bigfatgun.fixjures");
 
 	/**
 	 * Empty private utility constructor.
