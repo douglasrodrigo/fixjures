@@ -18,7 +18,6 @@ package com.bigfatgun.fixjures;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
@@ -45,6 +44,16 @@ public class FixtureBuilder<T> {
 	/* package */ FixtureBuilder(final Class<? super T> cls) {
 		clazz = cls;
 		typeParams = Lists.newLinkedList();
+	}
+
+	/**
+	 * Copies the given fixture builder.
+	 *
+	 * @param builder builder to copy
+	 */
+	/* package */ FixtureBuilder(final FixtureBuilder<T> builder) {
+		clazz = builder.getType();
+		typeParams = builder.getTypeParams();
 	}
 
 	/**
@@ -80,7 +89,7 @@ public class FixtureBuilder<T> {
 	 * @return this
 	 */
 	public FixtureBuilder<T> of(final Class<?>... classes) {
-		Iterables.addAll(typeParams, Arrays.asList(classes));
+		typeParams.addAll(Arrays.asList(classes));
 		return this;
 	}
 }

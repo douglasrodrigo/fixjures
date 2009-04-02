@@ -21,12 +21,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +35,10 @@ import java.util.Set;
 
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureBuilder;
+import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureHandler;
 import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.SourcedFixtureBuilder;
-import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.handlers.ByteFixtureHandler;
 import com.bigfatgun.fixjures.handlers.DoubleFixtureHandler;
 import com.bigfatgun.fixjures.handlers.FloatFixtureHandler;
@@ -52,6 +53,7 @@ import com.bigfatgun.fixjures.proxy.ObjectProxy;
 import com.bigfatgun.fixjures.proxy.ValueStub;
 import com.bigfatgun.fixjures.proxy.ValueStubImpl;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -163,7 +165,7 @@ public final class JSONSource extends FixtureSource {
 
 	/**
 	 * @param type type of object to proxy
-	 * @param typeParams
+	 * @param typeParams type params
 	 * @return proxied object
 	 */
 	public <T> T createFixture(final Class<T> type, final List<Class<?>> typeParams) {
@@ -184,7 +186,7 @@ public final class JSONSource extends FixtureSource {
 			}
 
 			//noinspection unchecked
-			return (T) findValue(type, rawValue, "ROOT");
+			return (T) findValue(type, typeParams, rawValue, "ROOT");
 		} catch (Exception e) {
 			throw new FixtureException(e);
 		}
@@ -208,9 +210,9 @@ public final class JSONSource extends FixtureSource {
 		} else {
 			//noinspection unchecked
 			getterClass = (Class) type;
-			typeParams = null;
+			typeParams = new Type[0];
 		}
-		return findValue(getterClass, typeParams, value, name);
+		return findValue(getterClass, Arrays.asList(typeParams), value, name);
 	}
 
 	/**
@@ -221,7 +223,7 @@ public final class JSONSource extends FixtureSource {
 	 * @return proxied object
 	 * @throws JSONException if there is an error reading JSON
 	 */
-	private Object findValue(final Class type, final Type[] typeParams, final Object value, final String name) throws JSONException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+	private Object findValue(final Class type, final List<? extends Type> typeParams, final Object value, final String name) throws JSONException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
 		for (Class cls = type; cls != null; cls = cls.getSuperclass()) {
 			for (final FixtureHandler handler : getDesiredTypeHandlers().get(cls)) {
 				if (handler.canDeserialize(value, type)) {
@@ -256,7 +258,7 @@ public final class JSONSource extends FixtureSource {
 			}
 		} else { // if (JSONArray.class.isAssignableFrom(value.getClass())) {
 			final JSONArray array = (JSONArray) value;
-			if (!type.isArray() && typeParams == null) {
+			if (!type.isArray() && typeParams.isEmpty()) {
 				Fixjure.zLOGGER.warning(String.format("Only generic collections or arrays are supported, failed to stub %s in %s", name, type));
 				throw new RuntimeException("generic plz");
 			} else if (type.isArray()) {
@@ -268,7 +270,7 @@ public final class JSONSource extends FixtureSource {
 				return actualArray;
 			} else {
 				final Multiset source = LinkedHashMultiset.create();
-				final Class collectionType = (Class) typeParams[0];
+				final Type collectionType = Iterables.getOnlyElement(typeParams);
 
 				for (int i = 0; i < array.length(); i++) {
 					//noinspection unchecked

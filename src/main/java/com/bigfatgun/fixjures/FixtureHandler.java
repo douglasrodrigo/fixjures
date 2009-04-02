@@ -44,13 +44,6 @@ public abstract class FixtureHandler<SourceType, ReturnType> implements Function
 	public abstract Class<? extends ReturnType> getReturnType();
 
 	/**
-	 * @return true if this handler can process a null source value
-	 */
-	public boolean handlesNull() {
-		return true;
-	}
-
-	/**
 	 * Evaluates a source object and desired type, returning true if the object can be passed to
 	 * {@code apply(...)} and return a correct value.
 	 *
@@ -59,8 +52,7 @@ public abstract class FixtureHandler<SourceType, ReturnType> implements Function
 	 * @return true if object can be transformed by this handler
 	 */
 	public boolean canDeserialize(final Object obj, final Class desiredType) {
-		return (obj != null || handlesNull())
-				  && getReturnType().isAssignableFrom(desiredType)
+		return getReturnType().isAssignableFrom(desiredType)
 				  && (obj == null || getSourceType().isAssignableFrom(obj.getClass()));
 	}
 }

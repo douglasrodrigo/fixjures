@@ -39,7 +39,7 @@ public abstract class SourcedFixtureBuilder<T, SourceType extends FixtureSource>
 	 * @param source fixture data source
 	 */
 	protected SourcedFixtureBuilder(final FixtureBuilder<T> builder, final SourceType source) {
-		super(builder.getType());
+		super(builder);
 		fixtureSource = source;
 	}
 
