@@ -1,15 +1,12 @@
 package com.bigfatgun.fixjures.sample;
 
-import java.io.FileNotFoundException;
-import java.lang.reflect.InvocationTargetException;
-
 import com.bigfatgun.fixjures.json.JSONFixture;
 import com.bigfatgun.fixjures.json.JSONFixtureHelper;
 import com.bigfatgun.fixjures.json.JSONSource;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.base.Function;
 import com.google.common.base.Nullable;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
@@ -25,7 +22,7 @@ public class SampleTest {
 	}
 
 	@Before
-	public void setUp() throws InvocationTargetException, FileNotFoundException, IllegalAccessException {
+	public void setUp() throws Exception {
 		JSONFixtureHelper.scan(this);
 	}
 

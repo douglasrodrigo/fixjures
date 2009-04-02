@@ -15,38 +15,35 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.bigfatgun.fixjures.FixtureHandler;
+import com.google.common.base.Nullable;
 
 /**
- * Handles {@code Number}s.
+ * Handles {@code Byte}s.
  *
  * @author Steve Reed
  */
-public abstract class NumberFixtureHandler<NumericType extends Number> extends FixtureHandler<Number, NumericType> {
+public final class ByteFixtureHandler extends NumberFixtureHandler<Byte> {
 
 	/**
-	 * Abstract method provided by subclasses to provide the primitive type.
-	 *
-	 * @return numeric primitive type
-	 */
-	protected abstract Class<NumericType> getPrimitiveType();
-
-	/**
-	 * Returns {@code Number}.
-	 * <p>
-	 * {@inheritDoc}
-	 */
-	public final Class<Number> getSourceType() {
-		return Number.class;
-	}
-
-	/**
-	 * Returns true if the desired type is the correct source type or primitive type.
-	 * <p>
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final boolean canDeserialize(final Object obj, final Class desiredType) {
-		return super.canDeserialize(obj, desiredType) || getPrimitiveType().equals(desiredType);
+	protected Class<Byte> getPrimitiveType() {
+		return Byte.TYPE;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Class<Byte> getReturnType() {
+		return Byte.class;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public Byte apply(@Nullable final Number number) {
+		return number.byteValue();
 	}
 }

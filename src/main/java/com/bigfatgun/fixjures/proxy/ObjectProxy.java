@@ -15,6 +15,8 @@
  */
 package com.bigfatgun.fixjures.proxy;
 
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * This interface is implemented by any class that can produce a proxy object of some sort based on a
  * pre-configured map of property accessor name to {@link com.bigfatgun.fixjures.proxy.ValueStub}.
@@ -42,5 +44,5 @@ public interface ObjectProxy<T> {
 	 * Creates a new proxy instance.
 	 * @return a new proxy instance
 	 */
-	T create();
+	T create() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException;
 }

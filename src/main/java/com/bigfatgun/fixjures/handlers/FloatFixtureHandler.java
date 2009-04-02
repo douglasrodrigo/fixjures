@@ -15,38 +15,35 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.bigfatgun.fixjures.FixtureHandler;
+import com.google.common.base.Nullable;
 
 /**
- * Handles {@code Number}s.
+ * Handles {@code Float}s.
  *
  * @author Steve Reed
  */
-public abstract class NumberFixtureHandler<NumericType extends Number> extends FixtureHandler<Number, NumericType> {
+public final class FloatFixtureHandler extends NumberFixtureHandler<Float> {
 
 	/**
-	 * Abstract method provided by subclasses to provide the primitive type.
-	 *
-	 * @return numeric primitive type
-	 */
-	protected abstract Class<NumericType> getPrimitiveType();
-
-	/**
-	 * Returns {@code Number}.
-	 * <p>
-	 * {@inheritDoc}
-	 */
-	public final Class<Number> getSourceType() {
-		return Number.class;
-	}
-
-	/**
-	 * Returns true if the desired type is the correct source type or primitive type.
-	 * <p>
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final boolean canDeserialize(final Object obj, final Class desiredType) {
-		return super.canDeserialize(obj, desiredType) || getPrimitiveType().equals(desiredType);
+	protected Class<Float> getPrimitiveType() {
+		return Float.TYPE;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Class<Float> getReturnType() {
+		return Float.class;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public Float apply(@Nullable final Number number) {
+		return number.floatValue();
 	}
 }

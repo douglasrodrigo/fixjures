@@ -15,37 +15,35 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.bigfatgun.fixjures.Fixjure;
-import com.bigfatgun.fixjures.FixtureHandler;
+import com.google.common.base.Nullable;
 
 /**
- * Handles strings.
+ * Handles integers.
  *
  * @author Steve Reed
  */
-public final class StringFixtureHandler implements FixtureHandler<Object, String> {
+public final class IntegerFixtureHandler extends NumberFixtureHandler<Integer> {
 
 	/**
-	 * Returns {@code String.class}.
-	 * <p>
 	 * {@inheritDoc}
 	 */
-	public Class<String> getType() {
-		return String.class;
+	@Override
+	protected Class<Integer> getPrimitiveType() {
+		return Integer.TYPE;
 	}
 
 	/**
-	 * Converts the object to a string only if it's assignable from the {@code desiredType}.
-	 * <p>
 	 * {@inheritDoc}
 	 */
-	public String deserialize(final Class desiredType, final Object rawValue, final String name) {
-		if (desiredType.isAssignableFrom(rawValue.getClass())) {
-			//noinspection unchecked
-			return String.valueOf(rawValue);
-		} else {
-			Fixjure.LOGGER.warning(String.format("Type mismatch, stubbing %s to return null.", name));
-			return null;
-		}
+	@Override
+	public Class<Integer> getReturnType() {
+		return Integer.class;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public Integer apply(@Nullable final Number number) {
+		return number.intValue();
 	}
 }

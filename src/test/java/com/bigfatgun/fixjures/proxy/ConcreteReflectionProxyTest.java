@@ -15,6 +15,8 @@
  */
 package com.bigfatgun.fixjures.proxy;
 
+import java.lang.reflect.InvocationTargetException;
+
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
@@ -36,8 +38,8 @@ public class ConcreteReflectionProxyTest {
 		new ConcreteReflectionProxy<Foo>(Foo.class);
 	}
 
-	@Test
-	public void bogusGetterName() {
+	@Test(expected = NoSuchMethodException.class)
+	public void bogusGetterName() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
 		final ConcreteReflectionProxy<FooTwo> proxy = new ConcreteReflectionProxy<FooTwo>(FooTwo.class);
 		proxy.addValueStub("bogus", new ValueStubImpl("dude"));
 		FooTwo two = proxy.create();

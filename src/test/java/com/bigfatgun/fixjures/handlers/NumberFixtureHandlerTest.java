@@ -1,71 +1,84 @@
 package com.bigfatgun.fixjures.handlers;
 
+import com.google.common.base.Nullable;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import org.junit.Test;
 
 public class NumberFixtureHandlerTest {
 
-	private NumberFixtureHandler handler = new NumberFixtureHandler();
+	private NumberFixtureHandler handler;
 
 	@Test
 	public void theTypeIsRight() {
-		assertSame(Number.class, handler.getType());
+		handler = new NumberFixtureHandler<Number>() {
+			@Override
+			protected Class getPrimitiveType() {
+				return null;  //To change body of implemented methods use File | Settings | File Templates.
+			}
+
+			@Override
+			public Class getReturnType() {
+				return null;  //To change body of implemented methods use File | Settings | File Templates.
+			}
+
+			public Number apply(@Nullable final Number o) {
+				return null;  //To change body of implemented methods use File | Settings | File Templates.
+			}
+		};
+		assertSame(Number.class, handler.getSourceType());
 	}
 
 	@Test
 	public void handleByte() {
+		handler = new ByteFixtureHandler();
 		for (long i = -100; i < 100; i++) {
-			assertEquals((byte) i, handler.deserialize(Byte.class, i, "i"));
-			assertEquals((byte) i, handler.deserialize(Byte.TYPE, i, "i"));
+			assertEquals((byte) i, handler.apply(i));
+			assertEquals((byte) i, handler.apply(i));
 		}
-
-		assertFalse(handler.deserialize(Short.class, 100, "one hundred").equals((byte) 100));
 	}
 
 	@Test
 	public void handleShort() {
+		handler = new ShortFixtureHandler();
 		for (long i = -100; i < 100; i++) {
-			assertEquals((short) i, handler.deserialize(Short.class, i, "i"));
-			assertEquals((short) i, handler.deserialize(Short.TYPE, i, "i"));
+			assertEquals((short) i, handler.apply(i));
+			assertEquals((short) i, handler.apply(i));
 		}
-
-		assertFalse(handler.deserialize(Integer.class, 100000, "one hundred k").equals((short) 100000));
 	}
 
 	@Test
 	public void handleInt() {
+		handler = new IntegerFixtureHandler();
 		for (long i = -100; i < 100; i++) {
-			assertEquals((int) i, handler.deserialize(Integer.class, i, "i"));
-			assertEquals((int) i, handler.deserialize(Integer.TYPE, i, "i"));
+			assertEquals((int) i, handler.apply(i));
+			assertEquals((int) i, handler.apply(i));
 		}
-
-		assertFalse(handler.deserialize(Long.class, 4000000000L, "one hundred k").equals((int) 4000000000L));
 	}
 
 	@Test
 	public void handleLong() {
+		handler = new LongFixtureHandler();
 		for (long i = -100; i < 100; i++) {
-			assertEquals(i, handler.deserialize(Long.class, i, "i"));
-			assertEquals(i, handler.deserialize(Long.TYPE, i, "i"));
+			assertEquals(i, handler.apply(i));
+			assertEquals(i, handler.apply(i));
 		}
 	}
 
 	@Test
 	public void handleFloat() {
+		handler = new FloatFixtureHandler();
 		for (long i = -100; i < 100; i++) {
-			assertEquals((float) i, handler.deserialize(Float.class, i, "i"));
-			assertEquals((float) i, handler.deserialize(Float.TYPE, i, "i"));
+			assertEquals((float) i, handler.apply(i));
+			assertEquals((float) i, handler.apply(i));
 		}
-
-		assertFalse(handler.deserialize(Double.class, 100000.0d, ".").equals((float) 100000.0d));
 	}
 
 	@Test
 	public void handleDouble() {
+		handler = new DoubleFixtureHandler();
 		for (long i = -100; i < 100; i++) {
-			assertEquals((double) i, handler.deserialize(Double.class, i, "one"));
+			assertEquals((double) i, handler.apply(i));
 		}
 	}
 }

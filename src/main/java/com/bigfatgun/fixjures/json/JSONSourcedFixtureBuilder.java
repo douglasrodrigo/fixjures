@@ -15,10 +15,8 @@
  */
 package com.bigfatgun.fixjures.json;
 
-import com.bigfatgun.fixjures.SourcedFixtureBuilder;
 import com.bigfatgun.fixjures.FixtureBuilder;
-import com.bigfatgun.fixjures.FixtureHandler;
-import com.google.common.collect.ImmutableMap;
+import com.bigfatgun.fixjures.SourcedFixtureBuilder;
 
 /**
  * A fixture builder with a {@link JSONSource} source.
@@ -40,14 +38,12 @@ import com.google.common.collect.ImmutableMap;
 	}
 
 	/**
-	 * Forwards to {@link JSONSource#createFixture(Class)}.
+	 * Forwards to {@link JSONSource#createFixture(Class, java.util.List)}.
 	 *
-	 * @param handlers fixture handlers
 	 * @return fixture object
 	 */
 	@Override
-	protected T createFixtureObject(final ImmutableMap<Class, FixtureHandler> handlers) {
-		getSource().setFixtureHandlers(handlers);
-		return getSource().createFixture(getType());
+	protected T createFixtureObject() {
+		return getSource().createFixture(getType(), getTypeParams());
 	}
 }

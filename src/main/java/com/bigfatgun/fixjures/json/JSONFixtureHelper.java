@@ -16,9 +16,7 @@
 package com.bigfatgun.fixjures.json;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
 
 import com.bigfatgun.fixjures.Fixjure;
 
@@ -42,11 +40,8 @@ public final class JSONFixtureHelper {
 	 * </code>
 	 *
 	 * @param obj object to scan
-	 * @throws FileNotFoundException if the JSONFixture is sourced from a file which is not found
-	 * @throws InvocationTargetException if the method can't be invoked via reflection
-	 * @throws IllegalAccessException if the method can't be accessed
 	 */
-	public static void scan(final Object obj) throws FileNotFoundException, InvocationTargetException, IllegalAccessException {
+	public static void scan(final Object obj) throws Exception {
 		final Class cls = obj.getClass();
 		for (Method m : cls.getMethods()) {
          if (m.isAnnotationPresent(JSONFixture.class)) {

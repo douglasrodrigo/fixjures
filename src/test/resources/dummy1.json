@@ -1,10 +1,6 @@
 {
 	"str" : "Some String!",
 	"byte" : 4,
-	"ignored" : {
-		"please" : "ignore",
-		"me" : "!"
-	},
 	"double" : 1e14,
 	"list" : [ 1, 2, 3, 4 ],
 	"set" : [ 4, 3, 2, 1 ],

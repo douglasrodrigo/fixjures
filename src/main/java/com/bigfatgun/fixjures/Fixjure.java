@@ -15,7 +15,11 @@
  */
 package com.bigfatgun.fixjures;
 
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
+
+import com.google.common.collect.Multiset;
 
 /**
  * Main fixjures entry point that provides builder-like semantics for setting up
@@ -28,7 +32,7 @@ import java.util.logging.Logger;
 public class Fixjure {
 
 	/** Logger. */
-	public static final Logger LOGGER = Logger.getLogger("com.bigfatgun.fixjures");
+	public static final Logger zLOGGER = Logger.getLogger("com.bigfatgun.fixjures");
 
 	/**
 	 * Empty private utility constructor.
@@ -46,5 +50,38 @@ public class Fixjure {
 	 */
 	public static <T> FixtureBuilder<T> of(final Class<T> cls) {
 		return new FixtureBuilder<T>(cls);
+	}
+
+	/**
+	 * Creates a builder of a list of objects.
+	 *
+	 * @param cls object type
+	 * @param <T> object type
+	 * @return new fixture builder
+	 */
+	public static <T> FixtureBuilder<List<T>> listOf(final Class<T> cls) {
+		return new FixtureBuilder<List<T>>(List.class).of(cls);
+	}
+
+	/**
+	 * Creates a builder of a set of objects.
+	 *
+	 * @param cls object type
+	 * @param <T> object type
+	 * @return new fixture builder
+	 */
+	public static <T> FixtureBuilder<Set<T>> setOf(final Class<T> cls) {
+		return new FixtureBuilder<Set<T>>(Set.class).of(cls);
+	}
+
+	/**
+	 * Creates a builder of a multiset of objects.
+	 *
+	 * @param cls object type
+	 * @param <T> object type
+	 * @return new fixture builder
+	 */
+	public static <T> FixtureBuilder<Multiset<T>> multisetOf(final Class<T> cls) {
+		return new FixtureBuilder<Multiset<T>>(Multiset.class).of(cls);
 	}
 }

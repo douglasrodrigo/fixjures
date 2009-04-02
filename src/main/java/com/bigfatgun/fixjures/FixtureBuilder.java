@@ -15,6 +15,12 @@
  */
 package com.bigfatgun.fixjures;
 
+import java.util.Arrays;
+import java.util.List;
+
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+
 /**
  * Your basic fixture builder that provides the simplest implementation of
  * the {@code from} method, which passes the type info into a fixture source
@@ -26,15 +32,26 @@ package com.bigfatgun.fixjures;
 public class FixtureBuilder<T> {
 
 	/** Fixture object type. */
-	private final Class<T> clazz;
+	private final Class<? super T> clazz;
+
+	/** List of type params. */
+	private final List<Class<?>> typeParams;
 
 	/**
 	 * Instantiates a new fixture builder.
 	 *
 	 * @param cls fixture object type
 	 */
-	/* package */ FixtureBuilder(final Class<T> cls) {
+	/* package */ FixtureBuilder(final Class<? super T> cls) {
 		clazz = cls;
+		typeParams = Lists.newLinkedList();
+	}
+
+	/**
+	 * @return list of type params
+	 */
+	public List<Class<?>> getTypeParams() {
+		return typeParams;
 	}
 
 	/**
@@ -51,7 +68,19 @@ public class FixtureBuilder<T> {
 	/**
 	 * @return fixture object type
 	 */
+	@SuppressWarnings({"unchecked"})
 	public final Class<T> getType() {
-		return clazz;
+		return (Class<T>) clazz;
+	}
+
+	/**
+	 * Adds the given classes as type params to the main type.
+	 *
+	 * @param classes classes
+	 * @return this
+	 */
+	public FixtureBuilder<T> of(final Class<?>... classes) {
+		Iterables.addAll(typeParams, Arrays.asList(classes));
+		return this;
 	}
 }

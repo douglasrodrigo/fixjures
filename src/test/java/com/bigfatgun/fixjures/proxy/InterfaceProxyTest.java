@@ -46,7 +46,7 @@ public class InterfaceProxyTest {
 	}
 
 	@Test
-	public void proxiesHaveAHashCodeBasedOnValue() {
+	public void proxiesHaveAHashCodeBasedOnValue() throws Exception {
 		final Foo3 foo = Fixjure.of(Foo3.class).from(new JSONSource("{ str : \"09182340\" }")).create();
 		assertEquals(ImmutableSet.of("09182340").hashCode(), foo.hashCode());
 	}

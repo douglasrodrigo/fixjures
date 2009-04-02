@@ -2,22 +2,21 @@ package com.bigfatgun.fixjures;
 
 import java.io.IOException;
 
-import org.junit.Test;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
-import com.google.common.collect.ImmutableMap;
+import static org.junit.Assert.assertNull;
+import org.junit.Test;
 
 public class SourcedFixtureBuilderTest {
 
-	@Test
-	public void whenAnExceptionIsThrown() {
+	@Test(expected = RuntimeException.class)
+	public void whenAnExceptionIsThrown() throws Exception {
 		assertNull(Fixjure.of(Integer.class).from(new FixtureSource() {
 			@Override
 			public <T> SourcedFixtureBuilder<T, FixtureSource> build(final FixtureBuilder<T> builder) {
 				return new SourcedFixtureBuilder<T, FixtureSource>(builder, this) {
 					@Override
-					protected T createFixtureObject(final ImmutableMap<Class, FixtureHandler> classFixtureHandlerImmutableMap) throws Exception {
-						throw new Exception();
+					protected T createFixtureObject() {
+						throw new RuntimeException();
 					}
 				};
 			}
@@ -25,7 +24,7 @@ public class SourcedFixtureBuilderTest {
 	}
 
 	@Test
-	public void whenSourceThrowsExceptionOnClose() {
+	public void whenSourceThrowsExceptionOnClose() throws Exception {
 		assertEquals((Integer) 1234, Fixjure.of(Integer.class).from(new FixtureSource() {
 			@Override
 			public void close() throws IOException {
@@ -36,7 +35,7 @@ public class SourcedFixtureBuilderTest {
 			public <T> SourcedFixtureBuilder<T, FixtureSource> build(final FixtureBuilder<T> builder) {
 				return new SourcedFixtureBuilder<T, FixtureSource>(builder, this) {
 					@Override
-					protected T createFixtureObject(final ImmutableMap<Class, FixtureHandler> classFixtureHandlerImmutableMap) throws Exception {
+					protected T createFixtureObject() {
 						return builder.getType().cast(1234);
 					}
 				};

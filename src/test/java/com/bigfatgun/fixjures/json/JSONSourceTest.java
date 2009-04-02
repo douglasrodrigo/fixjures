@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.Set;
 
 import com.bigfatgun.fixjures.Fixjure;
+import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureHandler;
+import com.google.common.base.Nullable;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
@@ -62,28 +64,28 @@ public class JSONSourceTest {
 	}
 
 	@Test
-	public void simpleStringLiteralToInterface() {
+	public void simpleStringLiteralToInterface() throws Exception {
 		final Foo foo = Fixjure.of(Foo.class).from(new JSONSource("{ \"bar\" : \"" + toString() + "\" }")).create();
 		assertNotNull(foo);
 		assertEquals(toString(), foo.getBar());
 	}
 
 	@Test
-	public void simpleStringLiteralToConcrete() {
+	public void simpleStringLiteralToConcrete() throws Exception {
 		final FooTwo foo = Fixjure.of(FooTwo.class).from(new JSONSource("{ \"electric\" : \"boogaloo\" }")).create();
 		assertNotNull(foo);
 		assertEquals("boogaloo", foo.getElectric());
 	}
 
 	@Test
-	public void simpleStringLiteralToConcreteWithPrivateConstructor() {
+	public void simpleStringLiteralToConcreteWithPrivateConstructor() throws Exception {
 		final FooThree foo = Fixjure.of(FooThree.class).from(new JSONSource("{ \"electric\" : \"boogaloo\" }")).create();
 		assertNotNull(foo);
 		assertEquals("boogaloo", foo.getElectric());
 	}
 
 	@Test
-	public void complexFromFile() throws FileNotFoundException {
+	public void complexFromFile() throws Exception {
 		final Complex complex = Fixjure.of(Complex.class).from(new JSONSource(new File("src/test/resources/dummy1.json"))).create();
 		assertEquals("Some String!", complex.getStr());
 		assertEquals((byte) 4, complex.getByte());
@@ -99,15 +101,22 @@ public class JSONSourceTest {
 	}
 
 	@Test
-	public void complexWithFixtureHandler() {
+	public void complexWithFixtureHandler() throws Exception {
 		final Complex complex = Fixjure.of(Complex.class)
 				  .from(new JSONSource(" { \"str\" : \"val\" } "))
 				  .with(new FixtureHandler<String, String>() {
-					  public Class<String> getType() {
+
+					  @Override
+					  public Class<String> getSourceType() {
 						  return String.class;
 					  }
 
-					  public String deserialize(final Class desiredType, final String rawValue, final String name) {
+					  @Override
+					  public Class<String> getReturnType() {
+						  return String.class;
+					  }
+
+					  public String apply(@Nullable final String s) {
 						  return "overridden!";
 					  }
 				  })
@@ -115,8 +124,8 @@ public class JSONSourceTest {
 		assertEquals("overridden!", complex.getStr());
 	}
 
-	@Test
-	public void unsupportedJSONValue() {
+	@Test(expected = FixtureException.class)
+	public void unsupportedJSONValue() throws Exception {
 		assertNull(Fixjure.of(Boolean.class).from(new JSONSource(" true ")).create());
 	}
 
@@ -124,8 +133,8 @@ public class JSONSourceTest {
 		List getFoo();
 	}
 
-	@Test
-	public void nonGenericList() {
+	@Test(expected = RuntimeException.class)
+	public void nonGenericList() throws Exception {
 		final WithNonGenericList foo = Fixjure.of(WithNonGenericList.class).from(new JSONSource("{ \"foo\" : [ 1, 2 ] }")).create();
 		assertNull(foo.getFoo());
 	}
@@ -136,20 +145,27 @@ public class JSONSourceTest {
 	}
 
 	@Test(expected = ClassCastException.class)
-	public void youGetErrorsWhenYouUseAFixtureHandlerToHijackYourStuff() {
+	public void youGetErrorsWhenYouUseAFixtureHandlerToHijackYourStuff() throws Exception {
 		Fixjure.of(Complex.class).from(new JSONSource("{ str : \"str\"}")).with(new FixtureHandler() {
-			public Class getType() {
+
+			@Override
+			public Class getSourceType() {
 				return String.class;
 			}
 
-			public Object deserialize(final Class desiredType, final Object rawValue, final String name) {
+			@Override
+			public Class getReturnType() {
+				return String.class;
+			}
+
+			public Object apply(@Nullable final Object o) {
 				return 1;
 			}
 		}).create().getStr();
 	}
 
-	@Test
-	public void attemptToConvertListToUnknownCollectionType() {
+	@Test(expected = RuntimeException.class)
+	public void attemptToConvertListToUnknownCollectionType() throws Exception {
 		assertNull(Fixjure.of(Complex.class).from(new JSONSource("{ str : [1, 2] }")).create().getStr());
 	}
 
@@ -159,8 +175,8 @@ public class JSONSourceTest {
 		}
 	}
 
-	@Test
-	public void exceptionOnConcreteCtor() {
+	@Test(expected = FixtureException.class)
+	public void exceptionOnConcreteCtor() throws Exception {
 		assertNull(Fixjure.of(BadCtor.class).from(new JSONSource("{ 1: 2 }")).create());
 	}
 
@@ -184,16 +200,13 @@ public class JSONSourceTest {
 		}
 	}
 
-	@Test
-	public void badGettersAndSetters() {
-		BadGettersAndSetters bgas = Fixjure.of(BadGettersAndSetters.class).from(new JSONSource("{ \"unknown\" : 1, \"bar\" : 2, \"foo\" : 3 }")).create();
-		assertNotNull(bgas);
-		assertNull(bgas.getFoo());
-		assertNull(bgas.getBar());
+	@Test(expected = FixtureException.class)
+	public void badGettersAndSetters() throws Exception {
+		assertNull(Fixjure.of(BadGettersAndSetters.class).from(new JSONSource("{ \"unknown\" : 1, \"bar\" : 2, \"foo\" : 3 }")).create());
 	}
 
 	@Test
-	public void simpleArrayOfNumbers() {
+	public void simpleArrayOfNumbers() throws Exception {
 		int[] ints = new int[0];
 		ints = Fixjure.of(ints.getClass()).from(new JSONSource("[ 1, 2, 3 ]")).create();
 		assertNotNull(ints.length);

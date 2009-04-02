@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import com.bigfatgun.fixjures.FixtureException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -13,7 +14,7 @@ import org.junit.Test;
 public class JSONFixtureHelperTest {
 
 	@Test
-	public void testMyBean() throws InvocationTargetException, FileNotFoundException, IllegalAccessException {
+	public void testMyBean() throws Exception, FileNotFoundException, IllegalAccessException {
 		MyBean bean = new MyBean();
 		assertNull(bean.getFoo());
 		assertNull(bean.getBar());
@@ -39,17 +40,17 @@ public class JSONFixtureHelperTest {
 	}
 
 	@Test
-	public void badMarkup1() throws InvocationTargetException, FileNotFoundException, IllegalAccessException {
+	public void badMarkup1() throws Exception, FileNotFoundException, IllegalAccessException {
 		JSONFixtureHelper.scan(new BadBean1());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void badMarkup2() throws InvocationTargetException, FileNotFoundException, IllegalAccessException {
+	@Test(expected = FixtureException.class)
+	public void badMarkup2() throws Exception, FileNotFoundException, IllegalAccessException {
 		JSONFixtureHelper.scan(new BadBean2());
 	}
 
 	@Test
-	public void badMarkup3() throws InvocationTargetException, FileNotFoundException, IllegalAccessException {
+	public void badMarkup3() throws Exception, FileNotFoundException, IllegalAccessException {
 		JSONFixtureHelper.scan(new BadBean3());
 	}
 

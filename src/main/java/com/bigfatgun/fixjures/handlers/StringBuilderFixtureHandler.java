@@ -15,38 +15,39 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureHandler;
+import com.google.common.base.Nullable;
 
 /**
- * Handles booleans.
+ * Converts a {@code String} to a {@code StringBuilder}.
  *
  * @author Steve Reed
  */
-public final class BooleanFixtureHandler implements FixtureHandler<Object, Boolean> {
+public final class StringBuilderFixtureHandler extends FixtureHandler<String, StringBuilder> {
 
 	/**
-	 * Returns {@code Boolean.class}.
-	 * <p>
 	 * {@inheritDoc}
 	 */
-	public Class<Boolean> getType() {
-		return Boolean.class;
+	@Override
+	public Class<String> getSourceType() {
+		return String.class;
 	}
 
 	/**
-	 * Converts the given object to a boolean. TODO add support for converting a number to a boolean, or perhaps
-	 * testing for nulls/non-nulls.
+	 * Returns {@code StringBuilder.class}.
 	 * <p>
 	 * {@inheritDoc}
 	 */
-	public Boolean deserialize(final Class desiredType, final Object rawValue, final String name) {
-		if (desiredType.isAssignableFrom(rawValue.getClass())) {
-			//noinspection unchecked
-			return (Boolean) rawValue;
-		} else {
-			Fixjure.LOGGER.warning(String.format("Type mismatch, stubbing %s to return null.", name));
-			return null;
-		}
+	public Class<StringBuilder> getReturnType() {
+		return StringBuilder.class;
+	}
+
+	/**
+	 * Wraps the object in a {@code StringBuilder}.
+	 * <p>
+	 * {@inheritDoc}
+	 */
+	public StringBuilder apply(@Nullable final String s) {
+		return new StringBuilder(s);
 	}
 }

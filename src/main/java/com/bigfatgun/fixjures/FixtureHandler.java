@@ -15,6 +15,8 @@
  */
 package com.bigfatgun.fixjures;
 
+import com.google.common.base.Function;
+
 /**
  * Fixture handler plugin which can intercept object deserialization and provide its
  * own behavior during fixture instantiation.
@@ -27,21 +29,38 @@ package com.bigfatgun.fixjures;
  * @param <ReturnType> type of object returned by this handler
  * @author Steve Reed
  */
-public interface FixtureHandler<SourceType, ReturnType> {
+public abstract class FixtureHandler<SourceType, ReturnType> implements Function<SourceType, ReturnType> {
+
+	/**
+	 * Returns the type of object required by this handler.
+	 * @return the type of object required by this handler
+	 */
+	public abstract Class<? extends SourceType> getSourceType();
 
 	/**
 	 * Returns the type of object created by this handler.
 	 * @return the type of object created by this handler
 	 */
-	Class<? extends ReturnType> getType();
+	public abstract Class<? extends ReturnType> getReturnType();
 
 	/**
-	 * Deserializes the given object from a fixture source object.
-	 *
-	 * @param desiredType type required by consumer
-	 * @param rawValue raw value
-	 * @param name property name
-	 * @return value
+	 * @return true if this handler can process a null source value
 	 */
-	ReturnType deserialize(Class desiredType, SourceType rawValue, String name);
+	public boolean handlesNull() {
+		return true;
+	}
+
+	/**
+	 * Evaluates a source object and desired type, returning true if the object can be passed to
+	 * {@code apply(...)} and return a correct value.
+	 *
+	 * @param obj source object
+	 * @param desiredType desired object type
+	 * @return true if object can be transformed by this handler
+	 */
+	public boolean canDeserialize(final Object obj, final Class desiredType) {
+		return (obj != null || handlesNull())
+				  && getReturnType().isAssignableFrom(desiredType)
+				  && (obj == null || getSourceType().isAssignableFrom(obj.getClass()));
+	}
 }
