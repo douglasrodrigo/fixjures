@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,5 +38,11 @@ public class SampleTest {
 						  return team.getName();
 					  }
 				  })));
+	}
+
+	@Test
+	public void passTheLeagueAround() {
+		// You can pass this object around to other methods for test
+		assertTrue(new Sample().containsFavoriteTeam(league));
 	}
 }

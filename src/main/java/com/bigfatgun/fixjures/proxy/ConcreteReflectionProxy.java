@@ -60,8 +60,8 @@ public final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 //			return null;
 //		}
 
-		for (final Map.Entry<String, ValueStub> entry : getStubs().entrySet()) {
-			setInstanceValue(object, entry.getKey(), convertNameToSetter(entry.getKey()), entry.getValue().invoke());
+		for (final Map.Entry<String, Object> entry : getStubs().entrySet()) {
+			setInstanceValue(object, entry.getKey(), convertNameToSetter(entry.getKey()), entry.getValue());
 		}
 
 		return object;

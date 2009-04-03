@@ -32,7 +32,7 @@ public abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 	private final Class<T> clazz;
 
 	/** Map of method name to stub. */
-	private final Map<String, ValueStub> stubs;
+	private final Map<String, Object> stubs;
 
 	/**
 	 * Constructor required to be invoked by subclasses in order to set up the class and stubs.
@@ -60,7 +60,7 @@ public abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 	 * Returns an immutable map of getter name to value stub.
 	 * @return an immutable map of getter name to value stub
 	 */
-	protected final ImmutableMap<String, ValueStub> getStubs() {
+	protected final ImmutableMap<String, Object> getStubs() {
 		return ImmutableMap.copyOf(stubs);
 	}
 
@@ -70,7 +70,7 @@ public abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 	 * @param methodName method name
 	 * @param valueStub method return value stub
 	 */
-	public final void addValueStub(final String methodName, final ValueStub valueStub) {
+	public final void addValueStub(final String methodName, final Object valueStub) {
 		stubs.put(methodName, valueStub);
 	}
 }

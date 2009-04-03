@@ -16,6 +16,7 @@
 package com.bigfatgun.fixjures;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -83,5 +84,18 @@ public class Fixjure {
 	 */
 	public static <T> FixtureBuilder<Multiset<T>> multisetOf(final Class<T> cls) {
 		return new FixtureBuilder<Multiset<T>>(Multiset.class).of(cls);
+	}
+
+	/**
+	 * Creates a builder of a map of objects.
+	 *
+	 * @param keyCls map key type
+	 * @param valCls map value type
+	 * @param <K> map key type
+	 * @param <V> map value type
+	 * @return new fixture builder
+	 */
+	public static <K, V> FixtureBuilder<Map<K, V>> mapOf(final Class<K> keyCls, final Class<V> valCls) {
+		return new FixtureBuilder<Map<K, V>>(Map.class).of(keyCls, valCls);
 	}
 }

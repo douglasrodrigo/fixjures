@@ -81,13 +81,11 @@ public abstract class SourcedFixtureBuilder<T, SourceType extends FixtureSource>
 		try {
 			return createFixtureObject();
 		} finally {
-//			if (!(fixtureSource instanceof FixtureStream)) {
-				try {
-					fixtureSource.close();
-				} catch (IOException e) {
-					Fixjure.LOGGER.warning(String.format("Source close error: %s", e.getMessage()));
-				}
-//			}
+			try {
+				fixtureSource.close();
+			} catch (IOException e) {
+				Fixjure.LOGGER.warning(String.format("Source close error: %s", e.getMessage()));
+			}
 		}
 	}
 }

@@ -10,7 +10,7 @@ public class SourcedFixtureBuilderTest {
 
 	@Test(expected = RuntimeException.class)
 	public void whenAnExceptionIsThrown() throws Exception {
-		assertNull(Fixjure.of(Integer.class).from(new FixtureSource() {
+		assertNull(Fixjure.of(Integer.class).from(new FixtureSource(null) {
 			@Override
 			public <T> SourcedFixtureBuilder<T, FixtureSource> build(final FixtureBuilder<T> builder) {
 				return new SourcedFixtureBuilder<T, FixtureSource>(builder, this) {
@@ -25,7 +25,7 @@ public class SourcedFixtureBuilderTest {
 
 	@Test
 	public void whenSourceThrowsExceptionOnClose() throws Exception {
-		assertEquals((Integer) 1234, Fixjure.of(Integer.class).from(new FixtureSource() {
+		assertEquals((Integer) 1234, Fixjure.of(Integer.class).from(new FixtureSource(null) {
 			@Override
 			public void close() throws IOException {
 				throw new IOException("told you");

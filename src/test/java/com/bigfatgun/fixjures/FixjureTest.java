@@ -3,9 +3,11 @@ package com.bigfatgun.fixjures;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.bigfatgun.fixjures.json.JSONSource;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
@@ -54,6 +56,15 @@ public class FixjureTest {
 		Multiset<Integer> expected = ImmutableMultiset.of(1, 1, 2, 3, 5, 8, 13);
 		Multiset<Integer> actual1 = Fixjure.of(Multiset.class).of(Integer.class).from(new JSONSource("[ 1, 1, 2, 3, 5, 8, 13 ]")).create();
 		Multiset<Integer> actual2 = Fixjure.multisetOf(Integer.class).from(new JSONSource("[ 13, 8, 5, 3, 2, 1, 1 ]")).create();
+		assertEquals(expected, actual1);
+		assertEquals(expected, actual2);
+	}
+
+	@Test
+	public void mapFixture() {
+		Map<String, Integer> expected = ImmutableMap.of("one", 1, "two", 2, "three", 3);
+		Map<String, Integer> actual1 = Fixjure.of(Map.class).of(String.class, Integer.class).from(new JSONSource("{ one : 1, two : 2, three : 3 }")).create();
+		Map<String, Integer> actual2 = Fixjure.mapOf(String.class, Integer.class).from(new JSONSource("{ one : 1, two : 2, three : 3 }")).create();
 		assertEquals(expected, actual1);
 		assertEquals(expected, actual2);
 	}

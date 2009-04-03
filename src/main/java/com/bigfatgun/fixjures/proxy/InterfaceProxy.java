@@ -19,11 +19,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.common.base.Function;
-import com.google.common.base.Nullable;
 
 /**
  * Simple interface getter proxy using {@code java.lang.reflect.Proxy}. This will only proxy methods that
@@ -72,11 +68,7 @@ public final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements I
 		}
 
 		if (method.getName().equals("hashCode")) {
-			return Sets.newHashSet(Iterables.transform(getStubs().values(), new Function<ValueStub, Object>() {
-				public Object apply(@Nullable final ValueStub valueStub) {
-					return valueStub.invoke();
-				}
-			})).hashCode();
+			return getStubs().values().hashCode();
 		} else if (method.getName().equals("toString")) {
 			return "Proxy of " + getType();
 		}
@@ -85,7 +77,7 @@ public final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements I
 			throw new RuntimeException("Method has not been stubbed. Call: " + callToString(method, objects));
 		}
 
-		return getStubs().get(method.getName()).invoke();
+		return getStubs().get(method.getName());
 	}
 
 	/**

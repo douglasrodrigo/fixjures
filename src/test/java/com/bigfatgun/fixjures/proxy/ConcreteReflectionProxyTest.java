@@ -41,7 +41,7 @@ public class ConcreteReflectionProxyTest {
 	@Test(expected = NoSuchMethodException.class)
 	public void bogusGetterName() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
 		final ConcreteReflectionProxy<FooTwo> proxy = new ConcreteReflectionProxy<FooTwo>(FooTwo.class);
-		proxy.addValueStub("bogus", new ValueStubImpl("dude"));
+		proxy.addValueStub("bogus", "dude");
 		FooTwo two = proxy.create();
 		assertNotNull(two);
 	}

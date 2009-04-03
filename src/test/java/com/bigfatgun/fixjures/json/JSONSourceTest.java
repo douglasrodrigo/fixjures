@@ -124,9 +124,9 @@ public class JSONSourceTest {
 		assertEquals("overridden!", complex.getStr());
 	}
 
-	@Test(expected = FixtureException.class)
+	@Test
 	public void unsupportedJSONValue() throws Exception {
-		assertNull(Fixjure.of(Boolean.class).from(new JSONSource(" true ")).create());
+		assertEquals("true", Fixjure.of(Boolean.class).from(new JSONSource(" true ")).create());
 	}
 
 	public static interface WithNonGenericList {

@@ -18,11 +18,23 @@ package com.bigfatgun.fixjures;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.util.Arrays;
+import java.util.List;
 
+import com.bigfatgun.fixjures.handlers.ByteFixtureHandler;
+import com.bigfatgun.fixjures.handlers.DoubleFixtureHandler;
+import com.bigfatgun.fixjures.handlers.FloatFixtureHandler;
+import com.bigfatgun.fixjures.handlers.IntegerFixtureHandler;
+import com.bigfatgun.fixjures.handlers.LongFixtureHandler;
+import com.bigfatgun.fixjures.handlers.NoConversionFixtureHandler;
+import com.bigfatgun.fixjures.handlers.ShortFixtureHandler;
+import com.bigfatgun.fixjures.handlers.StringBuilderFixtureHandler;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -81,13 +93,66 @@ public abstract class FixtureSource implements Closeable {
 	/**
 	 * Map of desired type to fixture handlers.
 	 */
-	private final Multimap<Class, FixtureHandler> desiredTypeHandlers;
+	private final Multimap<Class, FixtureHandler> requiredTypeHandlers;
+
+	/**
+	 * Raw data.
+	 */
+	private final ReadableByteChannel sourceChannel;
+
+	/**
+	 * Map of source type to fixture handlers.
+	 */
+	private final Multimap<Class, FixtureHandler> sourceTypeHandlers;
 
 	/**
 	 * Initializes the source.
+	 *
+	 * @param source source data
 	 */
-	public FixtureSource() {
-		desiredTypeHandlers = Multimaps.newLinkedHashMultimap();
+	protected FixtureSource(final ReadableByteChannel source) {
+		sourceChannel = source;
+		requiredTypeHandlers = Multimaps.newLinkedHashMultimap();
+		sourceTypeHandlers = Multimaps.newLinkedHashMultimap();
+		installDefaultHandlers();
+	}
+
+	/**
+	 * Install default fixture handlers.
+	 */
+	private void installDefaultHandlers() {
+		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(String.class));
+		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Boolean.class));
+		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Boolean.TYPE));
+		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Byte.TYPE));
+		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Short.TYPE));
+		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Integer.TYPE));
+		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Long.TYPE));
+		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Float.TYPE));
+		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Double.TYPE));
+		installSourceTypeHandler(new ByteFixtureHandler());
+		installSourceTypeHandler(new ShortFixtureHandler());
+		installSourceTypeHandler(new IntegerFixtureHandler());
+		installSourceTypeHandler(new LongFixtureHandler());
+		installSourceTypeHandler(new FloatFixtureHandler());
+		installSourceTypeHandler(new DoubleFixtureHandler());
+		installSourceTypeHandler(new StringBuilderFixtureHandler());
+		installDesiredTypeHandler(new ByteFixtureHandler());
+		installDesiredTypeHandler(new ShortFixtureHandler());
+		installDesiredTypeHandler(new IntegerFixtureHandler());
+		installDesiredTypeHandler(new LongFixtureHandler());
+		installDesiredTypeHandler(new FloatFixtureHandler());
+		installDesiredTypeHandler(new DoubleFixtureHandler());
+		installDesiredTypeHandler(new StringBuilderFixtureHandler());
+	}
+
+	/**
+	 * Exposes the source data to sub-classes.
+	 *
+	 * @return source data
+	 */
+	protected final ReadableByteChannel getSource() {
+		return sourceChannel;
 	}
 
 	/**
@@ -100,12 +165,21 @@ public abstract class FixtureSource implements Closeable {
 	public abstract <T> SourcedFixtureBuilder<T, ? extends FixtureSource> build(FixtureBuilder<T> builder);
 
 	/**
-	 * No-op.
+	 * Closes the source channel.
 	 * <p>
 	 * {@inheritDoc}
 	 */
 	public void close() throws IOException {
-		// nothing to do, override this
+		sourceChannel.close();
+	}
+
+	/**
+	 * Exposes map of source type handlers to subclasses.
+	 *
+	 * @return immutable multimap of source type to fixture handler
+	 */
+	protected final ImmutableMultimap<Class, FixtureHandler> getSourceTypeHandlers() {
+		return ImmutableMultimap.copyOf(sourceTypeHandlers);
 	}
 
 	/**
@@ -113,8 +187,8 @@ public abstract class FixtureSource implements Closeable {
 	 *
 	 * @return immutable multimap of desired type to fixture handler
 	 */
-	protected ImmutableMultimap<Class, FixtureHandler> getDesiredTypeHandlers() {
-		return ImmutableMultimap.copyOf(desiredTypeHandlers);
+	protected final ImmutableMultimap<Class, FixtureHandler> getRequiredTypeHandlers() {
+		return ImmutableMultimap.copyOf(requiredTypeHandlers);
 	}
 
 	/**
@@ -122,7 +196,71 @@ public abstract class FixtureSource implements Closeable {
 	 *
 	 * @param handler handler to install
 	 */
-	protected void installDesiredTypeHandler(final FixtureHandler handler) {
-		desiredTypeHandlers.put(handler.getReturnType(), handler);
+	protected final void installDesiredTypeHandler(final FixtureHandler handler) {
+		requiredTypeHandlers.put(handler.getReturnType(), handler);
+	}
+
+	/**
+	 * Installs a source type fixture handler by mapping its source type to itself.
+	 *
+	 * @param handler handler to install
+	 */
+	protected final void installSourceTypeHandler(final FixtureHandler handler) {
+		sourceTypeHandlers.put(handler.getSourceType(), handler);
+	}
+
+	/**
+	 * @param type object type
+	 * @param value object value
+	 * @param name object name
+	 * @return proxied object
+	 */
+	protected final Object findValue(final Type type, final Object value, final String name) throws Exception {
+		final Class getterClass;
+		final Type[] typeParams;
+		if (type instanceof ParameterizedType) {
+			//noinspection unchecked
+			getterClass = (Class) ((ParameterizedType) type).getRawType();
+			//noinspection unchecked
+			typeParams = ((ParameterizedType) type).getActualTypeArguments();
+		} else {
+			//noinspection unchecked
+			getterClass = (Class) type;
+			typeParams = new Type[0];
+		}
+		return findValue(getterClass, Arrays.asList(typeParams), value, name);
+	}
+
+	/**
+	 * @param type object type
+	 * @param typeParams object type's type params
+	 * @param value object value
+	 * @param name object name
+	 * @return proxied object
+	 */
+	protected final Object findValue(final Class type, final List<? extends Type> typeParams, final Object value, final String name) throws Exception {
+		for (Class cls = type; cls != null; cls = cls.getSuperclass()) {
+			for (final FixtureHandler handler : getRequiredTypeHandlers().get(cls)) {
+				if (handler.canDeserialize(value, type)) {
+					//noinspection unchecked
+					return handler.apply(value);
+				}
+			}
+		}
+
+		for (Class cls = value.getClass(); cls != null; cls = cls.getSuperclass()) {
+			for (final FixtureHandler handler : getSourceTypeHandlers().get(cls)) {
+				if (handler.canDeserialize(value, type)) {
+					//noinspection unchecked
+					return handler.apply(value);
+				}
+			}
+		}
+
+		return handle(type, typeParams, value, name);
+	}
+
+	protected Object handle(final Class type, final List<? extends Type> typeParams, final Object value, final String name) throws Exception {
+		return null;
 	}
 }

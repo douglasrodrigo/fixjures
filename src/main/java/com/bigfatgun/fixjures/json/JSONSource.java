@@ -19,15 +19,14 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -36,33 +35,19 @@ import java.util.Set;
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureBuilder;
 import com.bigfatgun.fixjures.FixtureException;
-import com.bigfatgun.fixjures.FixtureHandler;
 import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.SourcedFixtureBuilder;
-import com.bigfatgun.fixjures.handlers.ByteFixtureHandler;
-import com.bigfatgun.fixjures.handlers.DoubleFixtureHandler;
-import com.bigfatgun.fixjures.handlers.FloatFixtureHandler;
-import com.bigfatgun.fixjures.handlers.IntegerFixtureHandler;
-import com.bigfatgun.fixjures.handlers.LongFixtureHandler;
-import com.bigfatgun.fixjures.handlers.NoConversionFixtureHandler;
-import com.bigfatgun.fixjures.handlers.ShortFixtureHandler;
-import com.bigfatgun.fixjures.handlers.StringBuilderFixtureHandler;
 import com.bigfatgun.fixjures.proxy.ConcreteReflectionProxy;
 import com.bigfatgun.fixjures.proxy.InterfaceProxy;
 import com.bigfatgun.fixjures.proxy.ObjectProxy;
-import com.bigfatgun.fixjures.proxy.ValueStub;
-import com.bigfatgun.fixjures.proxy.ValueStubImpl;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -89,32 +74,20 @@ public final class JSONSource extends FixtureSource {
 	}
 
 	/**
-	 * Raw JSON.
-	 */
-	private final ReadableByteChannel jsonSource;
-
-	/**
-	 * Map of source type to fixture handlers.
-	 */
-	private final Multimap<Class, FixtureHandler> sourceTypeHandlers;
-
-	/**
 	 * Creates a new JSON source from the given {@code ReadableByteChannel}. The channel isn't read
 	 * until the fixture object is created.
 	 *
 	 * @param source byte source
 	 */
 	public JSONSource(final ReadableByteChannel source) {
-		jsonSource = source;
-		sourceTypeHandlers = Multimaps.newLinkedHashMultimap();
-		installDefaultHandlers();
+		super(source);
 	}
 
 	/**
 	 * @param raw raw JSON
 	 */
 	public JSONSource(final String raw) {
-		this(Channels.newChannel(new ByteArrayInputStream(getBytes(raw))));
+		this(new ByteArrayInputStream(getBytes(raw)));
 	}
 
 	/**
@@ -126,41 +99,18 @@ public final class JSONSource extends FixtureSource {
 	}
 
 	/**
-	 * Install default fixture handlers.
+	 * @param url url with json
+	 * @throws IOException if there is an error retrieving data at url
 	 */
-	private void installDefaultHandlers() {
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(String.class));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Boolean.class));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Boolean.TYPE));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Byte.TYPE));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Short.TYPE));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Integer.TYPE));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Long.TYPE));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Float.TYPE));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Double.TYPE));
-		installSourceTypeHandler(new ByteFixtureHandler());
-		installSourceTypeHandler(new ShortFixtureHandler());
-		installSourceTypeHandler(new IntegerFixtureHandler());
-		installSourceTypeHandler(new LongFixtureHandler());
-		installSourceTypeHandler(new FloatFixtureHandler());
-		installSourceTypeHandler(new DoubleFixtureHandler());
-		installSourceTypeHandler(new StringBuilderFixtureHandler());
-		installDesiredTypeHandler(new ByteFixtureHandler());
-		installDesiredTypeHandler(new ShortFixtureHandler());
-		installDesiredTypeHandler(new IntegerFixtureHandler());
-		installDesiredTypeHandler(new LongFixtureHandler());
-		installDesiredTypeHandler(new FloatFixtureHandler());
-		installDesiredTypeHandler(new DoubleFixtureHandler());
-		installDesiredTypeHandler(new StringBuilderFixtureHandler());
+	public JSONSource(final URL url) throws IOException {
+		this(url.openStream());
 	}
 
 	/**
-	 * Installs a source type fixture handler by mapping its source type to itself.
-	 *
-	 * @param handler handler to install
+	 * @param input input stream with data
 	 */
-	private void installSourceTypeHandler(final FixtureHandler handler) {
-		sourceTypeHandlers.put(handler.getSourceType(), handler);
+	public JSONSource(final InputStream input) {
+		this(Channels.newChannel(input));
 	}
 
 	/**
@@ -170,7 +120,7 @@ public final class JSONSource extends FixtureSource {
 	 */
 	public <T> T createFixture(final Class<T> type, final List<Class<?>> typeParams) {
 		try {
-			final String sourceJson = loadTextFromChannel(jsonSource);
+			final String sourceJson = loadTextFromChannel(getSource());
 			Object rawValue;
 			final String sourceJsonTrimmed = sourceJson.trim();
 			if (sourceJsonTrimmed.startsWith("{")) {
@@ -193,130 +143,26 @@ public final class JSONSource extends FixtureSource {
 	}
 
 	/**
-	 * @param type object type
-	 * @param value object value
-	 * @param name object name
-	 * @return proxied object
-	 * @throws JSONException if there is an error loading JSON data
-	 */
-	private Object findValue(final Type type, final Object value, final String name) throws JSONException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
-		final Class getterClass;
-		final Type[] typeParams;
-		if (type instanceof ParameterizedType) {
-			//noinspection unchecked
-			getterClass = (Class) ((ParameterizedType) type).getRawType();
-			//noinspection unchecked
-			typeParams = ((ParameterizedType) type).getActualTypeArguments();
-		} else {
-			//noinspection unchecked
-			getterClass = (Class) type;
-			typeParams = new Type[0];
-		}
-		return findValue(getterClass, Arrays.asList(typeParams), value, name);
-	}
-
-	/**
-	 * @param type object type
-	 * @param typeParams object type's type params
-	 * @param value object value
-	 * @param name object name
-	 * @return proxied object
-	 * @throws JSONException if there is an error reading JSON
-	 */
-	private Object findValue(final Class type, final List<? extends Type> typeParams, final Object value, final String name) throws JSONException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-		for (Class cls = type; cls != null; cls = cls.getSuperclass()) {
-			for (final FixtureHandler handler : getDesiredTypeHandlers().get(cls)) {
-				if (handler.canDeserialize(value, type)) {
-					//noinspection unchecked
-					return handler.apply(value);
-				}
-			}
-		}
-
-		for (Class cls = value.getClass(); cls != null; cls = cls.getSuperclass()) {
-			for (final FixtureHandler handler : sourceTypeHandlers.get(cls)) {
-				if (handler.canDeserialize(value, type)) {
-					//noinspection unchecked
-					return handler.apply(value);
-				}
-			}
-		}
-
-		if (JSONObject.class.isAssignableFrom(value.getClass())) {
-			final JSONObject jsonObj = (JSONObject) value;
-			if (Map.class.isAssignableFrom(type)) {
-				ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder();
-				for (final Iterator i = jsonObj.keys(); i.hasNext();) {
-					Object key = i.next();
-					Object keyValue = jsonObj.get(String.valueOf(key));
-					builder = builder.put(key, keyValue);
-				}
-				return Maps.newHashMap(builder.build());
-			} else {
-				//noinspection unchecked
-				return generateObject(type, (JSONObject) value);
-			}
-		} else { // if (JSONArray.class.isAssignableFrom(value.getClass())) {
-			final JSONArray array = (JSONArray) value;
-			if (!type.isArray() && typeParams.isEmpty()) {
-				Fixjure.LOGGER.warning(String.format("Only generic collections or arrays are supported, failed to stub %s in %s", name, type));
-				throw new RuntimeException("generic plz");
-			} else if (type.isArray()) {
-				final Class collectionType = type.getComponentType();
-				final Object actualArray = Array.newInstance(collectionType, array.length());
-				for (int i = 0; i < array.length(); i++) {
-					Array.set(actualArray, i, findValue(collectionType, array.get(i), name + "[" + i + "]"));
-				}
-				return actualArray;
-			} else {
-				final Multiset source = LinkedHashMultiset.create();
-				final Type collectionType = Iterables.getOnlyElement(typeParams);
-
-				for (int i = 0; i < array.length(); i++) {
-					//noinspection unchecked
-					source.add(findValue(collectionType, array.get(i), name + "[" + i + "]"));
-				}
-
-				if (List.class.isAssignableFrom(type)) {
-					//noinspection unchecked
-					return Lists.newArrayList(source);
-				} else if (Set.class.isAssignableFrom(type)) {
-					//noinspection unchecked
-					return Sets.newHashSet(source);
-				} else { // if (Multiset.class.isAssignableFrom(type)) {
-					//noinspection unchecked
-					return source;
-//				} else {
-//					warn("Don't know what to do with collection of type " + collectionType);
-//					return null;
-				}
-			}
-		}
-	}
-
-	/**
 	 * Generates an object either by creating a proxy of an interfce, or by instantiating it.
 	 *
 	 * @param cls type of object
 	 * @param jsonObject json value
 	 * @param <T> type of object
 	 * @return instantiated or proxied object
-	 * @throws JSONException if there is bad JSON
 	 */
-	private <T> T generateObject(final Class<T> cls, final JSONObject jsonObject) throws JSONException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
+	private <T> T generateObject(final Class<T> cls, final JSONObject jsonObject) throws Exception {
 		final ObjectProxy<T> proxy = createObjectProxy(cls);
 		configureProxy(proxy, jsonObject);
 		return proxy.create();
 	}
 
-	private <T> void configureProxy(final ObjectProxy<T> proxy, final JSONObject obj) throws JSONException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
+	private <T> void configureProxy(final ObjectProxy<T> proxy, final JSONObject obj) throws Exception {
 		for (final Iterator objIterator = obj.keys(); objIterator.hasNext();) {
 			final String key = objIterator.next().toString();
-			final ValueStub stub = getterValueStub(proxy.getType(), key, obj.get(key));
+			final Object stub = findValue(proxy.getType(), key, obj.get(key));
 			if (stub == null) {
-
-				Fixjure.LOGGER.warning(String.format("Key [%s] found in JSON but could not stub. Could be its name or value type doesn't match methods in %s", key, proxy.getType()));
-				throw new RuntimeException("no stub");
+				Fixjure.LOGGER.severe(String.format("Key [%s] found in JSON but could not stub. Could be its name or value type doesn't match methods in %s", key, proxy.getType()));
+				throw new Exception("no stub");
 			} else {
 				proxy.addValueStub(getterName(key), stub);
 			}
@@ -356,25 +202,18 @@ public final class JSONSource extends FixtureSource {
 	}
 
 	/**
-	 * Creates a jmock value stub.
+	 * Finds a value based on type info for the corresponding getter method.
 	 *
 	 * @param parentCls containing class
 	 * @param keyName json key name
 	 * @param value json value
 	 * @return value stub
-	 * @throws JSONException if there is a JSON related error
-	 * @throws NoSuchMethodException if the getter cannot be found
 	 */
-	private ValueStub getterValueStub(final Class parentCls, final String keyName, final Object value) throws JSONException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+	private Object findValue(final Class parentCls, final String keyName, final Object value) throws Exception {
 		final String getterName = getterName(keyName);
 		final Method getter;
-//		try {
-			getter = parentCls.getMethod(getterName);
-			return new ValueStubImpl(findValue(getter.getGenericReturnType(), value, getterName));
-//		} catch (NoSuchMethodException e) {
-//			 TODO : throw
-//			return null;
-//		}
+		getter = parentCls.getMethod(getterName);
+		return findValue(getter.getGenericReturnType(), value, getterName);
 	}
 
 	/**
@@ -389,13 +228,57 @@ public final class JSONSource extends FixtureSource {
 		return new JSONSourcedFixtureBuilder<T>(this, builder);
 	}
 
-	/**
-	 * Closes the {@code ReadableByteChannel}.
-	 * <p>
-	 * {@inheritDoc}
-	 */
 	@Override
-	public void close() throws IOException {
-		jsonSource.close();
+	protected Object handle(final Class type, final List<? extends Type> typeParams, final Object value, final String name) throws Exception {
+		if (JSONObject.class.isAssignableFrom(value.getClass())) {
+			final JSONObject jsonObj = (JSONObject) value;
+			if (Map.class.isAssignableFrom(type)) {
+				ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder();
+				for (final Iterator i = jsonObj.keys(); i.hasNext();) {
+					Object key = findValue(typeParams.size() > 0 ? typeParams.get(0) : Object.class, i.next(), "key");
+					Object keyValue = findValue(typeParams.size() > 1 ? typeParams.get(1) : Object.class, jsonObj.get(String.valueOf(key)), "value");
+					builder = builder.put(key, keyValue);
+				}
+				return Maps.newHashMap(builder.build());
+			} else {
+				//noinspection unchecked
+				return generateObject(type, (JSONObject) value);
+			}
+		} else if (JSONArray.class.isAssignableFrom(value.getClass())) {
+			final JSONArray array = (JSONArray) value;
+			if (!type.isArray() && typeParams.isEmpty()) {
+				throw new RuntimeException(String.format("Only generic collections or arrays are supported, failed to stub %s in %s", name, type));
+			} else if (type.isArray()) {
+				final Class collectionType = type.getComponentType();
+				final Object actualArray = Array.newInstance(collectionType, array.length());
+				for (int i = 0; i < array.length(); i++) {
+					Array.set(actualArray, i, findValue(collectionType, array.get(i), name + "[" + i + "]"));
+				}
+				return actualArray;
+			} else {
+				final Multiset source = LinkedHashMultiset.create();
+				final Type collectionType = Iterables.getOnlyElement(typeParams);
+
+				for (int i = 0; i < array.length(); i++) {
+					//noinspection unchecked
+					source.add(findValue(collectionType, array.get(i), name + "[" + i + "]"));
+				}
+
+				if (List.class.isAssignableFrom(type)) {
+					//noinspection unchecked
+					return Lists.newArrayList(source);
+				} else if (Set.class.isAssignableFrom(type)) {
+					//noinspection unchecked
+					return Sets.newHashSet(source);
+				} else if (Multiset.class.isAssignableFrom(type)) {
+					//noinspection unchecked
+					return source;
+				} else {
+					throw new Exception("Unhandled destination type: " + type);
+				}
+			}
+		} else {
+			return value;
+		}
 	}
 }

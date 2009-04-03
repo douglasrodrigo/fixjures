@@ -19,7 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 
 /**
  * This interface is implemented by any class that can produce a proxy object of some sort based on a
- * pre-configured map of property accessor name to {@link com.bigfatgun.fixjures.proxy.ValueStub}.
+ * pre-configured map of property accessor name to value.
  *
  * @param <T> proxy object type
  * @author Steve Reed
@@ -38,7 +38,7 @@ public interface ObjectProxy<T> {
 	 * @param methodName method name
 	 * @param stub value stub
 	 */
-	void addValueStub(String methodName, ValueStub stub);
+	void addValueStub(String methodName, Object stub);
 
 	/**
 	 * Creates a new proxy instance.
