@@ -17,20 +17,22 @@ package com.bigfatgun.fixjures;
 
 import java.io.IOException;
 
+import com.bigfatgun.fixjures.handlers.FixtureHandler;
+
 /**
  * A "sourced" fixture builder, meaning it has at least the necessary state to begin
  * reading fixtures from some type of data.
  *
  * @param <T> fixture object type
- * @param <SourceType> fixture source type
+ * @param <S> fixture source type
  * @author Steve Reed
  */
-public abstract class SourcedFixtureBuilder<T, SourceType extends FixtureSource> extends FixtureBuilder<T> {
+public abstract class SourcedFixtureBuilder<T, S extends FixtureSource> extends FixtureBuilder<T> {
 
 	/**
 	 * Fixture data source.
 	 */
-	private final SourceType fixtureSource;
+	private final S fixtureSource;
 
 	/**
 	 * Protected constructor that stores the given builder's state.
@@ -38,26 +40,10 @@ public abstract class SourcedFixtureBuilder<T, SourceType extends FixtureSource>
 	 * @param builder builder to copy
 	 * @param source fixture data source
 	 */
-	protected SourcedFixtureBuilder(final FixtureBuilder<T> builder, final SourceType source) {
+	protected SourcedFixtureBuilder(final FixtureBuilder<T> builder, final S source) {
 		super(builder);
 		fixtureSource = source;
 	}
-
-	/**
-	 * @return fixture data source
-	 */
-	protected final SourceType getSource() {
-		return fixtureSource;
-	}
-
-	/**
-	 * Creates a new fixture object. This methid is implemented by subclasses which
-	 * have an explicit knowledge of the fixture source format, such as the
-	 * {@link com.bigfatgun.fixjures.json.JSONSource}.
-	 *
-	 * @return new object from fixture source
-	 */
-	protected abstract T createFixtureObject();
 
 	/**
 	 * Adds a fixture handler to this builder.
@@ -65,8 +51,8 @@ public abstract class SourcedFixtureBuilder<T, SourceType extends FixtureSource>
 	 * @param handler handler to add
 	 * @return this
 	 */
-	public SourcedFixtureBuilder<T, SourceType> with(final FixtureHandler handler) {
-		getSource().installDesiredTypeHandler(handler);
+	public final SourcedFixtureBuilder<T, S> with(final FixtureHandler handler) {
+		getSource().installRequiredTypeHandler(handler);
 		return this;
 	}
 
@@ -87,5 +73,33 @@ public abstract class SourcedFixtureBuilder<T, SourceType extends FixtureSource>
 				Fixjure.LOGGER.warning(String.format("Source close error: %s", e.getMessage()));
 			}
 		}
+	}
+
+	/**
+	 * Adds options.
+	 * @param opts options
+	 * @return this
+	 */
+	public final SourcedFixtureBuilder<T, S> withOptions(final int... opts) {
+		for (final int opt : opts) {
+			getSource().addOption(opt);
+		}
+		return this;
+	}
+
+	/**
+	 * Creates a new fixture object. This methid is implemented by subclasses which
+	 * have an explicit knowledge of the fixture source format, such as the
+	 * {@link com.bigfatgun.fixjures.json.JSONSource}.
+	 *
+	 * @return new object from fixture source
+	 */
+	protected abstract T createFixtureObject();
+
+	/**
+	 * @return fixture data source
+	 */
+	protected final S getSource() {
+		return fixtureSource;
 	}
 }

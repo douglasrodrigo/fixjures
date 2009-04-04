@@ -20,15 +20,18 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import com.bigfatgun.fixjures.handlers.ByteFixtureHandler;
 import com.bigfatgun.fixjures.handlers.DoubleFixtureHandler;
+import com.bigfatgun.fixjures.handlers.FixtureHandler;
 import com.bigfatgun.fixjures.handlers.FloatFixtureHandler;
 import com.bigfatgun.fixjures.handlers.IntegerFixtureHandler;
 import com.bigfatgun.fixjures.handlers.LongFixtureHandler;
@@ -38,10 +41,10 @@ import com.bigfatgun.fixjures.handlers.StringBuilderFixtureHandler;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 
 /**
- * Abstract fixture source which provides a no-op implementation of
- * {@code java.io.Closeable.close()}.
+ * Abstract fixture source.
  *
  * @author Steve Reed
  */
@@ -49,6 +52,36 @@ public abstract class FixtureSource implements Closeable {
 
 	/** Charset to use when reading byte streams and channels. */
 	private static final String CHARSET = "UTF-8";
+
+	/** Array of numeric types. */
+	private static final Class[] NUMERIC_TYPES = new Class[] {
+			  Byte.class,
+			  Byte.TYPE,
+			  Short.class,
+			  Short.TYPE,
+			  Integer.class,
+			  Integer.TYPE,
+			  Long.class,
+			  Long.TYPE,
+			  Float.class,
+			  Float.TYPE,
+			  Double.class,
+			  Double.TYPE
+	};
+
+	/**
+	 * Converts the given string into a UTF-8 encoded byte array.
+	 *
+	 * @param str string to convert
+	 * @return byte array
+	 */
+	public static byte[] getBytes(final String str) {
+		try {
+			return str.getBytes(CHARSET);
+		} catch (UnsupportedEncodingException e) {
+			throw new FixtureException("JSONSource requires UTF-8.");
+		}
+	}
 
 	/**
 	 * Reads the entire contents of the given byte channel into a string builder. The channel is
@@ -77,20 +110,6 @@ public abstract class FixtureSource implements Closeable {
 	}
 
 	/**
-	 * Converts the given string into a UTF-8 encoded byte array.
-	 *
-	 * @param str string to convert
-	 * @return byte array
-	 */
-	public static byte[] getBytes(final String str) {
-		try {
-			return str.getBytes(CHARSET);
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException("JSONSource requires UTF-8.");
-		}
-	}
-
-	/**
 	 * Map of desired type to fixture handlers.
 	 */
 	private final Multimap<Class, FixtureHandler> requiredTypeHandlers;
@@ -106,6 +125,11 @@ public abstract class FixtureSource implements Closeable {
 	private final Multimap<Class, FixtureHandler> sourceTypeHandlers;
 
 	/**
+	 * Set of options.
+	 */
+	private final Set<Integer> options;
+
+	/**
 	 * Initializes the source.
 	 *
 	 * @param source source data
@@ -115,44 +139,15 @@ public abstract class FixtureSource implements Closeable {
 		requiredTypeHandlers = Multimaps.newLinkedHashMultimap();
 		sourceTypeHandlers = Multimaps.newLinkedHashMultimap();
 		installDefaultHandlers();
+		options = Sets.newHashSet();
 	}
 
 	/**
-	 * Install default fixture handlers.
+	 * Adds an option.
+	 * @param opt option
 	 */
-	private void installDefaultHandlers() {
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(String.class));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Boolean.class));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Boolean.TYPE));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Byte.TYPE));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Short.TYPE));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Integer.TYPE));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Long.TYPE));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Float.TYPE));
-		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Double.TYPE));
-		installSourceTypeHandler(new ByteFixtureHandler());
-		installSourceTypeHandler(new ShortFixtureHandler());
-		installSourceTypeHandler(new IntegerFixtureHandler());
-		installSourceTypeHandler(new LongFixtureHandler());
-		installSourceTypeHandler(new FloatFixtureHandler());
-		installSourceTypeHandler(new DoubleFixtureHandler());
-		installSourceTypeHandler(new StringBuilderFixtureHandler());
-		installDesiredTypeHandler(new ByteFixtureHandler());
-		installDesiredTypeHandler(new ShortFixtureHandler());
-		installDesiredTypeHandler(new IntegerFixtureHandler());
-		installDesiredTypeHandler(new LongFixtureHandler());
-		installDesiredTypeHandler(new FloatFixtureHandler());
-		installDesiredTypeHandler(new DoubleFixtureHandler());
-		installDesiredTypeHandler(new StringBuilderFixtureHandler());
-	}
-
-	/**
-	 * Exposes the source data to sub-classes.
-	 *
-	 * @return source data
-	 */
-	protected final ReadableByteChannel getSource() {
-		return sourceChannel;
+	public void addOption(final int opt) {
+		options.add(opt);
 	}
 
 	/**
@@ -174,15 +169,6 @@ public abstract class FixtureSource implements Closeable {
 	}
 
 	/**
-	 * Exposes map of source type handlers to subclasses.
-	 *
-	 * @return immutable multimap of source type to fixture handler
-	 */
-	protected final ImmutableMultimap<Class, FixtureHandler> getSourceTypeHandlers() {
-		return ImmutableMultimap.copyOf(sourceTypeHandlers);
-	}
-
-	/**
 	 * Exposes map of desired type handlers to subclasses.
 	 *
 	 * @return immutable multimap of desired type to fixture handler
@@ -192,21 +178,38 @@ public abstract class FixtureSource implements Closeable {
 	}
 
 	/**
+	 * Exposes the source data to sub-classes.
+	 *
+	 * @return source data
+	 */
+	protected final ReadableByteChannel getSource() {
+		return sourceChannel;
+	}
+
+	/**
+	 * Exposes map of source type handlers to subclasses.
+	 *
+	 * @return immutable multimap of source type to fixture handler
+	 */
+	protected final ImmutableMultimap<Class, FixtureHandler> getSourceTypeHandlers() {
+		return ImmutableMultimap.copyOf(sourceTypeHandlers);
+	}
+
+	/**
 	 * Installs a desired type handler by mapping its return type to itself.
 	 *
 	 * @param handler handler to install
 	 */
-	protected final void installDesiredTypeHandler(final FixtureHandler handler) {
+	protected final void installRequiredTypeHandler(final FixtureHandler handler) {
 		requiredTypeHandlers.put(handler.getReturnType(), handler);
 	}
 
 	/**
-	 * Installs a source type fixture handler by mapping its source type to itself.
-	 *
-	 * @param handler handler to install
+	 * @param option option to test
+	 * @return true if option is enabled
 	 */
-	protected final void installSourceTypeHandler(final FixtureHandler handler) {
-		sourceTypeHandlers.put(handler.getSourceType(), handler);
+	protected final boolean isOptionEnabled(final int option) {
+		return options.contains(option);
 	}
 
 	/**
@@ -215,7 +218,7 @@ public abstract class FixtureSource implements Closeable {
 	 * @param name object name
 	 * @return proxied object
 	 */
-	protected final Object findValue(final Type type, final Object value, final String name) throws Exception {
+	protected final Object findValue(final Type type, final Type typeVariable, final Object value, final String name) {
 		final Class getterClass;
 		final Type[] typeParams;
 		if (type instanceof ParameterizedType) {
@@ -223,6 +226,9 @@ public abstract class FixtureSource implements Closeable {
 			getterClass = (Class) ((ParameterizedType) type).getRawType();
 			//noinspection unchecked
 			typeParams = ((ParameterizedType) type).getActualTypeArguments();
+		} else if (type instanceof TypeVariable && typeVariable != null) {
+			getterClass = (Class) typeVariable;
+			typeParams = new Type[0];
 		} else {
 			//noinspection unchecked
 			getterClass = (Class) type;
@@ -238,7 +244,7 @@ public abstract class FixtureSource implements Closeable {
 	 * @param name object name
 	 * @return proxied object
 	 */
-	protected final Object findValue(final Class type, final List<? extends Type> typeParams, final Object value, final String name) throws Exception {
+	protected final Object findValue(final Class type, final List<? extends Type> typeParams, final Object value, final String name) {
 		for (Class cls = type; cls != null; cls = cls.getSuperclass()) {
 			for (final FixtureHandler handler : getRequiredTypeHandlers().get(cls)) {
 				if (handler.canDeserialize(value, type)) {
@@ -260,7 +266,58 @@ public abstract class FixtureSource implements Closeable {
 		return handle(type, typeParams, value, name);
 	}
 
-	protected Object handle(final Class type, final List<? extends Type> typeParams, final Object value, final String name) throws Exception {
+	/**
+	 * Unimplements source value conversion handler method. Subclasses should override this to catch
+	 * any source-specific types and perform their own conversion there.
+	 *
+	 * @param requiredType required type
+	 * @param typeParams required type params, never null
+	 * @param sourceValue source value
+	 * @param name value name, for logging
+	 * @return value
+	 */
+	protected Object handle(final Class requiredType, final List<? extends Type> typeParams, final Object sourceValue, final String name) {
 		return null;
+	}
+
+	/**
+	 * Installs a source type fixture handler by mapping its source type to itself.
+	 *
+	 * @param handler handler to install
+	 */
+	protected final void installSourceTypeHandler(final FixtureHandler handler) {
+		sourceTypeHandlers.put(handler.getSourceType(), handler);
+	}
+
+	/**
+	 * Installs a fixture handler for both source and required type.
+	 *
+	 * @param handler handler
+	 */
+	protected final void installUniversalHandler(final FixtureHandler handler) {
+		installRequiredTypeHandler(handler);
+		installSourceTypeHandler(handler);
+	}
+
+	/**
+	 * Install default fixture handlers.
+	 */
+	private void installDefaultHandlers() {
+		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(String.class));
+		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Boolean.class));
+		installSourceTypeHandler(NoConversionFixtureHandler.newInstance(Boolean.TYPE));
+
+		for (final Class<?> t : NUMERIC_TYPES) {
+			installSourceTypeHandler(NoConversionFixtureHandler.newInstance(t));
+		}
+
+		installUniversalHandler(new ByteFixtureHandler());
+		installUniversalHandler(new ShortFixtureHandler());
+		installUniversalHandler(new IntegerFixtureHandler());
+		installUniversalHandler(new LongFixtureHandler());
+		installUniversalHandler(new FloatFixtureHandler());
+		installUniversalHandler(new DoubleFixtureHandler());
+
+		installRequiredTypeHandler(new StringBuilderFixtureHandler());
 	}
 }

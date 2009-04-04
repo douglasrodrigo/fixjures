@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bigfatgun.fixjures;
+package com.bigfatgun.fixjures.handlers;
 
 import com.google.common.base.Function;
 
@@ -32,18 +32,6 @@ import com.google.common.base.Function;
 public abstract class FixtureHandler<SourceType, ReturnType> implements Function<SourceType, ReturnType> {
 
 	/**
-	 * Returns the type of object required by this handler.
-	 * @return the type of object required by this handler
-	 */
-	public abstract Class<? extends SourceType> getSourceType();
-
-	/**
-	 * Returns the type of object created by this handler.
-	 * @return the type of object created by this handler
-	 */
-	public abstract Class<? extends ReturnType> getReturnType();
-
-	/**
 	 * Evaluates a source object and desired type, returning true if the object can be passed to
 	 * {@code apply(...)} and return a correct value.
 	 *
@@ -55,4 +43,16 @@ public abstract class FixtureHandler<SourceType, ReturnType> implements Function
 		return getReturnType().isAssignableFrom(desiredType)
 				  && (obj == null || getSourceType().isAssignableFrom(obj.getClass()));
 	}
+
+	/**
+	 * Returns the type of object created by this handler.
+	 * @return the type of object created by this handler
+	 */
+	public abstract Class<? extends ReturnType> getReturnType();
+
+	/**
+	 * Returns the type of object required by this handler.
+	 * @return the type of object required by this handler
+	 */
+	public abstract Class<? extends SourceType> getSourceType();
 }

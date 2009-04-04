@@ -9,7 +9,7 @@ import java.util.Set;
 
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
-import com.bigfatgun.fixjures.FixtureHandler;
+import com.bigfatgun.fixjures.handlers.FixtureHandler;
 import com.google.common.base.Nullable;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Lists;
@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import org.junit.Test;
 
 public class JSONSourceTest {
@@ -133,10 +134,12 @@ public class JSONSourceTest {
 		List getFoo();
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void nonGenericList() throws Exception {
 		final WithNonGenericList foo = Fixjure.of(WithNonGenericList.class).from(new JSONSource("{ \"foo\" : [ 1, 2 ] }")).create();
-		assertNull(foo.getFoo());
+		assertNotNull(foo.getFoo());
+		assertEquals(1, foo.getFoo().get(0));
+		assertEquals(2, foo.getFoo().get(1));
 	}
 
 	@Test(expected = FileNotFoundException.class)
@@ -213,5 +216,33 @@ public class JSONSourceTest {
 		assertEquals(1, ints[0]);
 		assertEquals(2, ints[1]);
 		assertEquals(3, ints[2]);
+	}
+
+	private static interface HasBools {
+		boolean getFirst();
+		Boolean getSecond();
+	}
+
+	@Test
+	public void booleansWork() {
+		HasBools hasbools = Fixjure.of(HasBools.class).from(new JSONSource("{ first : true, second : false }")).create();
+		assertTrue(hasbools.getFirst());
+		assertFalse(hasbools.getSecond());
+		hasbools = Fixjure.of(HasBools.class).from(new JSONSource("{ first : false, second : true }")).create();
+		assertFalse(hasbools.getFirst());
+		assertTrue(hasbools.getSecond());
+	}
+
+	private static interface Decorator<T> {
+		T getT();
+	}
+
+	@Test
+	public void decoratorOfStringWorks() {
+		Decorator<String> d = Fixjure.of(Decorator.class).of(String.class).from(new JSONSource("{ t: 'foo' }")).create();
+		assertEquals("foo", d.getT());
+		d = Fixjure.of(Decorator.class).of(String.class).from(new JSONSource("{ t: 1234 }")).create();
+		// shouldn't be possible but is, unfortunately
+		assertEquals(1234, d.getT());
 	}
 }

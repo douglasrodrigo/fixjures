@@ -18,6 +18,7 @@ package com.bigfatgun.fixjures;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 /**
@@ -57,20 +58,13 @@ public class FixtureBuilder<T> {
 	}
 
 	/**
-	 * @return list of type params
-	 */
-	public List<Class<?>> getTypeParams() {
-		return typeParams;
-	}
-
-	/**
 	 * Uses the given {@code FixtureSource} to convert this builder into
 	 * a {@code SourcedFixtureBuilder}.
 	 *
 	 * @param source fixture source, could be JSON or otherwise
 	 * @return sourced fixture builder
 	 */
-	public SourcedFixtureBuilder<T, ? extends FixtureSource> from(final FixtureSource source) {
+	public final SourcedFixtureBuilder<T, ? extends FixtureSource> from(final FixtureSource source) {
 		return source.build(this);
 	}
 
@@ -83,12 +77,19 @@ public class FixtureBuilder<T> {
 	}
 
 	/**
+	 * @return list of type params
+	 */
+	public final ImmutableList<Class<?>> getTypeParams() {
+		return ImmutableList.copyOf(typeParams);
+	}
+
+	/**
 	 * Adds the given classes as type params to the main type.
 	 *
 	 * @param classes classes
 	 * @return this
 	 */
-	public FixtureBuilder<T> of(final Class<?>... classes) {
+	public final FixtureBuilder<T> of(final Class<?>... classes) {
 		typeParams.addAll(Arrays.asList(classes));
 		return this;
 	}

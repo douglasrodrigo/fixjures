@@ -35,23 +35,8 @@ public class Fixjure {
 	/** Logger. */
 	public static final Logger LOGGER = Logger.getLogger("com.bigfatgun.fixjures");
 
-	/**
-	 * Empty private utility constructor.
-	 */
-	private Fixjure() {
-		// utility constructor is empty
-	}
-
-	/**
-	 * Creates a new un-sourced fixture builder of the given class.
-	 *
-	 * @param cls fixture class
-	 * @param <T> fixture type
-	 * @return new un-sourced fixture builder
-	 */
-	public static <T> FixtureBuilder<T> of(final Class<T> cls) {
-		return new FixtureBuilder<T>(cls);
-	}
+	/** Skip unmappable properties option. */
+	public static final int SKIP_UNMAPPABLE = 1;
 
 	/**
 	 * Creates a builder of a list of objects.
@@ -65,14 +50,16 @@ public class Fixjure {
 	}
 
 	/**
-	 * Creates a builder of a set of objects.
+	 * Creates a builder of a map of objects.
 	 *
-	 * @param cls object type
-	 * @param <T> object type
+	 * @param keyCls map key type
+	 * @param valCls map value type
+	 * @param <K> map key type
+	 * @param <V> map value type
 	 * @return new fixture builder
 	 */
-	public static <T> FixtureBuilder<Set<T>> setOf(final Class<T> cls) {
-		return new FixtureBuilder<Set<T>>(Set.class).of(cls);
+	public static <K, V> FixtureBuilder<Map<K, V>> mapOf(final Class<K> keyCls, final Class<V> valCls) {
+		return new FixtureBuilder<Map<K, V>>(Map.class).of(keyCls, valCls);
 	}
 
 	/**
@@ -87,15 +74,31 @@ public class Fixjure {
 	}
 
 	/**
-	 * Creates a builder of a map of objects.
+	 * Creates a new un-sourced fixture builder of the given class.
 	 *
-	 * @param keyCls map key type
-	 * @param valCls map value type
-	 * @param <K> map key type
-	 * @param <V> map value type
+	 * @param cls fixture class
+	 * @param <T> fixture type
+	 * @return new un-sourced fixture builder
+	 */
+	public static <T> FixtureBuilder<T> of(final Class<T> cls) {
+		return new FixtureBuilder<T>(cls);
+	}
+
+	/**
+	 * Creates a builder of a set of objects.
+	 *
+	 * @param cls object type
+	 * @param <T> object type
 	 * @return new fixture builder
 	 */
-	public static <K, V> FixtureBuilder<Map<K, V>> mapOf(final Class<K> keyCls, final Class<V> valCls) {
-		return new FixtureBuilder<Map<K, V>>(Map.class).of(keyCls, valCls);
+	public static <T> FixtureBuilder<Set<T>> setOf(final Class<T> cls) {
+		return new FixtureBuilder<Set<T>>(Set.class).of(cls);
+	}
+
+	/**
+	 * Empty private utility constructor.
+	 */
+	private Fixjure() {
+		// utility constructor is empty
 	}
 }

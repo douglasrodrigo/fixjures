@@ -15,7 +15,7 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.bigfatgun.fixjures.FixtureHandler;
+import com.bigfatgun.fixjures.handlers.FixtureHandler;
 
 /**
  * Handles {@code Number}s.

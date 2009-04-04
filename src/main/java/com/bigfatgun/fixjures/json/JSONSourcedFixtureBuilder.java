@@ -38,7 +38,8 @@ import com.bigfatgun.fixjures.SourcedFixtureBuilder;
 	}
 
 	/**
-	 * Forwards to {@link JSONSource#createFixture(Class, java.util.List)}.
+	 * Forwards to {@link JSONSource#createFixture(Class, java.util.List)}
+	 * to create a fixture object.
 	 *
 	 * @return fixture object
 	 */

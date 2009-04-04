@@ -16,14 +16,23 @@
 package com.bigfatgun.fixjures;
 
 /**
- * Created by IntelliJ IDEA.
- * User: steve
- * Date: Apr 1, 2009
- * Time: 7:59:54 PM
- * To change this template use File | Settings | File Templates.
+ * A runtime exception used during fixture object creation to wrap any sort
+ * of underlying failure.
  */
 public class FixtureException extends RuntimeException {
 
+	/**
+	 * Creates a new exception.
+	 * @param message message
+	 */
+	public FixtureException(final String message) {
+		super(message);
+	}
+
+	/**
+	 * Creates a new exception.
+	 * @param throwable cause
+	 */
 	public FixtureException(final Throwable throwable) {
 		super(throwable);
 	}

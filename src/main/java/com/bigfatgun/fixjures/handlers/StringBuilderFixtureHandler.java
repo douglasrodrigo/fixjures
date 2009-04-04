@@ -15,7 +15,6 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.bigfatgun.fixjures.FixtureHandler;
 import com.google.common.base.Nullable;
 
 /**
@@ -23,14 +22,14 @@ import com.google.common.base.Nullable;
  *
  * @author Steve Reed
  */
-public final class StringBuilderFixtureHandler extends FixtureHandler<String, StringBuilder> {
+public final class StringBuilderFixtureHandler extends FixtureHandler<CharSequence, StringBuilder> {
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Class<String> getSourceType() {
-		return String.class;
+	public Class<CharSequence> getSourceType() {
+		return CharSequence.class;
 	}
 
 	/**
@@ -47,7 +46,7 @@ public final class StringBuilderFixtureHandler extends FixtureHandler<String, St
 	 * <p>
 	 * {@inheritDoc}
 	 */
-	public StringBuilder apply(@Nullable final String s) {
+	public StringBuilder apply(@Nullable final CharSequence s) {
 		return new StringBuilder(s);
 	}
 }

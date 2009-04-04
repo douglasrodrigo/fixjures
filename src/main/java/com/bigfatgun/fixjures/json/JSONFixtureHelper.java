@@ -40,6 +40,7 @@ public final class JSONFixtureHelper {
 	 * </code>
 	 *
 	 * @param obj object to scan
+	 * @throws Exception if there are any errors
 	 */
 	public static void scan(final Object obj) throws Exception {
 		final Class cls = obj.getClass();
