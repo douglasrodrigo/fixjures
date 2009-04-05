@@ -15,7 +15,6 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.bigfatgun.fixjures.handlers.FixtureHandler;
 import com.google.common.base.Nullable;
 
 /**

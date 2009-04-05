@@ -34,7 +34,7 @@ public @interface JSONFixture {
 	 * Fixture value, either a json string literal if location is LITERAL, or a filename if it is FILE.
 	 * @return fixture value
 	 */
-	String value() default "{}";
+	String value();
 
 	/**
 	 * Fixture source type, either a string literal or a file.

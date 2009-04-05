@@ -36,7 +36,7 @@ public class SourcedFixtureBuilderTest {
 				return new SourcedFixtureBuilder<T, FixtureSource>(builder, this) {
 					@Override
 					protected T createFixtureObject() {
-						return builder.getType().cast(1234);
+						return (T) builder.getType().cast(1234);
 					}
 				};
 			}

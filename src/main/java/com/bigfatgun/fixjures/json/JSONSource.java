@@ -66,10 +66,8 @@ public final class JSONSource extends FixtureSource {
 	 * An enumeration of source types.
 	 */
 	public static enum SourceType {
-
 		/** String literal. */
 		LITERAL,
-
 		/** File. */
 		FILE
 	}
@@ -131,7 +129,7 @@ public final class JSONSource extends FixtureSource {
 	 * @param typeParams type params
 	 * @return proxied object
 	 */
-	public <T> T createFixture(final Class<T> type, final List<Class<?>> typeParams) {
+	public <T> T createFixture(final Class<? extends T> type, final List<Class<?>> typeParams) {
 		try {
 			final String sourceJson = loadTextFromChannel(getSource());
 			Object rawValue;
@@ -148,7 +146,6 @@ public final class JSONSource extends FixtureSource {
 				}
 			}
 
-			//noinspection unchecked
 			return (T) findValue(type, typeParams, rawValue, "ROOT");
 		} catch (Exception e) {
 			throw new FixtureException(e);

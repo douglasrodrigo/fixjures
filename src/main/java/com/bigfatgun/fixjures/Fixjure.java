@@ -49,7 +49,7 @@ public class Fixjure {
 	 * @return new fixture builder
 	 */
 	public static <T> FixtureBuilder<List<T>> listOf(final Class<T> cls) {
-		return new FixtureBuilder<List<T>>(List.class).of(cls);
+		return new FixtureBuilder.FixtureListBuilder<T>(cls);
 	}
 
 	/**
@@ -62,18 +62,17 @@ public class Fixjure {
 	 * @return new fixture builder
 	 */
 	public static <K, V> FixtureBuilder<Map<K, V>> mapOf(final Class<K> keyCls, final Class<V> valCls) {
-		return new FixtureBuilder<Map<K, V>>(Map.class).of(keyCls, valCls);
+		return new FixtureBuilder.FixtureMapBuilder<K,V>(keyCls, valCls);
 	}
 
 	/**
 	 * Creates a builder of a multiset of objects.
 	 *
 	 * @param cls object type
-	 * @param <T> object type
 	 * @return new fixture builder
 	 */
 	public static <T> FixtureBuilder<Multiset<T>> multisetOf(final Class<T> cls) {
-		return new FixtureBuilder<Multiset<T>>(Multiset.class).of(cls);
+		return new FixtureBuilder.FixtureMultisetBuilder<T>(cls);
 	}
 
 	/**
@@ -95,7 +94,7 @@ public class Fixjure {
 	 * @return new fixture builder
 	 */
 	public static <T> FixtureBuilder<Set<T>> setOf(final Class<T> cls) {
-		return new FixtureBuilder<Set<T>>(Set.class).of(cls);
+		return new FixtureBuilder.FixtureSetBuilder<T>(cls);
 	}
 
 	/**

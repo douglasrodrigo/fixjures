@@ -15,11 +15,13 @@
  */
 package com.bigfatgun.fixjures;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multiset;
 
 /**
  * Your basic fixture builder that provides the simplest implementation of
@@ -31,8 +33,78 @@ import com.google.common.collect.Lists;
  */
 public class FixtureBuilder<T> {
 
+	/**
+	 * Builds list fixtures.
+	 *
+	 * @param <T> collection object type
+	 */
+	/* package */ static final class FixtureListBuilder<T> extends FixtureBuilder<List<T>> {
+
+		/**
+		 * Creates a new fixture builder.
+		 * @param cls collection object type
+		 */
+		FixtureListBuilder(final Class<T> cls) {
+			super(List.class);
+			of(cls);
+		}
+	}
+
+	/**
+	 * Builds set fixtures.
+	 *
+	 * @param <T> collection object type
+	 */
+	/* package */ static final class FixtureSetBuilder<T> extends FixtureBuilder<Set<T>> {
+
+		/**
+		 * Creates a new fixture builder.
+		 * @param cls collection object type
+		 */
+		FixtureSetBuilder(final Class<T> cls) {
+			super(Set.class);
+			of(cls);
+		}
+	}
+
+	/**
+	 * Builds map fixtures.
+	 *
+	 * @param <K> collection object key type
+	 * @param <V> collection object value type
+	 */
+	/* package */ static final class FixtureMapBuilder<K,V> extends FixtureBuilder<Map<K,V>> {
+
+		/**
+		 * Creates a new fixture builder.
+		 * @param keyCls collection object key type
+		 * @param valCls collection object value type
+		 */
+		FixtureMapBuilder(final Class<K> keyCls, final Class<V> valCls) {
+			super(Map.class);
+			of(keyCls, valCls);
+		}
+	}
+
+	/**
+	 * Builds multiset fixtures.
+	 *
+	 * @param <T> collection object type
+	 */
+	/* package */ static final class FixtureMultisetBuilder<T> extends FixtureBuilder<Multiset<T>> {
+
+		/**
+		 * Creates a new fixture builder.
+		 * @param cls collection object type
+		 */
+		FixtureMultisetBuilder(final Class<T> cls) {
+			super(Multiset.class);
+			of(cls);
+		}
+	}
+
 	/** Fixture object type. */
-	private final Class<? super T> clazz;
+	private final Class<T> clazz;
 
 	/** List of type params. */
 	private final List<Class<?>> typeParams;
@@ -42,8 +114,10 @@ public class FixtureBuilder<T> {
 	 *
 	 * @param cls fixture object type
 	 */
-	/* package */ FixtureBuilder(final Class<? super T> cls) {
-		clazz = cls;
+	/* package */
+	@SuppressWarnings({"unchecked"})
+	FixtureBuilder(final Class cls) {
+		clazz = (Class<T>) cls;
 		typeParams = Lists.newLinkedList();
 	}
 
@@ -71,9 +145,8 @@ public class FixtureBuilder<T> {
 	/**
 	 * @return fixture object type
 	 */
-	@SuppressWarnings({"unchecked"})
 	public final Class<T> getType() {
-		return (Class<T>) clazz;
+		return clazz;
 	}
 
 	/**
@@ -90,7 +163,7 @@ public class FixtureBuilder<T> {
 	 * @return this
 	 */
 	public final FixtureBuilder<T> of(final Class<?>... classes) {
-		typeParams.addAll(Arrays.asList(classes));
+		typeParams.addAll(ImmutableList.of(classes));
 		return this;
 	}
 }
