@@ -32,11 +32,14 @@ import com.google.common.collect.Multiset;
  */
 public class Fixjure {
 
+	/** An enumeration of fixture options. */
+	public static enum Option {
+		/** When enabled, unmappable data from the input source will be ignored. */
+		SKIP_UNMAPPABLE
+	}
+
 	/** Logger. */
 	public static final Logger LOGGER = Logger.getLogger("com.bigfatgun.fixjures");
-
-	/** Skip unmappable properties option. */
-	public static final int SKIP_UNMAPPABLE = 1;
 
 	/**
 	 * Creates a builder of a list of objects.

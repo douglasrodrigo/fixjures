@@ -80,8 +80,8 @@ public abstract class SourcedFixtureBuilder<T, S extends FixtureSource> extends 
 	 * @param opts options
 	 * @return this
 	 */
-	public final SourcedFixtureBuilder<T, S> withOptions(final int... opts) {
-		for (final int opt : opts) {
+	public final SourcedFixtureBuilder<T, S> withOptions(final Fixjure.Option... opts) {
+		for (final Fixjure.Option opt : opts) {
 			getSource().addOption(opt);
 		}
 		return this;

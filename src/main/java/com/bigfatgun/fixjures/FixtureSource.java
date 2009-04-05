@@ -39,6 +39,7 @@ import com.bigfatgun.fixjures.handlers.NoConversionFixtureHandler;
 import com.bigfatgun.fixjures.handlers.ShortFixtureHandler;
 import com.bigfatgun.fixjures.handlers.StringBuilderFixtureHandler;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
@@ -68,6 +69,9 @@ public abstract class FixtureSource implements Closeable {
 			  Double.class,
 			  Double.TYPE
 	};
+
+	/** Default options, currently none. */
+	private static final Iterable<Fixjure.Option> DEFAULT_OPTIONS = ImmutableSet.of();
 
 	/**
 	 * Converts the given string into a UTF-8 encoded byte array.
@@ -127,7 +131,7 @@ public abstract class FixtureSource implements Closeable {
 	/**
 	 * Set of options.
 	 */
-	private final Set<Integer> options;
+	private final Set<Fixjure.Option> options;
 
 	/**
 	 * Initializes the source.
@@ -139,14 +143,14 @@ public abstract class FixtureSource implements Closeable {
 		requiredTypeHandlers = Multimaps.newLinkedHashMultimap();
 		sourceTypeHandlers = Multimaps.newLinkedHashMultimap();
 		installDefaultHandlers();
-		options = Sets.newHashSet();
+		options = Sets.newEnumSet(DEFAULT_OPTIONS, Fixjure.Option.class);
 	}
 
 	/**
 	 * Adds an option.
 	 * @param opt option
 	 */
-	public void addOption(final int opt) {
+	public void addOption(final Fixjure.Option opt) {
 		options.add(opt);
 	}
 
@@ -208,8 +212,16 @@ public abstract class FixtureSource implements Closeable {
 	 * @param option option to test
 	 * @return true if option is enabled
 	 */
-	protected final boolean isOptionEnabled(final int option) {
+	protected final boolean isOptionEnabled(final Fixjure.Option option) {
 		return options.contains(option);
+	}
+
+	/**
+	 * @param option options to test
+	 * @return true of all options are enabled
+	 */
+	protected final boolean areOptionsEnabled(final Fixjure.Option... option) {
+		return options.containsAll(ImmutableSet.of(option));
 	}
 
 	/**

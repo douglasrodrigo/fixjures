@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.bigfatgun.fixjures.json.JSONSource;
+import static com.bigfatgun.fixjures.Fixjure.Option.SKIP_UNMAPPABLE;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Lists;
@@ -85,7 +86,7 @@ public class FixjureTest {
 		try {
 			final String nytimesJsonUrl = "http://prototype.nytimes.com/svc/widgets/dataservice.html?uri=http://www.nytimes.com/services/xml/rss/nyt/World.xml";
 			final JSONSource src = new JSONSource(new URL(nytimesJsonUrl));
-			NyTimes nytimes = Fixjure.of(NyTimes.class).from(src).withOptions(Fixjure.SKIP_UNMAPPABLE).create();
+			NyTimes nytimes = Fixjure.of(NyTimes.class).from(src).withOptions(SKIP_UNMAPPABLE).create();
 			System.out.println("Successfully connected to nytimes, got version: " + nytimes.getVersion());
 			assertEquals("NYT > World", nytimes.getChannel().getTitle());
 		} catch (Exception e) {

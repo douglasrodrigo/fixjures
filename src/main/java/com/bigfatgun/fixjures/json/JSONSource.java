@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.bigfatgun.fixjures.Fixjure;
+import static com.bigfatgun.fixjures.Fixjure.Option.SKIP_UNMAPPABLE;
 import com.bigfatgun.fixjures.FixtureBuilder;
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureSource;
@@ -257,10 +257,10 @@ public final class JSONSource extends FixtureSource {
 			try {
 				final Object stub = findValue(proxy.getType(), type, key, obj.get(key));
 				if (stub == null) {
-					if (isOptionEnabled(Fixjure.SKIP_UNMAPPABLE)) {
+					if (isOptionEnabled(SKIP_UNMAPPABLE)) {
 						continue;
 					}
-					
+
 					throw new FixtureException(String.format("Key [%s] found in JSON but could not stub. Could be its name or value type doesn't match methods in %s", key, proxy.getType()));
 				} else {
 					proxy.addValueStub(getterName(key), stub);
@@ -287,7 +287,7 @@ public final class JSONSource extends FixtureSource {
 			getter = parentCls.getMethod(getterName);
 			return findValue(getter.getGenericReturnType(), probableType, value, getterName);
 		} catch (NoSuchMethodException e) {
-			if (isOptionEnabled(Fixjure.SKIP_UNMAPPABLE)) {
+			if (isOptionEnabled(SKIP_UNMAPPABLE)) {
 				return null;
 			} else {
 				throw new FixtureException(e);
