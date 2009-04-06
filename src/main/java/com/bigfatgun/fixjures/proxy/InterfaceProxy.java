@@ -28,7 +28,7 @@ import com.google.common.collect.Lists;
  * @param <T> proxy object type
  * @author Steve Reed
  */
-public final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements InvocationHandler {
+final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements InvocationHandler {
 
 	/**
 	 * Creates a new proxy of the given class.
@@ -37,7 +37,7 @@ public final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements I
 	 * @throws NullPointerException if {@code cls} is null
 	 * @throws RuntimeException if {@code cls} is not an interface
 	 */
-	public InterfaceProxy(final Class<T> cls) {
+	InterfaceProxy(final Class<T> cls) {
 		super(cls);
 		if (!cls.isInterface()) {
 			throw new RuntimeException(String.format("Class %s is not an interface.", cls.getName()));

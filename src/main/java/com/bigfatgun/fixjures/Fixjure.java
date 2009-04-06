@@ -15,11 +15,14 @@
  */
 package com.bigfatgun.fixjures;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import com.bigfatgun.fixjures.handlers.FixtureHandler;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 
 /**
@@ -39,7 +42,7 @@ public class Fixjure {
 	}
 
 	/** Logger. */
-	public static final Logger LOGGER = Logger.getLogger("com.bigfatgun.fixjures");
+	private static final Logger LOGGER = Logger.getLogger("com.bigfatgun.fixjures");
 
 	/**
 	 * Creates a builder of a list of objects.
@@ -102,5 +105,226 @@ public class Fixjure {
 	 */
 	private Fixjure() {
 		// utility constructor is empty
+	}
+
+	/**
+    * Your basic fixture builder that provides the simplest implementation of
+	 * the {@code from} method, which passes the type info into a fixture source
+	 * in order to create a {@link com.bigfatgun.fixjures.Fixjure.SourcedFixtureBuilder}.
+	 *
+	 * @param <T> fixture object type
+	 * @author Steve Reed
+	 */
+	public static class FixtureBuilder<T> {
+
+		/**
+		 * Builds list fixtures.
+		 *
+		 * @param <T> collection object type
+		 */
+		static final class FixtureListBuilder<T> extends FixtureBuilder<List<T>> {
+
+			/**
+			 * Creates a new fixture builder.
+			 * @param cls collection object type
+			 */
+			FixtureListBuilder(final Class<T> cls) {
+				super(List.class);
+				of(cls);
+			}
+		}
+
+		/**
+		 * Builds set fixtures.
+		 *
+		 * @param <T> collection object type
+		 */
+		static final class FixtureSetBuilder<T> extends FixtureBuilder<Set<T>> {
+
+			/**
+			 * Creates a new fixture builder.
+			 * @param cls collection object type
+			 */
+			FixtureSetBuilder(final Class<T> cls) {
+				super(Set.class);
+				of(cls);
+			}
+		}
+
+		/**
+		 * Builds map fixtures.
+		 *
+		 * @param <K> collection object key type
+		 * @param <V> collection object value type
+		 */
+		static final class FixtureMapBuilder<K,V> extends FixtureBuilder<Map<K,V>> {
+
+			/**
+			 * Creates a new fixture builder.
+			 * @param keyCls collection object key type
+			 * @param valCls collection object value type
+			 */
+			FixtureMapBuilder(final Class<K> keyCls, final Class<V> valCls) {
+				super(Map.class);
+				of(keyCls, valCls);
+			}
+		}
+
+		/**
+		 * Builds multiset fixtures.
+		 *
+		 * @param <T> collection object type
+		 */
+		static final class FixtureMultisetBuilder<T> extends FixtureBuilder<Multiset<T>> {
+
+			/**
+			 * Creates a new fixture builder.
+			 * @param cls collection object type
+			 */
+			FixtureMultisetBuilder(final Class<T> cls) {
+				super(Multiset.class);
+				of(cls);
+			}
+		}
+
+		/** Fixture object type. */
+		private final Class<T> clazz;
+
+		/** List of type params. */
+		private final ImmutableList<Class<?>> typeParams;
+
+		/**
+		 * Instantiates a new fixture builder.
+		 *
+		 * @param cls fixture object type
+		 */
+		@SuppressWarnings({"unchecked"})
+		FixtureBuilder(final Class cls) {
+			this((Class<T>) cls, ImmutableList.<Class<?>>of());
+		}
+
+		/**
+		 * Copies the given fixture builder.
+		 *
+		 * @param builder builder to copy
+		 */
+		FixtureBuilder(final FixtureBuilder<T> builder) {
+			this(builder.getType(), builder.getTypeParams());
+		}
+
+		/**
+		 * Private copy ctor.
+		 *
+		 * @param cls class
+		 * @param params type params
+		 */
+		private FixtureBuilder(final Class<T> cls, final ImmutableList<Class<?>> params) {
+			clazz = cls;
+			typeParams = params;
+		}
+
+		/**
+		 * Uses the given {@code FixtureSource} to convert this builder into
+		 * a {@code SourcedFixtureBuilder}.
+		 *
+		 * @param source fixture source, could be JSON or otherwise
+		 * @return sourced fixture builder
+		 */
+		public final SourcedFixtureBuilder<T, ? extends FixtureSource> from(final FixtureSource source) {
+			return new SourcedFixtureBuilder<T, FixtureSource>(this, source);
+		}
+
+		/**
+		 * @return fixture object type
+		 */
+		protected final Class<T> getType() {
+			return clazz;
+		}
+
+		/**
+		 * @return list of type params
+		 */
+		protected final ImmutableList<Class<?>> getTypeParams() {
+			return ImmutableList.copyOf(typeParams);
+		}
+
+		/**
+		 * Adds the given classes as type params to the main type.
+		 *
+		 * @param classes classes
+		 * @return this
+		 */
+		public final FixtureBuilder<T> of(final Class<?>... classes) {
+			return new FixtureBuilder<T>(clazz, ImmutableList.<Class<?>>builder().addAll(typeParams).addAll(ImmutableList.of(classes)).build());
+		}
+	}
+
+	/**
+    * A "sourced" fixture builder, meaning it has at least the necessary state to begin
+	 * reading fixtures from some type of data.
+	 *
+	 * @param <T> fixture object type
+	 * @param <S> fixture source type
+	 * @author Steve Reed
+	 */
+	public static final class SourcedFixtureBuilder<T, S extends FixtureSource> extends FixtureBuilder<T> {
+
+		/**
+		 * Fixture data source.
+		 */
+		private final S fixtureSource;
+
+		/**
+		 * Protected constructor that stores the given builder's state.
+		 *
+		 * @param builder builder to copy
+		 * @param source fixture data source
+		 */
+		SourcedFixtureBuilder(final FixtureBuilder<T> builder, final S source) {
+			super(builder);
+			fixtureSource = source;
+		}
+
+		/**
+		 * Adds a fixture handler to this builder.
+		 *
+		 * @param handler handler to add
+		 * @return this
+		 */
+		public final SourcedFixtureBuilder<T, S> with(final FixtureHandler handler) {
+			this.fixtureSource.installRequiredTypeHandler(handler);
+			return this;
+		}
+
+		/**
+		 * Strongly-typed fixture creation method which creates a new fixture object. This method forwards the call
+		 * to the underlying {@code FixtureSource} which have an explicit knowledge of the fixture source format, such as
+		 * the {@link com.bigfatgun.fixjures.json.JSONSource}.
+		 *
+		 * @return new fixture object
+		 */
+		public final T create() {
+			try {
+				return this.fixtureSource.createFixture(getType(), getTypeParams());
+			} finally {
+				try {
+					fixtureSource.close();
+				} catch (IOException e) {
+					LOGGER.warning(String.format("Source close error: %s", e.getMessage()));
+				}
+			}
+		}
+
+		/**
+		 * Adds options.
+		 * @param opts options
+		 * @return this
+		 */
+		public final SourcedFixtureBuilder<T, S> withOptions(final Option... opts) {
+			for (final Option opt : opts) {
+				this.fixtureSource.addOption(opt);
+			}
+			return this;
+		}
 	}
 }

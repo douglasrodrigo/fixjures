@@ -27,7 +27,7 @@ import java.util.Map;
  * @param <T> proxy object type
  * @author Steve Reed
  */
-public final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
+final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 
 	/**
 	 * Creates a new proxy of the given type.
@@ -36,7 +36,7 @@ public final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 	 * @throws NullPointerException if {@code cls} is null
 	 * @throws RuntimeException if {@code cls} is an interface
 	 */
-	public ConcreteReflectionProxy(final Class<T> cls) {
+	ConcreteReflectionProxy(final Class<T> cls) {
 		super(cls);
 		if (cls.isInterface()) {
 			throw new RuntimeException(String.format("Class %s is an interface.", cls.getName()));
@@ -50,15 +50,9 @@ public final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 	 * {@inheritDoc}
 	 */
 	public T create() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-		final T object;
-//		try {
-			final Constructor<T> ctor = getType().getDeclaredConstructor();
-			ctor.setAccessible(true);
-			object = ctor.newInstance();
-//		} catch (Exception e) {
-//			Fixjure.LOGGER.severe(String.format("Error instantiating object of type: %s", getType()));
-//			return null;
-//		}
+		final Constructor<T> ctor = getType().getDeclaredConstructor();
+		ctor.setAccessible(true);
+		final T object = ctor.newInstance();
 
 		for (final Map.Entry<String, Object> entry : getStubs().entrySet()) {
 			setInstanceValue(object, entry.getKey(), convertNameToSetter(entry.getKey()), entry.getValue());
@@ -74,18 +68,14 @@ public final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 	 * @param getterName name of getter method
 	 * @param setterName name of setter method
 	 * @param value value to set
+	 * @throws IllegalAccessException if getter or setter cannot be accessed
+	 * @throws NoSuchMethodException if getter or setter do not exist
+	 * @throws java.lang.reflect.InvocationTargetException if setter cannot be invoked
 	 */
 	private void setInstanceValue(final T object, final String getterName, final String setterName, final Object value) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-//		try {
-			final Method getter = getType().getMethod(getterName);
-			final Method setter = getType().getMethod(setterName, getter.getReturnType());
-
-			setter.invoke(object, value);
-//		} catch (NoSuchMethodException e) {
-//			Fixjure.LOGGER.warning(String.format("No getter and setter (%s and %s) found in %s", getterName, setterName, getType()));
-//		} catch (Exception e) {
-//			Fixjure.LOGGER.warning(String.format("Exception while attempting %s in %s", setterName, getType()));
-//		}
+		final Method getter = getType().getMethod(getterName);
+		final Method setter = getType().getMethod(setterName, getter.getReturnType());
+		setter.invoke(object, value);
 	}
 
 	/**

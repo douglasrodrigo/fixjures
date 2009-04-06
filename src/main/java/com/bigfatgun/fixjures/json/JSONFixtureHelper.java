@@ -19,6 +19,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 
 import com.bigfatgun.fixjures.Fixjure;
+import com.bigfatgun.fixjures.FixtureSource;
 
 /**
  * This utility will scan an object for methods with the {@link JSONFixture} annotation and invoke said methods
@@ -53,13 +54,11 @@ public final class JSONFixtureHelper {
 				if (paramTypes.length == 1 && m.getReturnType() == Void.TYPE) {
 					// we're cool
 					final JSONFixture fixture = m.getAnnotation(JSONFixture.class);
-					final JSONSource fixtureSource;
+					final FixtureSource fixtureSource;
 					if (fixture.type() == JSONSource.SourceType.FILE) {
-						//noinspection UnusedAssignment
-						fixtureSource = new JSONSource(new File(fixture.value()));
+						fixtureSource = JSONSource.newJsonFile(new File(fixture.value()));
 					} else {
-						//noinspection UnusedAssignment
-						fixtureSource = new JSONSource(fixture.value());
+						fixtureSource = JSONSource.newJsonString(fixture.value());
 					}
 					//noinspection unchecked,RedundantArrayCreation
 					m.invoke(obj, new Object[] { Fixjure.of(paramTypes[0]).from(fixtureSource).create() });

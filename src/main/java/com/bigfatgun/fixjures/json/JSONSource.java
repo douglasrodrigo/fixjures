@@ -34,13 +34,11 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.bigfatgun.fixjures.Fixjure.Option.SKIP_UNMAPPABLE;
-import com.bigfatgun.fixjures.FixtureBuilder;
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureSource;
-import com.bigfatgun.fixjures.SourcedFixtureBuilder;
-import com.bigfatgun.fixjures.proxy.ConcreteReflectionProxy;
-import com.bigfatgun.fixjures.proxy.InterfaceProxy;
 import com.bigfatgun.fixjures.proxy.ObjectProxy;
+import com.bigfatgun.fixjures.proxy.Proxies;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Lists;
@@ -73,17 +71,49 @@ public final class JSONSource extends FixtureSource {
 	}
 
 	/**
+	 * Static factory for file source.
+	 *
+	 * @param jsonFile json file
+	 * @return new json source
+	 * @throws FileNotFoundException if file is not found
+	 */
+	public static FixtureSource newJsonFile(final File jsonFile) throws FileNotFoundException {
+		return new JSONSource(jsonFile);
+	}
+
+	/**
+	 * Static factory for a json string literal.
+	 *
+	 * @param json json string literal
+	 * @return new json source
+	 */
+	public static FixtureSource newJsonString(final String json) {
+		return new JSONSource(json);
+	}
+
+	/**
+	 * Static factory for URL source.
+	 *
+	 * @param url json url
+	 * @return new json source
+	 * @throws IOException if json cannot be found/retrieved at the given url
+	 */
+	public static FixtureSource newRemoteUrl(final URL url) throws IOException {
+		return new JSONSource(url);
+	}
+
+	/**
 	 * @param jsonFile file with JSON
 	 * @throws FileNotFoundException if the file does not exist
 	 */
-	public JSONSource(final File jsonFile) throws FileNotFoundException {
+	private JSONSource(final File jsonFile) throws FileNotFoundException {
 		this(new RandomAccessFile(jsonFile, "r").getChannel());
 	}
 
 	/**
 	 * @param input input stream with data
 	 */
-	public JSONSource(final InputStream input) {
+	private JSONSource(final InputStream input) {
 		this(Channels.newChannel(input));
 	}
 
@@ -93,14 +123,14 @@ public final class JSONSource extends FixtureSource {
 	 *
 	 * @param source byte source
 	 */
-	public JSONSource(final ReadableByteChannel source) {
+	private JSONSource(final ReadableByteChannel source) {
 		super(source);
 	}
 
 	/**
 	 * @param raw raw JSON
 	 */
-	public JSONSource(final String raw) {
+	private JSONSource(final String raw) {
 		this(new ByteArrayInputStream(getBytes(raw)));
 	}
 
@@ -108,20 +138,8 @@ public final class JSONSource extends FixtureSource {
 	 * @param url url with json
 	 * @throws IOException if there is an error retrieving data at url
 	 */
-	public JSONSource(final URL url) throws IOException {
+	private JSONSource(final URL url) throws IOException {
 		this(url.openStream());
-	}
-
-	/**
-	 * Builds a new {@link com.bigfatgun.fixjures.json.JSONSourcedFixtureBuilder}.
-	 *
-	 * @param builder the builder to convert
-	 * @param <T> fixture object type
-	 * @return json-sourced fixture builder
-	 */
-	@Override
-	public <T> SourcedFixtureBuilder<T, JSONSource> build(final FixtureBuilder<T> builder) {
-		return new JSONSourcedFixtureBuilder<T>(this, builder);
 	}
 
 	/**
@@ -129,7 +147,8 @@ public final class JSONSource extends FixtureSource {
 	 * @param typeParams type params
 	 * @return proxied object
 	 */
-	public <T> T createFixture(final Class<? extends T> type, final List<Class<?>> typeParams) {
+	@SuppressWarnings({"unchecked"})
+	public <T> T createFixture(final Class<T> type, final ImmutableList<Class<?>> typeParams) {
 		try {
 			final String sourceJson = loadTextFromChannel(getSource());
 			Object rawValue;
@@ -179,7 +198,7 @@ public final class JSONSource extends FixtureSource {
 					return Maps.newHashMap(builder.build());
 				} else {
 					//noinspection unchecked
-					return generateObject(requiredType, typeParams, (JSONObject) sourceValue);
+					return newConfiguredProxy(requiredType, typeParams, (JSONObject) sourceValue);
 				}
 			} else if (JSONArray.class.isAssignableFrom(sourceValue.getClass())) {
 				final JSONArray array = (JSONArray) sourceValue;
@@ -221,24 +240,6 @@ public final class JSONSource extends FixtureSource {
 			}
 		} catch (JSONException e) {
 			throw new FixtureException(e);
-		}
-	}
-
-	/**
-	 * Creates a proxy object based on the class. If the class is an interface, a
-	 * {@link com.bigfatgun.fixjures.proxy.InterfaceProxy} is returned, otherwise a
-	 * {@link com.bigfatgun.fixjures.proxy.ConcreteReflectionProxy} is assumed to be the appropriate
-	 * proxy.
-	 *
-	 * @param cls proxy object type
-	 * @param <T> proxy object type
-	 * @return object proxy
-	 */
-	private <T> ObjectProxy<T> createObjectProxy(final Class<T> cls) {
-		if (cls.isInterface()) {
-			return new InterfaceProxy<T>(cls);
-		} else {
-			return new ConcreteReflectionProxy<T>(cls);
 		}
 	}
 
@@ -306,8 +307,8 @@ public final class JSONSource extends FixtureSource {
 	 * @param <T> type of object
 	 * @return instantiated or proxied object
 	 */
-	private <T> T generateObject(final Class<T> cls, final List<? extends Type> typeParams, final JSONObject jsonObject) {
-		final ObjectProxy<T> proxy = createObjectProxy(cls);
+	private <T> T newConfiguredProxy(final Class<T> cls, final List<? extends Type> typeParams, final JSONObject jsonObject) {
+		final ObjectProxy<T> proxy = Proxies.newProxy(cls);
 		configureProxy(proxy, typeParams, jsonObject);
 		try {
 			return proxy.create();

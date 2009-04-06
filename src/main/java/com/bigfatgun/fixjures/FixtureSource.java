@@ -46,6 +46,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Abstract fixture source.
@@ -82,7 +83,7 @@ public abstract class FixtureSource implements Closeable {
 	 * @param str string to convert
 	 * @return byte array
 	 */
-	public static byte[] getBytes(final String str) {
+	protected static byte[] getBytes(final String str) {
 		try {
 			return str.getBytes(CHARSET);
 		} catch (UnsupportedEncodingException e) {
@@ -98,7 +99,7 @@ public abstract class FixtureSource implements Closeable {
 	 * @return string contents of channel
 	 * @throws IOException if there are any IO errors while reading or closing the given channel
 	 */
-	public static String loadTextFromChannel(final ReadableByteChannel channel) throws IOException {
+	protected static String loadTextFromChannel(final ReadableByteChannel channel) throws IOException {
 		try {
 			final ByteBuffer buf = ByteBuffer.allocate(Short.MAX_VALUE);
 			final CharsetDecoder decoder = Charset.forName(CHARSET).newDecoder();
@@ -158,15 +159,6 @@ public abstract class FixtureSource implements Closeable {
 	}
 
 	/**
-	 * Converts the given builder into a "sourced" fixture builder.
-	 *
-	 * @param <T> fixture object type
-	 * @param builder the builder to convert
-	 * @return sourced fixture builder
-	 */
-	public abstract <T> SourcedFixtureBuilder<T, ? extends FixtureSource> build(FixtureBuilder<T> builder);
-
-	/**
 	 * Closes the source channel.
 	 * <p>
 	 * {@inheritDoc}
@@ -174,6 +166,16 @@ public abstract class FixtureSource implements Closeable {
 	public void close() throws IOException {
 		sourceChannel.close();
 	}
+
+	/**
+	 * Creates a fixture object from source.
+	 *
+	 * @param type fixture object type
+	 * @param typeParams type params
+	 * @param <T> fixture object type
+	 * @return new fixture object
+	 */
+	public abstract <T> T createFixture(final Class<T> type, final ImmutableList<Class<?>> typeParams);
 
 	/**
 	 * Exposes map of desired type handlers to subclasses.
@@ -229,6 +231,7 @@ public abstract class FixtureSource implements Closeable {
 
 	/**
 	 * @param type object type
+	 * @param typeVariable object type's type param if applicable
 	 * @param value object value
 	 * @param name object name
 	 * @return proxied object
@@ -245,7 +248,7 @@ public abstract class FixtureSource implements Closeable {
 			getterClass = (Class) typeVariable;
 			typeParams = new Type[0];
 		} else {
-			//noinspection unchecked
+			//noinspection ConstantConditions
 			getterClass = (Class) type;
 			typeParams = new Type[0];
 		}
