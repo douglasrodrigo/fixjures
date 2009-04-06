@@ -129,8 +129,7 @@ public class Fixjure {
 			 * @param cls collection object type
 			 */
 			FixtureListBuilder(final Class<T> cls) {
-				super(List.class);
-				of(cls);
+				super(List.class, ImmutableList.<Class<?>>of(cls));
 			}
 		}
 
@@ -146,8 +145,7 @@ public class Fixjure {
 			 * @param cls collection object type
 			 */
 			FixtureSetBuilder(final Class<T> cls) {
-				super(Set.class);
-				of(cls);
+				super(Set.class, ImmutableList.<Class<?>>of(cls));
 			}
 		}
 
@@ -165,8 +163,7 @@ public class Fixjure {
 			 * @param valCls collection object value type
 			 */
 			FixtureMapBuilder(final Class<K> keyCls, final Class<V> valCls) {
-				super(Map.class);
-				of(keyCls, valCls);
+				super(Map.class, ImmutableList.<Class<?>>of(keyCls, valCls));
 			}
 		}
 
@@ -182,8 +179,7 @@ public class Fixjure {
 			 * @param cls collection object type
 			 */
 			FixtureMultisetBuilder(final Class<T> cls) {
-				super(Multiset.class);
-				of(cls);
+				super(Multiset.class, ImmutableList.<Class<?>>of(cls));
 			}
 		}
 
@@ -198,9 +194,8 @@ public class Fixjure {
 		 *
 		 * @param cls fixture object type
 		 */
-		@SuppressWarnings({"unchecked"})
 		FixtureBuilder(final Class cls) {
-			this((Class<T>) cls, ImmutableList.<Class<?>>of());
+			this(cls, ImmutableList.<Class<?>>of());
 		}
 
 		/**
@@ -218,8 +213,9 @@ public class Fixjure {
 		 * @param cls class
 		 * @param params type params
 		 */
-		private FixtureBuilder(final Class<T> cls, final ImmutableList<Class<?>> params) {
-			clazz = cls;
+		@SuppressWarnings({"unchecked"})
+		FixtureBuilder(final Class cls, final ImmutableList<Class<?>> params) {
+			clazz = (Class<T>) cls;
 			typeParams = params;
 		}
 
