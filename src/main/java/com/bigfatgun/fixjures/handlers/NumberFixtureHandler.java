@@ -20,7 +20,7 @@ package com.bigfatgun.fixjures.handlers;
  *
  * @author Steve Reed
  */
-public abstract class NumberFixtureHandler<NumericType extends Number> extends FixtureHandler<Number, NumericType> {
+public abstract class NumberFixtureHandler<NumericType extends Number> extends AbstractFixtureHandler<Number, NumericType> {
 
 	/**
 	 * Abstract method provided by subclasses to provide the primitive type.

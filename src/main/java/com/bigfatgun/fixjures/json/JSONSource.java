@@ -147,6 +147,8 @@ public final class JSONSource extends FixtureSource {
 			}
 
 			return (T) findValue(type, typeParams, rawValue, "ROOT");
+		} catch (FixtureException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new FixtureException(e);
 		}
@@ -169,8 +171,9 @@ public final class JSONSource extends FixtureSource {
 				if (Map.class.isAssignableFrom(requiredType)) {
 					ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder();
 					for (final Iterator i = jsonObj.keys(); i.hasNext();) {
-						Object key = findValue(typeParams.size() > 0 ? typeParams.get(0) : Object.class, null, i.next(), "key");
-						Object keyValue = findValue(typeParams.size() > 1 ? typeParams.get(1) : Object.class, null, jsonObj.get(String.valueOf(key)), "sourceValue");
+						final Object lookupKey = i.next();
+						Object key = findValue(typeParams.size() > 0 ? typeParams.get(0) : Object.class, null, lookupKey, "key");
+						Object keyValue = findValue(typeParams.size() > 1 ? typeParams.get(1) : Object.class, null, jsonObj.get(String.valueOf(lookupKey)), "sourceValue");
 						builder = builder.put(key, keyValue);
 					}
 					return Maps.newHashMap(builder.build());
@@ -211,8 +214,10 @@ public final class JSONSource extends FixtureSource {
 						throw new FixtureException("Unhandled destination requiredType: " + requiredType);
 					}
 				}
-			} else {
+			} else if (Object.class.equals(requiredType)) {
 				return sourceValue;
+			} else {
+				throw new FixtureException("Could not convert source value " + sourceValue + " to type " + requiredType);
 			}
 		} catch (JSONException e) {
 			throw new FixtureException(e);

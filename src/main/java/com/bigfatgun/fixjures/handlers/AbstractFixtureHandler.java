@@ -15,16 +15,19 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.google.common.base.Function;
-
 /**
- * Handles conversion of source data to destination data.
+ * Fixture handler plugin which can intercept object deserialization and provide its
+ * own behavior during fixture instantiation.
+ * <p/>
+ * Date: Mar 25, 2009
+ * <p/>
+ * Time: 11:26:54 AM
  *
- * @param <S> source type
- * @param <R> return type
+ * @param <S> type of source object provided by FixtureSource
+ * @param <R> type of object returned by this handler
  * @author Steve Reed
  */
-public interface FixtureHandler<S,R> extends Function<S,R> {
+public abstract class AbstractFixtureHandler<S,R> implements FixtureHandler<S,R>  {
 
 	/**
 	 * Evaluates a source object and desired type, returning true if the object can be passed to
@@ -34,17 +37,9 @@ public interface FixtureHandler<S,R> extends Function<S,R> {
 	 * @param desiredType desired object type
 	 * @return true if object can be transformed by this handler
 	 */
-	boolean canDeserialize(Object obj, Class desiredType);
+	public boolean canDeserialize(final Object obj, final Class desiredType) {
+		return getReturnType().isAssignableFrom(desiredType)
+				  && (obj == null || getSourceType().isAssignableFrom(obj.getClass()));
+	}
 
-	/**
-	 * Returns the type of object created by this handler.
-	 * @return the type of object created by this handler
-	 */
-	Class<? extends R> getReturnType();
-
-	/**
-	 * Returns the type of object required by this handler.
-	 * @return the type of object required by this handler
-	 */
-	Class<? extends S> getSourceType();
 }

@@ -30,14 +30,17 @@ import java.util.List;
 import java.util.Set;
 
 import com.bigfatgun.fixjures.handlers.ByteFixtureHandler;
+import com.bigfatgun.fixjures.handlers.ChainedFixtureHandler;
 import com.bigfatgun.fixjures.handlers.DoubleFixtureHandler;
 import com.bigfatgun.fixjures.handlers.FixtureHandler;
 import com.bigfatgun.fixjures.handlers.FloatFixtureHandler;
+import com.bigfatgun.fixjures.handlers.Handlers;
 import com.bigfatgun.fixjures.handlers.IntegerFixtureHandler;
 import com.bigfatgun.fixjures.handlers.LongFixtureHandler;
 import com.bigfatgun.fixjures.handlers.NoConversionFixtureHandler;
 import com.bigfatgun.fixjures.handlers.ShortFixtureHandler;
 import com.bigfatgun.fixjures.handlers.StringBuilderFixtureHandler;
+import com.google.common.base.Nullable;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -116,7 +119,7 @@ public abstract class FixtureSource implements Closeable {
 	/**
 	 * Map of desired type to fixture handlers.
 	 */
-	private final Multimap<Class, FixtureHandler> requiredTypeHandlers;
+	private final Multimap<Class<?>, FixtureHandler<?,?>> requiredTypeHandlers;
 
 	/**
 	 * Raw data.
@@ -126,7 +129,7 @@ public abstract class FixtureSource implements Closeable {
 	/**
 	 * Map of source type to fixture handlers.
 	 */
-	private final Multimap<Class, FixtureHandler> sourceTypeHandlers;
+	private final Multimap<Class<?>, FixtureHandler<?,?>> sourceTypeHandlers;
 
 	/**
 	 * Set of options.
@@ -177,7 +180,7 @@ public abstract class FixtureSource implements Closeable {
 	 *
 	 * @return immutable multimap of desired type to fixture handler
 	 */
-	protected final ImmutableMultimap<Class, FixtureHandler> getRequiredTypeHandlers() {
+	protected final ImmutableMultimap<Class<?>, FixtureHandler<?,?>> getRequiredTypeHandlers() {
 		return ImmutableMultimap.copyOf(requiredTypeHandlers);
 	}
 
@@ -195,7 +198,7 @@ public abstract class FixtureSource implements Closeable {
 	 *
 	 * @return immutable multimap of source type to fixture handler
 	 */
-	protected final ImmutableMultimap<Class, FixtureHandler> getSourceTypeHandlers() {
+	protected final ImmutableMultimap<Class<?>, FixtureHandler<?,?>> getSourceTypeHandlers() {
 		return ImmutableMultimap.copyOf(sourceTypeHandlers);
 	}
 
@@ -204,7 +207,7 @@ public abstract class FixtureSource implements Closeable {
 	 *
 	 * @param handler handler to install
 	 */
-	protected final void installRequiredTypeHandler(final FixtureHandler handler) {
+	protected final void installRequiredTypeHandler(final FixtureHandler<?,?> handler) {
 		requiredTypeHandlers.put(handler.getReturnType(), handler);
 	}
 
@@ -306,7 +309,7 @@ public abstract class FixtureSource implements Closeable {
 	 *
 	 * @param handler handler
 	 */
-	protected final void installUniversalHandler(final FixtureHandler handler) {
+	protected final void installUniversalHandler(final FixtureHandler<?,?> handler) {
 		installRequiredTypeHandler(handler);
 		installSourceTypeHandler(handler);
 	}
@@ -323,12 +326,35 @@ public abstract class FixtureSource implements Closeable {
 			installSourceTypeHandler(NoConversionFixtureHandler.newInstance(t));
 		}
 
-		installUniversalHandler(new ByteFixtureHandler());
-		installUniversalHandler(new ShortFixtureHandler());
-		installUniversalHandler(new IntegerFixtureHandler());
-		installUniversalHandler(new LongFixtureHandler());
-		installUniversalHandler(new FloatFixtureHandler());
-		installUniversalHandler(new DoubleFixtureHandler());
+		final ByteFixtureHandler byteHandler = new ByteFixtureHandler();
+		final ShortFixtureHandler shortHandler = new ShortFixtureHandler();
+		final IntegerFixtureHandler intHandler = new IntegerFixtureHandler();
+		final LongFixtureHandler longHandler = new LongFixtureHandler();
+		final FloatFixtureHandler floatHandler = new FloatFixtureHandler();
+		final DoubleFixtureHandler doubleHandler = new DoubleFixtureHandler();
+
+		installUniversalHandler(byteHandler);
+		installUniversalHandler(shortHandler);
+		installUniversalHandler(intHandler);
+		installUniversalHandler(longHandler);
+		installUniversalHandler(floatHandler);
+		installUniversalHandler(doubleHandler);
+		final ChainedFixtureHandler<CharSequence,Number> chainedHandler = new ChainedFixtureHandler<CharSequence, Number>() {
+			public Class<Number> getReturnType() {
+				return Number.class;
+			}
+
+			public Class<CharSequence> getSourceType() {
+				return CharSequence.class;
+			}
+
+			public Number apply(@Nullable final CharSequence charSequence) {
+				return Double.parseDouble(charSequence.toString());
+			}
+		};
+		for (final FixtureHandler handler : Handlers.createChain(chainedHandler, byteHandler, shortHandler, intHandler, longHandler, floatHandler, doubleHandler)) {
+			installUniversalHandler(handler);
+		}
 
 		installRequiredTypeHandler(new StringBuilderFixtureHandler());
 	}

@@ -17,7 +17,7 @@ package com.bigfatgun.fixjures;
 
 import java.io.IOException;
 
-import com.bigfatgun.fixjures.handlers.FixtureHandler;
+import com.bigfatgun.fixjures.handlers.AbstractFixtureHandler;
 
 /**
  * A "sourced" fixture builder, meaning it has at least the necessary state to begin
@@ -51,7 +51,7 @@ public abstract class SourcedFixtureBuilder<T, S extends FixtureSource> extends 
 	 * @param handler handler to add
 	 * @return this
 	 */
-	public final SourcedFixtureBuilder<T, S> with(final FixtureHandler handler) {
+	public final SourcedFixtureBuilder<T, S> with(final AbstractFixtureHandler handler) {
 		getSource().installRequiredTypeHandler(handler);
 		return this;
 	}

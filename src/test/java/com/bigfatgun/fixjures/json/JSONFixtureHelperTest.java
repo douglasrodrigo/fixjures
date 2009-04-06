@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import com.bigfatgun.fixjures.FixtureException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -43,7 +44,7 @@ public class JSONFixtureHelperTest {
 		JSONFixtureHelper.scan(new BadBean1());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = FixtureException.class)
 	public void badMarkup2() throws Exception, FileNotFoundException, IllegalAccessException {
 		JSONFixtureHelper.scan(new BadBean2());
 	}

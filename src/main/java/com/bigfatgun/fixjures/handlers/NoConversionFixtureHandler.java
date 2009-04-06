@@ -22,7 +22,7 @@ import com.google.common.base.Nullable;
  *
  * @author Steve Reed
  */
-public final class NoConversionFixtureHandler<T> extends FixtureHandler<T, T> {
+public final class NoConversionFixtureHandler<T> extends AbstractFixtureHandler<T, T> {
 
 	/**
 	 * Static factory method for better type inference.
