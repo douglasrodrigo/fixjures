@@ -1,16 +1,21 @@
 package com.bigfatgun.fixjures;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.bigfatgun.fixjures.json.JSONSource;
 import static com.bigfatgun.fixjures.Fixjure.Option.SKIP_UNMAPPABLE;
+import com.bigfatgun.fixjures.json.JSONSource;
+import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
@@ -93,5 +98,20 @@ public class FixjureTest {
 			e.printStackTrace();
 			fail("You need access to nytimes.com for this test to work.");
 		}
+	}
+
+	@Test
+	public void serializableTest1() throws IOException {
+		String s = Fixjure.of(String.class).from(ObjectInputStreamSource.newFile(new File("src/test/resources/string1.ser"))).create();
+		assertEquals("abcdefghijklm\nopqrs\tuvwxyz", s);
+	}
+
+	@Test
+	public void serializableTest2() throws IOException {
+		final List<String> list = new LinkedList<String>();
+		Iterables.addAll(list, Fixjure.of(String.class).fromStream(ObjectInputStreamSource.newFile(new File("src/test/resources/string2.ser"))).createAll());
+		assertEquals(2, list.size());
+		assertEquals("first", list.get(0));
+		assertEquals("second", list.get(1));
 	}
 }

@@ -16,6 +16,7 @@
 package com.bigfatgun.fixjures;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -230,6 +231,10 @@ public class Fixjure {
 			return new SourcedFixtureBuilder<T, FixtureSource>(this, source);
 		}
 
+		public final StreamedFixtureBuilder<T, ? extends FixtureSource> fromStream(final FixtureStream stream) {
+			return new StreamedFixtureBuilder<T, FixtureSource>(this, stream.asSourceStream());
+		}
+
 		/**
 		 * @return fixture object type
 		 */
@@ -255,6 +260,46 @@ public class Fixjure {
 		}
 	}
 
+	public static final class StreamedFixtureBuilder<T, S extends FixtureSource> extends SourcedFixtureBuilder<T, S> {
+
+		/**
+		 * Protected constructor that stores the given builder's state.
+		 *
+		 * @param builder builder to copy
+		 * @param source  fixture data source
+		 */
+		StreamedFixtureBuilder(final FixtureBuilder<T> builder, final S source) {
+			super(builder, source);
+		}
+
+		public final Iterable<T> createAll() {
+			return new Iterable<T>() {
+				public Iterator<T> iterator() {
+					return new Iterator<T>() {
+						private T next;
+
+						public boolean hasNext() {
+							try {
+								next = StreamedFixtureBuilder.this.getSource().createFixture(getType(), getTypeParams());
+							} catch (Exception e) {
+								next = null;
+							}
+							return next != null;
+						}
+
+						public T next() {
+							return next;
+						}
+
+						public void remove() {
+							throw new UnsupportedOperationException();
+						}
+					};
+				}
+			};
+		}
+	}
+
 	/**
     * A "sourced" fixture builder, meaning it has at least the necessary state to begin
 	 * reading fixtures from some type of data.
@@ -263,7 +308,7 @@ public class Fixjure {
 	 * @param <S> fixture source type
 	 * @author Steve Reed
 	 */
-	public static final class SourcedFixtureBuilder<T, S extends FixtureSource> extends FixtureBuilder<T> {
+	public static class SourcedFixtureBuilder<T, S extends FixtureSource> extends FixtureBuilder<T> {
 
 		/**
 		 * Fixture data source.
@@ -279,6 +324,15 @@ public class Fixjure {
 		SourcedFixtureBuilder(final FixtureBuilder<T> builder, final S source) {
 			super(builder);
 			fixtureSource = source;
+		}
+
+		/**
+		 * Exposes the source to subclasses.
+		 *
+		 * @return the source
+		 */
+		protected final S getSource() {
+			return fixtureSource;
 		}
 
 		/**

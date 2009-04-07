@@ -22,5 +22,6 @@ package com.bigfatgun.fixjures;
  * @author Steve Reed
  */
 public interface FixtureStream {
-	// marker interface
+
+	FixtureSource asSourceStream();
 }
