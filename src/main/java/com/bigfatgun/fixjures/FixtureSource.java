@@ -66,7 +66,7 @@ public abstract class FixtureSource implements Closeable {
 	);
 
 	/** Default options, currently none. */
-	private static final Iterable<Fixjure.Option> DEFAULT_OPTIONS = ImmutableSet.of();
+	private static final ImmutableSet<Fixjure.Option> DEFAULT_OPTIONS = ImmutableSet.of();
 
 	/**
 	 * Converts the given string into a UTF-8 encoded byte array.
