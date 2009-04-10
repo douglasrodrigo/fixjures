@@ -17,7 +17,11 @@ package com.bigfatgun.fixjures.handlers;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.LinkedList;
+
+import com.bigfatgun.fixjures.json.JSONSource;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import sun.font.LayoutPathImpl;
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,14 +30,42 @@ import java.util.LinkedList;
  * Time: 9:10:37 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Handlers {
+public final class Handlers {
 
-	public static <SourceType, InterimType, EndType> Iterable<FixtureHandler<SourceType,? extends EndType>> createChain(
-			  final ChainedFixtureHandler<SourceType, InterimType> chained,
-			  final FixtureHandler<InterimType, ? extends EndType>... handlers) {
+	public static FixtureHandler<Number,Byte> byteHandler() {
+		return new ByteFixtureHandler();
+	}
 
-		final List<FixtureHandler<SourceType,? extends EndType>> fixtures = new LinkedList<FixtureHandler<SourceType,? extends EndType>>();
-		for (final FixtureHandler<InterimType, ? extends EndType> handler : handlers) {
+	public static FixtureHandler<Number,Short> shortHandler() {
+		return new ShortFixtureHandler();
+	}
+
+	public static FixtureHandler<Number,Integer> integerHandler() {
+		return new IntegerFixtureHandler();
+	}
+
+	public static FixtureHandler<Number,Long> longHandler() {
+		return new LongFixtureHandler();
+	}
+
+	public static FixtureHandler<Number,Float> floatHandler() {
+		return new FloatFixtureHandler();
+	}
+
+	public static FixtureHandler<Number,Double> doubleHandler() {
+		return new DoubleFixtureHandler();
+	}
+
+	public static FixtureHandler<CharSequence,StringBuilder> stringBuilderHandler() {
+		return new StringBuilderFixtureHandler();
+	}
+
+	public static <SourceType, InterimType, EndType> Iterable<FixtureHandler<JSONSource.SourceType,? extends LayoutPathImpl.EndType>> createChain(
+			  final ChainedFixtureHandler<JSONSource.SourceType, InterimType> chained,
+			  final ImmutableList<FixtureHandler<InterimType, LayoutPathImpl.EndType>> handlers) {
+
+		final List<FixtureHandler<JSONSource.SourceType,? extends LayoutPathImpl.EndType>> fixtures = Lists.newLinkedList();
+		for (final FixtureHandler<InterimType, LayoutPathImpl.EndType> handler : handlers) {
 			fixtures.add(chained.link(handler));
 		}
 		return Collections.unmodifiableList(fixtures);

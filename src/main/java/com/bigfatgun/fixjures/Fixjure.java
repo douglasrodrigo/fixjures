@@ -195,7 +195,7 @@ public class Fixjure {
 		 *
 		 * @param cls fixture object type
 		 */
-		FixtureBuilder(final Class cls) {
+		FixtureBuilder(final Class<T> cls) {
 			this(cls, ImmutableList.<Class<?>>of());
 		}
 
@@ -215,7 +215,7 @@ public class Fixjure {
 		 * @param params type params
 		 */
 		@SuppressWarnings({"unchecked"})
-		FixtureBuilder(final Class cls, final ImmutableList<Class<?>> params) {
+		FixtureBuilder(final Class<?> cls, final ImmutableList<Class<?>> params) {
 			clazz = (Class<T>) cls;
 			typeParams = params;
 		}
@@ -227,12 +227,12 @@ public class Fixjure {
 		 * @param source fixture source, could be JSON or otherwise
 		 * @return sourced fixture builder
 		 */
-		public final SourcedFixtureBuilder<T, ? extends FixtureSource> from(final FixtureSource source) {
-			return new SourcedFixtureBuilder<T, FixtureSource>(this, source);
+		public final SourcedFixtureBuilder<T> from(final FixtureSource source) {
+			return new SourcedFixtureBuilder<T>(this, source);
 		}
 
-		public final StreamedFixtureBuilder<T, ? extends FixtureSource> fromStream(final FixtureStream stream) {
-			return new StreamedFixtureBuilder<T, FixtureSource>(this, stream.asSourceStream());
+		public final StreamedFixtureBuilder<T> fromStream(final FixtureStream stream) {
+			return new StreamedFixtureBuilder<T>(this, stream.asSourceStream());
 		}
 
 		/**
@@ -260,7 +260,7 @@ public class Fixjure {
 		}
 	}
 
-	public static final class StreamedFixtureBuilder<T, S extends FixtureSource> extends SourcedFixtureBuilder<T, S> {
+	public static final class StreamedFixtureBuilder<T> extends SourcedFixtureBuilder<T> {
 
 		/**
 		 * Protected constructor that stores the given builder's state.
@@ -268,11 +268,11 @@ public class Fixjure {
 		 * @param builder builder to copy
 		 * @param source  fixture data source
 		 */
-		StreamedFixtureBuilder(final FixtureBuilder<T> builder, final S source) {
+		StreamedFixtureBuilder(final FixtureBuilder<T> builder, final FixtureSource source) {
 			super(builder, source);
 		}
 
-		public final Iterable<T> createAll() {
+		public final Iterable<? extends T> createAll() {
 			return new Iterable<T>() {
 				public Iterator<T> iterator() {
 					return new Iterator<T>() {
@@ -305,15 +305,14 @@ public class Fixjure {
 	 * reading fixtures from some type of data.
 	 *
 	 * @param <T> fixture object type
-	 * @param <S> fixture source type
 	 * @author Steve Reed
 	 */
-	public static class SourcedFixtureBuilder<T, S extends FixtureSource> extends FixtureBuilder<T> {
+	public static class SourcedFixtureBuilder<T> extends FixtureBuilder<T> {
 
 		/**
 		 * Fixture data source.
 		 */
-		private final S fixtureSource;
+		private final FixtureSource fixtureSource;
 
 		/**
 		 * Protected constructor that stores the given builder's state.
@@ -321,7 +320,7 @@ public class Fixjure {
 		 * @param builder builder to copy
 		 * @param source fixture data source
 		 */
-		SourcedFixtureBuilder(final FixtureBuilder<T> builder, final S source) {
+		SourcedFixtureBuilder(final FixtureBuilder<T> builder, final FixtureSource source) {
 			super(builder);
 			fixtureSource = source;
 		}
@@ -331,7 +330,7 @@ public class Fixjure {
 		 *
 		 * @return the source
 		 */
-		protected final S getSource() {
+		protected final FixtureSource getSource() {
 			return fixtureSource;
 		}
 
@@ -341,7 +340,7 @@ public class Fixjure {
 		 * @param handler handler to add
 		 * @return this
 		 */
-		public final SourcedFixtureBuilder<T, S> with(final FixtureHandler handler) {
+		public final SourcedFixtureBuilder<T> with(final FixtureHandler handler) {
 			this.fixtureSource.installRequiredTypeHandler(handler);
 			return this;
 		}
@@ -370,7 +369,7 @@ public class Fixjure {
 		 * @param opts options
 		 * @return this
 		 */
-		public final SourcedFixtureBuilder<T, S> withOptions(final Option... opts) {
+		public final SourcedFixtureBuilder<T> withOptions(final Option... opts) {
 			for (final Option opt : opts) {
 				this.fixtureSource.addOption(opt);
 			}

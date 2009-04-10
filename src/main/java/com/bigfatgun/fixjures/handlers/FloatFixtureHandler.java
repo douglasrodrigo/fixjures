@@ -22,7 +22,7 @@ import com.google.common.base.Nullable;
  *
  * @author Steve Reed
  */
-public final class FloatFixtureHandler extends NumberFixtureHandler<Float> {
+final class FloatFixtureHandler extends NumberFixtureHandler<Float> {
 
 	/**
 	 * {@inheritDoc}

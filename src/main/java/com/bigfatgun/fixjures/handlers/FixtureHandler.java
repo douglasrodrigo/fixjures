@@ -34,17 +34,17 @@ public interface FixtureHandler<S,R> extends Function<S,R> {
 	 * @param desiredType desired object type
 	 * @return true if object can be transformed by this handler
 	 */
-	boolean canDeserialize(Object obj, Class desiredType);
+	boolean canDeserialize(Object obj, Class<?> desiredType);
 
 	/**
 	 * Returns the type of object created by this handler.
 	 * @return the type of object created by this handler
 	 */
-	Class<? extends R> getReturnType();
+	Class<R> getReturnType();
 
 	/**
 	 * Returns the type of object required by this handler.
 	 * @return the type of object required by this handler
 	 */
-	Class<? extends S> getSourceType();
+	Class<S> getSourceType();
 }

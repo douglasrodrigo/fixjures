@@ -44,7 +44,7 @@ public abstract class NumberFixtureHandler<NumericType extends Number> extends A
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final boolean canDeserialize(final Object obj, final Class desiredType) {
+	public final boolean canDeserialize(final Object obj, final Class<?> desiredType) {
 		return super.canDeserialize(obj, desiredType) || getPrimitiveType().equals(desiredType);
 	}
 }

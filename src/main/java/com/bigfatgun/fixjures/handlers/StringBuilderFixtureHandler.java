@@ -22,7 +22,7 @@ import com.google.common.base.Nullable;
  *
  * @author Steve Reed
  */
-public final class StringBuilderFixtureHandler extends AbstractFixtureHandler<CharSequence, StringBuilder> {
+final class StringBuilderFixtureHandler extends AbstractFixtureHandler<CharSequence, StringBuilder> {
 
 	/**
 	 * {@inheritDoc}

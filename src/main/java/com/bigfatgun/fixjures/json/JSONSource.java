@@ -27,7 +27,6 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -147,7 +146,6 @@ public final class JSONSource extends FixtureSource {
 	 * @param typeParams type params
 	 * @return proxied object
 	 */
-	@SuppressWarnings({"unchecked"})
 	public <T> T createFixture(final Class<T> type, final ImmutableList<Class<?>> typeParams) {
 		try {
 			final String sourceJson = loadTextFromChannel(getSource());
@@ -165,7 +163,7 @@ public final class JSONSource extends FixtureSource {
 				}
 			}
 
-			return (T) findValue(type, typeParams, rawValue, "ROOT");
+			return type.cast(findValue(type, typeParams, rawValue, "ROOT"));
 		} catch (FixtureException e) {
 			throw e;
 		} catch (Exception e) {
@@ -183,7 +181,7 @@ public final class JSONSource extends FixtureSource {
 	 * @return converted value
 	 */
 	@Override
-	protected Object handle(final Class requiredType, final List<? extends Type> typeParams, final Object sourceValue, final String name) {
+	protected Object handle(final Class<?> requiredType, final ImmutableList<? extends Type> typeParams, final Object sourceValue, final String name) {
 		try {
 			if (JSONObject.class.isAssignableFrom(sourceValue.getClass())) {
 				final JSONObject jsonObj = (JSONObject) sourceValue;
@@ -197,37 +195,32 @@ public final class JSONSource extends FixtureSource {
 					}
 					return Maps.newHashMap(builder.build());
 				} else {
-					//noinspection unchecked
 					return newConfiguredProxy(requiredType, typeParams, (JSONObject) sourceValue);
 				}
 			} else if (JSONArray.class.isAssignableFrom(sourceValue.getClass())) {
 				final JSONArray array = (JSONArray) sourceValue;
 				if (requiredType.isArray()) {
-					final Class collectionType = requiredType.getComponentType();
+					final Class<?> collectionType = requiredType.getComponentType();
 					final Object actualArray = Array.newInstance(collectionType, array.length());
 					for (int i = 0; i < array.length(); i++) {
-						Array.set(actualArray, i, findValue(collectionType, Arrays.<Type>asList(), array.get(i), name + "[" + i + "]"));
+						Array.set(actualArray, i, findValue(collectionType, ImmutableList.<Type>of(), array.get(i), name + "[" + i + "]"));
 					}
 					return actualArray;
 				} else {
-					final Multiset source = LinkedHashMultiset.create();
+					final Multiset<Object> source = LinkedHashMultiset.create();
 					final Type collectionType = typeParams.size() > 0
 						? typeParams.get(0)
 						: Object.class;
 
 					for (int i = 0; i < array.length(); i++) {
-						//noinspection unchecked
 						source.add(findValue(collectionType, null, array.get(i), name + "[" + i + "]"));
 					}
 
 					if (List.class.isAssignableFrom(requiredType)) {
-						//noinspection unchecked
 						return Lists.newArrayList(source);
 					} else if (Set.class.isAssignableFrom(requiredType)) {
-						//noinspection unchecked
 						return Sets.newHashSet(source);
 					} else if (Multiset.class.isAssignableFrom(requiredType)) {
-						//noinspection unchecked
 						return source;
 					} else {
 						throw new FixtureException("Unhandled destination requiredType: " + requiredType);
@@ -251,7 +244,7 @@ public final class JSONSource extends FixtureSource {
 	 * @param obj values to return
 	 * @param <T> proxy object type
 	 */
-	private <T> void configureProxy(final ObjectProxy<T> proxy, final List<? extends Type> typeParams, final JSONObject obj) {
+	private <T> void configureProxy(final ObjectProxy<T> proxy, final ImmutableList<? extends Type> typeParams, final JSONObject obj) {
 		final Iterator objIterator = obj.keys();
 
 		for (int i = 0; objIterator.hasNext(); i++) {
@@ -304,11 +297,10 @@ public final class JSONSource extends FixtureSource {
 	 * @param cls type of object
 	 * @param typeParams type params
 	 * @param jsonObject json value
-	 * @param <T> type of object
 	 * @return instantiated or proxied object
 	 */
-	private <T> T newConfiguredProxy(final Class<T> cls, final List<? extends Type> typeParams, final JSONObject jsonObject) {
-		final ObjectProxy<T> proxy = Proxies.newProxy(cls);
+	private Object newConfiguredProxy(final Class<?> cls, final ImmutableList<? extends Type> typeParams, final JSONObject jsonObject) {
+		final ObjectProxy<?> proxy = Proxies.newProxy(cls);
 		configureProxy(proxy, typeParams, jsonObject);
 		try {
 			return proxy.create();

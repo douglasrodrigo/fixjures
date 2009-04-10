@@ -37,11 +37,11 @@ public abstract class ChainedFixtureHandler<S,I> extends AbstractFixtureHandler<
 	public final <O> FixtureHandler<S,O> link(final FixtureHandler<I,O> handler) {
 		return new AbstractFixtureHandler<S, O>() {
 
-			public Class<? extends O> getReturnType() {
+			public Class<O> getReturnType() {
 				return handler.getReturnType();
 			}
 
-			public Class<? extends S> getSourceType() {
+			public Class<S> getSourceType() {
 				return ChainedFixtureHandler.this.getSourceType();
 			}
 

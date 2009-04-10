@@ -25,28 +25,19 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
-import com.bigfatgun.fixjures.handlers.ByteFixtureHandler;
 import com.bigfatgun.fixjures.handlers.ChainedFixtureHandler;
-import com.bigfatgun.fixjures.handlers.DoubleFixtureHandler;
 import com.bigfatgun.fixjures.handlers.FixtureHandler;
-import com.bigfatgun.fixjures.handlers.FloatFixtureHandler;
 import com.bigfatgun.fixjures.handlers.Handlers;
-import com.bigfatgun.fixjures.handlers.IntegerFixtureHandler;
-import com.bigfatgun.fixjures.handlers.LongFixtureHandler;
 import com.bigfatgun.fixjures.handlers.NoConversionFixtureHandler;
-import com.bigfatgun.fixjures.handlers.ShortFixtureHandler;
-import com.bigfatgun.fixjures.handlers.StringBuilderFixtureHandler;
 import com.google.common.base.Nullable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Abstract fixture source.
@@ -59,7 +50,7 @@ public abstract class FixtureSource implements Closeable {
 	private static final String CHARSET = "UTF-8";
 
 	/** Array of numeric types. */
-	private static final Class[] NUMERIC_TYPES = new Class[] {
+	private static final ImmutableSet<Class<?>> NUMERIC_TYPES = ImmutableSet.<Class<?>>of(
 			  Byte.class,
 			  Byte.TYPE,
 			  Short.class,
@@ -72,7 +63,7 @@ public abstract class FixtureSource implements Closeable {
 			  Float.TYPE,
 			  Double.class,
 			  Double.TYPE
-	};
+	);
 
 	/** Default options, currently none. */
 	private static final Iterable<Fixjure.Option> DEFAULT_OPTIONS = ImmutableSet.of();
@@ -135,7 +126,7 @@ public abstract class FixtureSource implements Closeable {
 	/**
 	 * Set of options.
 	 */
-	private final Set<Fixjure.Option> options;
+	private final Set<? super Fixjure.Option> options;
 
 	/**
 	 * Initializes the source.
@@ -222,11 +213,11 @@ public abstract class FixtureSource implements Closeable {
 	}
 
 	/**
-	 * @param option options to test
+	 * @param opts options to test
 	 * @return true of all options are enabled
 	 */
-	protected final boolean areOptionsEnabled(final Fixjure.Option... option) {
-		return options.containsAll(ImmutableSet.of(option));
+	protected final boolean areOptionsEnabled(final Fixjure.Option... opts) {
+		return options.containsAll(ImmutableSet.of(opts));
 	}
 
 	/**
@@ -237,22 +228,19 @@ public abstract class FixtureSource implements Closeable {
 	 * @return proxied object
 	 */
 	protected final Object findValue(final Type type, final Type typeVariable, final Object value, final String name) {
-		final Class getterClass;
+		final Class<?> getterClass;
 		final Type[] typeParams;
 		if (type instanceof ParameterizedType) {
-			//noinspection unchecked
-			getterClass = (Class) ((ParameterizedType) type).getRawType();
-			//noinspection unchecked
+			getterClass = (Class<?>) ((ParameterizedType) type).getRawType();
 			typeParams = ((ParameterizedType) type).getActualTypeArguments();
 		} else if (type instanceof TypeVariable && typeVariable != null) {
 			getterClass = (Class) typeVariable;
 			typeParams = new Type[0];
 		} else {
-			//noinspection ConstantConditions
 			getterClass = (Class) type;
 			typeParams = new Type[0];
 		}
-		return findValue(getterClass, Arrays.asList(typeParams), value, name);
+		return findValue(getterClass, ImmutableList.of(typeParams), value, name);
 	}
 
 	/**
@@ -262,11 +250,10 @@ public abstract class FixtureSource implements Closeable {
 	 * @param name object name
 	 * @return proxied object
 	 */
-	protected final Object findValue(final Class type, final List<? extends Type> typeParams, final Object value, final String name) {
-		for (Class cls = type; cls != null; cls = cls.getSuperclass()) {
+	protected final Object findValue(final Class type, final ImmutableList<? extends Type> typeParams, final Object value, final String name) {
+		for (Class<?> cls = type; cls != null; cls = cls.getSuperclass()) {
 			for (final FixtureHandler handler : getRequiredTypeHandlers().get(cls)) {
 				if (handler.canDeserialize(value, type)) {
-					//noinspection unchecked
 					return handler.apply(value);
 				}
 			}
@@ -294,7 +281,7 @@ public abstract class FixtureSource implements Closeable {
 	 * @param name value name, for logging
 	 * @return value
 	 */
-	protected Object handle(final Class requiredType, final List<? extends Type> typeParams, final Object sourceValue, final String name) {
+	protected Object handle(final Class<?> requiredType, final ImmutableList<? extends Type> typeParams, final Object sourceValue, final String name) {
 		return null;
 	}
 
@@ -329,12 +316,12 @@ public abstract class FixtureSource implements Closeable {
 			installSourceTypeHandler(NoConversionFixtureHandler.newInstance(t));
 		}
 
-		final ByteFixtureHandler byteHandler = new ByteFixtureHandler();
-		final ShortFixtureHandler shortHandler = new ShortFixtureHandler();
-		final IntegerFixtureHandler intHandler = new IntegerFixtureHandler();
-		final LongFixtureHandler longHandler = new LongFixtureHandler();
-		final FloatFixtureHandler floatHandler = new FloatFixtureHandler();
-		final DoubleFixtureHandler doubleHandler = new DoubleFixtureHandler();
+		final FixtureHandler<Number,Byte> byteHandler = Handlers.byteHandler();
+		final FixtureHandler<Number,Short> shortHandler = Handlers.shortHandler();
+		final FixtureHandler<Number,Integer> intHandler = Handlers.integerHandler();
+		final FixtureHandler<Number,Long> longHandler = Handlers.longHandler();
+		final FixtureHandler<Number,Float> floatHandler = Handlers.floatHandler();
+		final FixtureHandler<Number,Double> doubleHandler = Handlers.doubleHandler();
 
 		installUniversalHandler(byteHandler);
 		installUniversalHandler(shortHandler);
@@ -355,10 +342,13 @@ public abstract class FixtureSource implements Closeable {
 				return Double.parseDouble(charSequence.toString());
 			}
 		};
-		for (final FixtureHandler handler : Handlers.createChain(chainedHandler, byteHandler, shortHandler, intHandler, longHandler, floatHandler, doubleHandler)) {
-			installUniversalHandler(handler);
-		}
+		installUniversalHandler(chainedHandler.link(byteHandler));
+		installUniversalHandler(chainedHandler.link(shortHandler));
+		installUniversalHandler(chainedHandler.link(intHandler));
+		installUniversalHandler(chainedHandler.link(longHandler));
+		installUniversalHandler(chainedHandler.link(floatHandler));
+		installUniversalHandler(chainedHandler.link(doubleHandler));
 
-		installRequiredTypeHandler(new StringBuilderFixtureHandler());
+		installRequiredTypeHandler(Handlers.stringBuilderHandler());
 	}
 }

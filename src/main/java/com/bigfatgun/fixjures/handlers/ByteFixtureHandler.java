@@ -22,7 +22,7 @@ import com.google.common.base.Nullable;
  *
  * @author Steve Reed
  */
-public final class ByteFixtureHandler extends NumberFixtureHandler<Byte> {
+final class ByteFixtureHandler extends NumberFixtureHandler<Byte> {
 
 	/**
 	 * {@inheritDoc}

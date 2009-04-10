@@ -22,7 +22,7 @@ import com.google.common.base.Nullable;
  *
  * @author Steve Reed
  */
-public final class LongFixtureHandler extends NumberFixtureHandler<Long> {
+final class LongFixtureHandler extends NumberFixtureHandler<Long> {
 
 	/**
 	 * {@inheritDoc}

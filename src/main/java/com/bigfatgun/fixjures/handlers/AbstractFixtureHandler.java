@@ -37,7 +37,7 @@ public abstract class AbstractFixtureHandler<S,R> implements FixtureHandler<S,R>
 	 * @param desiredType desired object type
 	 * @return true if object can be transformed by this handler
 	 */
-	public boolean canDeserialize(final Object obj, final Class desiredType) {
+	public boolean canDeserialize(final Object obj, final Class<?> desiredType) {
 		return getReturnType().isAssignableFrom(desiredType)
 				  && (obj == null || getSourceType().isAssignableFrom(obj.getClass()));
 	}

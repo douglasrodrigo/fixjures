@@ -26,7 +26,7 @@ import com.google.common.collect.Maps;
  * @param <T> proxy object type
  * @author Steve Reed
  */
-public abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
+abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 
 	/** Proxy object type. */
 	private final Class<T> clazz;
