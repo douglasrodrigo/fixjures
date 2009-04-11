@@ -1,6 +1,7 @@
 package com.bigfatgun.fixjures;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -17,12 +18,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 public class FixjureTest {
@@ -113,5 +118,104 @@ public class FixjureTest {
 		assertEquals(2, list.size());
 		assertEquals("first", list.get(0));
 		assertEquals("second", list.get(1));
+	}
+
+	@Test
+	public void factory() {
+		FixjureFactory fact = FixjureFactory.newFactory(new SourceFactory() {
+			public FixtureSource newInstance(final Class<?> type, final String name) {
+				try {
+					return JSONSource.newJsonFile(new File(new File("src/test/resources/fixjures"), String.format("%s/%s.json", type.getName(), name)));
+				} catch (FileNotFoundException e) {
+					throw new FixtureException(e);
+				}
+			}
+		});
+		fact.enableOption(SKIP_UNMAPPABLE);
+		final NyTimes n1 = fact.createFixture(NyTimes.class, "one");
+		assertNotNull(n1);
+		assertEquals("1.0", n1.getVersion());
+		final NyTimes n2 = fact.createFixture(NyTimes.class, "two");
+		assertNotNull(n2);
+		assertEquals("2.0", n2.getVersion());
+		// test cache
+		assertSame(n2, fact.createFixture(NyTimes.class, "two"));
+		// clear cache
+		fact.expireCache();
+		assertNotSame(n2, fact.createFixture(NyTimes.class, "two"));
+	}
+
+	@Test
+	public void factoryWithStrategy() {
+		FixjureFactory fact = FixjureFactory.newJsonFactory(Strategies.newClasspathStrategy(Strategies.DEFAULT_CLASSPATH_NAME_STRATEGY));
+		fact.enableOption(SKIP_UNMAPPABLE);
+		final NyTimes n1 = fact.createFixture(NyTimes.class, "one");
+		assertNotNull(n1);
+		assertEquals("1.0", n1.getVersion());
+		final NyTimes n2 = fact.createFixture(NyTimes.class, "two");
+		assertNotNull(n2);
+		assertEquals("2.0", n2.getVersion());
+		// test cache
+		assertSame(n2, fact.createFixture(NyTimes.class, "two"));
+		// clear cache
+		fact.expireCache();
+		assertNotSame(n2, fact.createFixture(NyTimes.class, "two"));
+	}
+
+	@Test
+	public void inMemoryStrategy() {
+		Map<Class<?>, Map<String, byte[]>> mem = Maps.newHashMap();
+		mem.put(String.class, ImmutableMap.of("foo", "foo".getBytes(), "bar", "bar".getBytes()));
+		mem.put(Integer.class, ImmutableMap.of("one", "1".getBytes(), "two", "2".getBytes()));
+		mem.put(Map.class, ImmutableMap.of("map", "{ one : 1, two : 2 }".getBytes()));
+		mem.put(NyTimes.class, ImmutableMap.of("nyt", "{ version: '2.1' }".getBytes()));
+		FixjureFactory fact = FixjureFactory.newJsonFactory(Strategies.newInMemoryStrategy(mem));
+		assertEquals("foo", fact.createFixture(String.class, "foo"));
+		assertEquals("bar", fact.createFixture(String.class, "bar"));
+		assertEquals(1, fact.createFixture(Integer.class, "one").intValue());
+		assertEquals(2, fact.createFixture(Integer.class, "two").intValue());
+		assertEquals(ImmutableMap.of("one", 1, "two", 2), fact.createFixture(Map.class, "map"));
+		assertEquals("2.1", fact.createFixture(NyTimes.class, "nyt").getVersion());
+	}
+
+	private <T> double doPerf(final FixjureFactory fact, final Class<T> type, final String name, final int num, final boolean clearCache, final String desc) {
+		System.out.format("Creating %d of %s named %s [%s]...\n", num, type.getName(), name, desc);
+		final long start = System.nanoTime();
+		T obj;
+		for (int i = 0; i < num; i++) {
+			//noinspection UnusedAssignment
+			obj = fact.createFixture(type, name);
+			if (i != 0 && (i % 50000) == 0) {
+				System.out.println(obj);
+				final long dur = System.nanoTime() - start;
+				System.out.format("At %d, average of %gms/fixture.\n", i, ((dur / 1e6) / i));
+			}
+			if (clearCache) {
+				fact.expireCache();
+			}
+		}
+		final long dur = System.nanoTime() - start;
+		System.out.format("At %d, average of %gms/fixture.\n", num, ((dur / 1e6) / num));
+		return ((dur / 1e6) / num);
+	}
+
+	@Test
+	public void perf() {
+		FixjureFactory fact = FixjureFactory.newJsonFactory(Strategies.newClasspathStrategy());
+		double cpwc = doPerf(fact, NyTimes.class, "one", 1000000, false, "classpath w/ cache");
+		double cpwoc = doPerf(fact, NyTimes.class, "one", 1000, true, "classpath w/o cache");
+		fact = FixjureFactory.newFactory(new SourceFactory() {
+			public FixtureSource newInstance(final Class<?> type, final String name) {
+				try {
+					return JSONSource.newJsonFile(new File(new File("src/test/resources/fixjures"), String.format("%s/%s.json", type.getName(), name)));
+				} catch (FileNotFoundException e) {
+					throw new FixtureException(e);
+				}
+			}
+		});
+		double fwc = doPerf(fact, NyTimes.class, "one", 1000000, false, "file w/ cache");
+		double fwoc = doPerf(fact, NyTimes.class, "one", 1000, true, "file w/o cache");
+		// asserting that file-based without cache is faster than classpath-based without cache
+		assertTrue(Double.compare(cpwoc, fwoc) > 0);
 	}
 }

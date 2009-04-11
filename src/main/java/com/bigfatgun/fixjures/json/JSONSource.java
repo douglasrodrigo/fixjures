@@ -69,6 +69,10 @@ public final class JSONSource extends FixtureSource {
 		FILE
 	}
 
+	public static FixtureSource newJsonStream(final ReadableByteChannel channel) {
+		return new JSONSource(channel);
+	}
+
 	/**
 	 * Static factory for file source.
 	 *
