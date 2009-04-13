@@ -22,6 +22,21 @@ package com.bigfatgun.fixjures;
 public class FixtureException extends RuntimeException {
 
 	/**
+	 * Ensures that the given exception is returned as a FixtureException (if it passes an
+	 * instanceof check) or is wrapped by a new one.
+	 *
+	 * @param cause causing exception
+	 * @return fixture exception
+	 */
+	public static FixtureException convert(final Throwable cause) {
+		if (cause instanceof FixtureException) {
+			return (FixtureException) cause;
+		} else {
+			return new FixtureException(cause);
+		}
+	}
+
+	/**
 	 * Creates a new exception.
 	 * @param message message
 	 */

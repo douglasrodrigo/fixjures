@@ -40,7 +40,14 @@ import com.google.common.collect.ImmutableList;
 public class ObjectInputStreamSource extends FixtureSource implements FixtureStream {
 
 	public static ObjectInputStreamSource newFile(final File file) throws FileNotFoundException {
+		if (file == null) {
+			throw new NullPointerException("file");
+		}
 		return new ObjectInputStreamSource(new RandomAccessFile(file, "r").getChannel());
+	}
+
+	public static ObjectInputStreamSource newObjectInputStream(final ReadableByteChannel channel) {
+		return new ObjectInputStreamSource(channel);
 	}
 
 	private ObjectInputStream objIn;

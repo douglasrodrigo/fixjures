@@ -21,6 +21,8 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
@@ -134,6 +136,10 @@ public abstract class FixtureSource implements Closeable {
 	 * @param source source data
 	 */
 	protected FixtureSource(final ReadableByteChannel source) {
+		if (source == null) {
+			throw new NullPointerException("source");
+		}
+
 		sourceChannel = source;
 		requiredTypeHandlers = Multimaps.newLinkedHashMultimap();
 		sourceTypeHandlers = Multimaps.newLinkedHashMultimap();
@@ -210,14 +216,6 @@ public abstract class FixtureSource implements Closeable {
 	 */
 	protected final boolean isOptionEnabled(final Fixjure.Option option) {
 		return options.contains(option);
-	}
-
-	/**
-	 * @param opts options to test
-	 * @return true of all options are enabled
-	 */
-	protected final boolean areOptionsEnabled(final Fixjure.Option... opts) {
-		return options.containsAll(ImmutableSet.of(opts));
 	}
 
 	/**
@@ -322,6 +320,8 @@ public abstract class FixtureSource implements Closeable {
 		final FixtureHandler<Number,Long> longHandler = Handlers.longHandler();
 		final FixtureHandler<Number,Float> floatHandler = Handlers.floatHandler();
 		final FixtureHandler<Number,Double> doubleHandler = Handlers.doubleHandler();
+		final FixtureHandler<Number, BigInteger> bigintHandler = Handlers.bigIntegerHandler();
+		final FixtureHandler<Number, BigDecimal> bigdecHandler = Handlers.bigDecimalHandler();
 
 		installUniversalHandler(byteHandler);
 		installUniversalHandler(shortHandler);
@@ -329,6 +329,8 @@ public abstract class FixtureSource implements Closeable {
 		installUniversalHandler(longHandler);
 		installUniversalHandler(floatHandler);
 		installUniversalHandler(doubleHandler);
+		installUniversalHandler(bigintHandler);
+		installUniversalHandler(bigdecHandler);
 		final ChainedFixtureHandler<CharSequence,Number> chainedHandler = new ChainedFixtureHandler<CharSequence, Number>() {
 			public Class<Number> getReturnType() {
 				return Number.class;
@@ -348,7 +350,10 @@ public abstract class FixtureSource implements Closeable {
 		installUniversalHandler(chainedHandler.link(longHandler));
 		installUniversalHandler(chainedHandler.link(floatHandler));
 		installUniversalHandler(chainedHandler.link(doubleHandler));
+		installUniversalHandler(chainedHandler.link(bigintHandler));
+		installUniversalHandler(chainedHandler.link(bigdecHandler));
 
 		installRequiredTypeHandler(Handlers.stringBuilderHandler());
+		installRequiredTypeHandler(Handlers.javaDateHandler());
 	}
 }

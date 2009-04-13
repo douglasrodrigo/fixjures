@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +29,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Test;
 
 public class FixjureTest {
@@ -107,7 +110,12 @@ public class FixjureTest {
 
 	@Test
 	public void serializableTest1() throws IOException {
-		String s = Fixjure.of(String.class).from(ObjectInputStreamSource.newFile(new File("src/test/resources/string1.ser"))).create();
+		FixjureFactory fact = FixjureFactory.newObjectInputStreamFactory(Strategies.newFileStrategy(new Strategies.ResourceNameStrategy() {
+			public String getResourceName(final Class<?> type, final String name) {
+				return "src/test/resources/" + name + ".ser";
+			}
+		}));
+		String s = fact.createFixture(String.class, "string1");
 		assertEquals("abcdefghijklm\nopqrs\tuvwxyz", s);
 	}
 
@@ -217,5 +225,17 @@ public class FixjureTest {
 		double fwoc = doPerf(fact, NyTimes.class, "one", 1000, true, "file w/o cache");
 		// asserting that file-based without cache is faster than classpath-based without cache
 		assertTrue(Double.compare(cpwoc, fwoc) > 0);
+	}
+
+	@Test
+	public void datetime() {
+		System.out.println(DateFormat.getDateTimeInstance().format(new Date()));
+		Date d = Fixjure.of(Date.class).from(JSONSource.newJsonString("Apr 11, 2009 9:29:20 PM")).create();
+		assertNotNull(d);
+		final Calendar cal = Calendar.getInstance();
+		cal.setTime(d);
+		assertEquals(3, cal.get(Calendar.MONTH));
+		assertEquals(11, cal.get(Calendar.DAY_OF_MONTH));
+		assertEquals(2009, cal.get(Calendar.YEAR));
 	}
 }

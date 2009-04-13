@@ -19,6 +19,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 
 import com.bigfatgun.fixjures.Fixjure;
+import com.bigfatgun.fixjures.FixjureFactory;
 import com.bigfatgun.fixjures.FixtureSource;
 
 /**
@@ -45,7 +46,7 @@ public final class JSONFixtureHelper {
 	 */
 	public static void scan(final Object obj) throws Exception {
 		final Class cls = obj.getClass();
-		for (Method m : cls.getMethods()) {
+		for (final Method m : cls.getMethods()) {
          if (m.isAnnotationPresent(JSONFixture.class)) {
 				// found one
 				// want a signature with one argument, matching annotation type

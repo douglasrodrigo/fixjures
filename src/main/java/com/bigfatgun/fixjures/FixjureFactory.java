@@ -15,17 +15,19 @@
  */
 package com.bigfatgun.fixjures;
 
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
-import java.io.IOException;
 
 import com.bigfatgun.fixjures.handlers.FixtureHandler;
 import com.bigfatgun.fixjures.json.JSONSource;
+import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
 import com.google.common.base.Function;
 import com.google.common.base.Nullable;
 import com.google.common.collect.ComputationException;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
 
@@ -79,6 +81,31 @@ public final class FixjureFactory {
 	}
 
 	/**
+	 * Creates a new factory that will use {@link com.bigfatgun.fixjures.serializable.ObjectInputStreamSource}s
+	 * backed by data provided by the given {@link com.bigfatgun.fixjures.Strategies.SourceStrategy}.
+	 *
+	 * @param sourceStrategy strategy to use to find source data
+	 * @return new fixture factory
+	 */
+	public static FixjureFactory newObjectInputStreamFactory(final Strategies.SourceStrategy sourceStrategy) {
+		if (sourceStrategy == null) {
+			throw new NullPointerException("sourceStrategy");
+		}
+		return new FixjureFactory(new SourceFactory() {
+			public FixtureSource newInstance(final Class<?> type, final String name) {
+				assert type != null : "Type cannot be null.";
+				assert name != null : "Name cannot be null.";
+
+				try {
+					return ObjectInputStreamSource.newObjectInputStream(sourceStrategy.findStream(type, name));
+				} catch (IOException e) {
+					throw new FixtureException(e);
+				}
+			}
+		});
+	}
+
+	/**
 	 * Source factory.
 	 */
 	private final SourceFactory srcFactory;
@@ -104,9 +131,8 @@ public final class FixjureFactory {
 	 * @param sourceFactory source factory
 	 */
 	private FixjureFactory(final SourceFactory sourceFactory) {
-		if (sourceFactory == null) {
-			throw new NullPointerException("sourceFactory");
-		}
+		assert sourceFactory != null : "Source factory cannot be null.";
+
 		srcFactory = sourceFactory;
 		options = EnumSet.noneOf(Fixjure.Option.class);
 		handlers = Sets.newHashSet();
@@ -122,7 +148,7 @@ public final class FixjureFactory {
 							  public Object apply(@Nullable final String name) {
 								  assert name != null : "Name cannot be null.";
 
-								  Fixjure.SourcedFixtureBuilder<?> fixtureBuilder = Fixjure.of(type).from(srcFactory.newInstance(type, name)).withOptions(options);
+								  Fixjure.SourcedFixtureBuilder<?> fixtureBuilder = Fixjure.of(type).from(srcFactory.newInstance(type, name)).withOptions(ImmutableSet.copyOf(options));
 								  for (final FixtureHandler<?, ?> handler : handlers) {
 									  fixtureBuilder = fixtureBuilder.with(handler);
 								  }
@@ -138,35 +164,43 @@ public final class FixjureFactory {
 	 * by this factory.
 	 *
 	 * @param option option to enable, not null
+	 * @return this
 	 */
-	public void enableOption(final Fixjure.Option option) {
+	public FixjureFactory enableOption(final Fixjure.Option option) {
 		options.add(option);
+		return this;
 	}
 
 	/**
 	 * Disables the given option.
 	 * @param option option to disable, not null
+	 * @return this
 	 */
-	public void disableOption(final Fixjure.Option option) {
+	public FixjureFactory disableOption(final Fixjure.Option option) {
 		options.remove(option);
+		return this;
 	}
 
 	/**
 	 * Adds a fixture handler that will be passed into every fixture builder created by this factory.
 	 *
 	 * @param handler handler to add, not null
+	 * @return this
 	 */
-	public void addFixtureHandler(final FixtureHandler<?, ?> handler) {
+	public FixjureFactory addFixtureHandler(final FixtureHandler<?, ?> handler) {
 		handlers.add(handler);
+		return this;
 	}
 
 	/**
 	 * Removes a fixture handler.
 	 *
 	 * @param handler handler to remove, not null
+	 * @return this
 	 */
-	public void removeFixtureHandler(final FixtureHandler<?, ?> handler) {
+	public FixjureFactory removeFixtureHandler(final FixtureHandler<?, ?> handler) {
 		handlers.remove(handler);
+		return this;
 	}
 
 	/**
@@ -188,11 +222,7 @@ public final class FixjureFactory {
 		try {
 			return type.cast(objectCache.get(type).get(name));
 		} catch (ComputationException e) {
-			if (e.getCause() instanceof FixtureException) {
-				throw ((FixtureException) e.getCause());
-			} else {
-				throw new FixtureException(e.getCause());
-			}
+			throw FixtureException.convert(e.getCause());
 		}
 	}
 

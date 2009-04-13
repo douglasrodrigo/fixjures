@@ -15,7 +15,10 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import com.bigfatgun.fixjures.json.JSONSource;
@@ -69,5 +72,17 @@ public final class Handlers {
 			fixtures.add(chained.link(handler));
 		}
 		return Collections.unmodifiableList(fixtures);
+	}
+
+	public static FixtureHandler<Number, BigInteger> bigIntegerHandler() {
+		return new BigIntegerFixtureHandler();
+	}
+
+	public static FixtureHandler<Number, BigDecimal> bigDecimalHandler() {
+		return new BigDecimalFixtureHandler();
+	}
+
+	public static FixtureHandler<CharSequence, Date> javaDateHandler() {
+		return new JavaDateHandler();
 	}
 }
