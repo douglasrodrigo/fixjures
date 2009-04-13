@@ -15,7 +15,8 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.google.common.base.Nullable;
+import javax.annotation.Nullable;
+
 
 /**
  * Handles {@code Byte}s.

@@ -16,8 +16,7 @@
 package com.bigfatgun.fixjures.handlers;
 
 import java.math.BigDecimal;
-
-import com.google.common.base.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * Created by IntelliJ IDEA.

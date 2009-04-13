@@ -1,6 +1,7 @@
 package com.bigfatgun.fixjures.handlers;
 
-import com.google.common.base.Nullable;
+import javax.annotation.Nullable;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import org.junit.Test;

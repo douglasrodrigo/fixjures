@@ -18,9 +18,9 @@ package com.bigfatgun.fixjures.handlers;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
+import javax.annotation.Nullable;
 
 import com.bigfatgun.fixjures.FixtureException;
-import com.google.common.base.Nullable;
 
 /**
  * Created by IntelliJ IDEA.

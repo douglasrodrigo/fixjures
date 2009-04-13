@@ -15,7 +15,7 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.google.common.base.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * Converts a {@code String} to a {@code StringBuilder}.

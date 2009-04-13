@@ -28,17 +28,17 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 import com.bigfatgun.fixjures.handlers.ChainedFixtureHandler;
 import com.bigfatgun.fixjures.handlers.FixtureHandler;
 import com.bigfatgun.fixjures.handlers.Handlers;
 import com.bigfatgun.fixjures.handlers.NoConversionFixtureHandler;
-import com.google.common.base.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 
 /**
@@ -141,8 +141,8 @@ public abstract class FixtureSource implements Closeable {
 		}
 
 		sourceChannel = source;
-		requiredTypeHandlers = Multimaps.newLinkedHashMultimap();
-		sourceTypeHandlers = Multimaps.newLinkedHashMultimap();
+		requiredTypeHandlers = LinkedListMultimap.create();
+		sourceTypeHandlers = LinkedListMultimap.create();
 		installDefaultHandlers();
 		options = Sets.newEnumSet(DEFAULT_OPTIONS, Fixjure.Option.class);
 	}

@@ -1,8 +1,9 @@
 package com.bigfatgun.fixjures.sample;
 
-import com.google.common.collect.Iterables;
+import javax.annotation.Nullable;
+
 import com.google.common.base.Predicate;
-import com.google.common.base.Nullable;
+import com.google.common.collect.Iterables;
 
 public class Sample {
 

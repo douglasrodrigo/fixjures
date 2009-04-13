@@ -20,12 +20,12 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 import com.bigfatgun.fixjures.handlers.FixtureHandler;
 import com.bigfatgun.fixjures.json.JSONSource;
 import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
 import com.google.common.base.Function;
-import com.google.common.base.Nullable;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;

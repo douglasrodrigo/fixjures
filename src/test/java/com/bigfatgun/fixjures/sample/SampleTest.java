@@ -1,10 +1,11 @@
 package com.bigfatgun.fixjures.sample;
 
+import javax.annotation.Nullable;
+
 import com.bigfatgun.fixjures.json.JSONFixture;
 import com.bigfatgun.fixjures.json.JSONFixtureHelper;
 import com.bigfatgun.fixjures.json.JSONSource;
 import com.google.common.base.Function;
-import com.google.common.base.Nullable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import static org.junit.Assert.assertEquals;

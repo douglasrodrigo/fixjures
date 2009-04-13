@@ -15,7 +15,8 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.google.common.base.Nullable;
+import javax.annotation.Nullable;
+
 
 /**
  * Chained handler that can join two fixture handlers that have a return and source type
