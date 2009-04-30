@@ -272,7 +272,7 @@ public class Fixjure {
 			super(builder, source);
 		}
 
-		public final Iterable<? extends T> createAll() {
+		public Iterable<? extends T> createAll() {
 			return new Iterable<T>() {
 				public Iterator<T> iterator() {
 					return new Iterator<T>() {

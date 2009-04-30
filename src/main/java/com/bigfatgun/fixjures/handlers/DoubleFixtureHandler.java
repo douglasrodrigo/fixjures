@@ -15,8 +15,6 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import javax.annotation.Nullable;
-
 /**
  * Handles {@code Double}s.
  *
@@ -43,7 +41,7 @@ final class DoubleFixtureHandler extends NumberFixtureHandler<Double> {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Double apply(@Nullable final Number number) {
+	public Double apply(final HandlerHelper helper, final Number number) {
 		return number.doubleValue();
 	}
 }

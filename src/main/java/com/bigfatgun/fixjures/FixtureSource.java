@@ -28,10 +28,10 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.Set;
-import javax.annotation.Nullable;
 
 import com.bigfatgun.fixjures.handlers.ChainedFixtureHandler;
 import com.bigfatgun.fixjures.handlers.FixtureHandler;
+import com.bigfatgun.fixjures.handlers.HandlerHelper;
 import com.bigfatgun.fixjures.handlers.Handlers;
 import com.bigfatgun.fixjures.handlers.NoConversionFixtureHandler;
 import com.google.common.collect.ImmutableList;
@@ -46,7 +46,7 @@ import com.google.common.collect.Sets;
  *
  * @author Steve Reed
  */
-public abstract class FixtureSource implements Closeable {
+public abstract class FixtureSource implements Closeable, HandlerHelper {
 
 	/** Charset to use when reading byte streams and channels. */
 	private static final String CHARSET = "UTF-8";
@@ -76,7 +76,7 @@ public abstract class FixtureSource implements Closeable {
 	 * @param str string to convert
 	 * @return byte array
 	 */
-	protected static byte[] getBytes(final String str) {
+	public static byte[] getBytes(final String str) {
 		try {
 			return str.getBytes(CHARSET);
 		} catch (UnsupportedEncodingException e) {
@@ -242,31 +242,44 @@ public abstract class FixtureSource implements Closeable {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 */
+	@SuppressWarnings({"unchecked"})
+	public <S, R> FixtureHandler<S, R> findHandler(final S src, final Class<R> type) {
+		for (Class<?> cls = type; cls != null; cls = cls.getSuperclass()) {
+			for (final FixtureHandler handler : getRequiredTypeHandlers().get(cls)) {
+				if (handler.canDeserialize(src, type)) {
+					return handler;
+				}
+			}
+		}
+
+		for (Class cls = src.getClass(); cls != null; cls = cls.getSuperclass()) {
+			for (final FixtureHandler handler : getSourceTypeHandlers().get(cls)) {
+				if (handler.canDeserialize(src, type)) {
+					return handler;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * @param type object type
 	 * @param typeParams object type's type params
 	 * @param value object value
 	 * @param name object name
 	 * @return proxied object
 	 */
+	@SuppressWarnings({"unchecked"})
 	protected final Object findValue(final Class type, final ImmutableList<? extends Type> typeParams, final Object value, final String name) {
-		for (Class<?> cls = type; cls != null; cls = cls.getSuperclass()) {
-			for (final FixtureHandler handler : getRequiredTypeHandlers().get(cls)) {
-				if (handler.canDeserialize(value, type)) {
-					return handler.apply(value);
-				}
-			}
+		final FixtureHandler handler = findHandler(value, type);
+		if (handler == null) {
+			return handle(type, typeParams, value, name);
+		} else {
+			return handler.apply(this, value);
 		}
-
-		for (Class cls = value.getClass(); cls != null; cls = cls.getSuperclass()) {
-			for (final FixtureHandler handler : getSourceTypeHandlers().get(cls)) {
-				if (handler.canDeserialize(value, type)) {
-					//noinspection unchecked
-					return handler.apply(value);
-				}
-			}
-		}
-
-		return handle(type, typeParams, value, name);
 	}
 
 	/**
@@ -340,7 +353,7 @@ public abstract class FixtureSource implements Closeable {
 				return CharSequence.class;
 			}
 
-			public Number apply(@Nullable final CharSequence charSequence) {
+			public Number apply(final HandlerHelper helper, final CharSequence charSequence) {
 				return Double.parseDouble(charSequence.toString());
 			}
 		};

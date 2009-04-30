@@ -15,8 +15,6 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import javax.annotation.Nullable;
-
 /**
  * Simple object pass-through for when no conversion is necessary.
  *
@@ -67,7 +65,7 @@ public final class NoConversionFixtureHandler<T> extends AbstractFixtureHandler<
 	/**
 	 * {@inheritDoc}
 	 */
-	public T apply(@Nullable final T t) {
+	public T apply(final HandlerHelper helper, final T t) {
 		return t;
 	}
 }

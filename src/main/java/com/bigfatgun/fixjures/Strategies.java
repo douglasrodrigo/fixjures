@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableMap;
  * @author Steve Reed
  */
 public final class Strategies {
+	
 	/**
 	 * A strategy for finding source data for a fixture of a given type and name.
 	 */
@@ -47,7 +48,6 @@ public final class Strategies {
 		 * @throws IOException can be thrown when there is an error reading or finding source data
 		 */
 		ReadableByteChannel findStream(Class<?> type, String name) throws IOException;
-
 	}
 
 	/**

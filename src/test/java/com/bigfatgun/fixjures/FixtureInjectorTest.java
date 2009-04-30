@@ -1,17 +1,18 @@
-package com.bigfatgun.fixjures.json;
+package com.bigfatgun.fixjures;
 
 import java.io.FileNotFoundException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import com.bigfatgun.fixjures.FixtureException;
+import com.bigfatgun.fixjures.annotations.Fixture;
+import com.bigfatgun.fixjures.annotations.NativeSourceType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
-public class JSONFixtureHelperTest {
+public class FixtureInjectorTest {
 
 	@Test
 	public void testMyBean() throws Exception, FileNotFoundException, IllegalAccessException {
@@ -19,7 +20,7 @@ public class JSONFixtureHelperTest {
 		assertNull(bean.getFoo());
 		assertNull(bean.getBar());
 		assertNull(bean.getParent());
-		JSONFixtureHelper.scan(bean);
+		FixtureInjector.scan(bean);
 		assertNotNull(bean.getParent());
 		assertEquals("value of foo parent", bean.getParent().getFoo());
 		assertEquals(4321, bean.getParent().getBar().intValue());
@@ -33,7 +34,7 @@ public class JSONFixtureHelperTest {
 
 	@Test
 	public void constructorIsPrivate() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
-		Constructor<JSONFixtureHelper> ctor = JSONFixtureHelper.class.getDeclaredConstructor();
+		Constructor<FixtureInjector> ctor = FixtureInjector.class.getDeclaredConstructor();
 		assertFalse(ctor.isAccessible());
 		ctor.setAccessible(true);
 		assertNotNull(ctor.newInstance());
@@ -41,17 +42,17 @@ public class JSONFixtureHelperTest {
 
 	@Test
 	public void badMarkup1() throws Exception, FileNotFoundException, IllegalAccessException {
-		JSONFixtureHelper.scan(new BadBean1());
+		FixtureInjector.scan(new BadBean1());
 	}
 
 	@Test(expected = FixtureException.class)
 	public void badMarkup2() throws Exception, FileNotFoundException, IllegalAccessException {
-		JSONFixtureHelper.scan(new BadBean2());
+		FixtureInjector.scan(new BadBean2());
 	}
 
 	@Test
 	public void badMarkup3() throws Exception, FileNotFoundException, IllegalAccessException {
-		JSONFixtureHelper.scan(new BadBean3());
+		FixtureInjector.scan(new BadBean3());
 	}
 
 	public static final class MyBean {
@@ -66,7 +67,7 @@ public class JSONFixtureHelperTest {
 			return foo;
 		}
 
-		@JSONFixture(type = JSONSource.SourceType.LITERAL, value = "value of foo")
+		@Fixture(value = "value of foo")
 		public void setFoo(final String foo) {
 			this.foo = foo;
 		}
@@ -75,7 +76,7 @@ public class JSONFixtureHelperTest {
 			return bar;
 		}
 
-		@JSONFixture(value = "1234")
+		@Fixture(value = "1234")
 		public void setBar(final Integer bar) {
 			this.bar = bar;
 		}
@@ -84,7 +85,7 @@ public class JSONFixtureHelperTest {
 			return parent;
 		}
 
-		@JSONFixture(type = JSONSource.SourceType.FILE, value = "src/test/resources/JSONFixtureHelper.MyBean.json")
+		@Fixture(type = NativeSourceType.File, value = "src/test/resources/JSONFixtureHelper.MyBean.json")
 		public void setParent(final MyBean parent) {
 			this.parent = parent;
 		}
@@ -98,7 +99,7 @@ public class JSONFixtureHelperTest {
 			return foo;
 		}
 
-		@JSONFixture(value = "foo")
+		@Fixture(value = "foo")
 		public void setFoo(final String value, final boolean oopsie) {
 			foo = value;
 		}
@@ -112,7 +113,7 @@ public class JSONFixtureHelperTest {
 			return foo;
 		}
 
-		@JSONFixture(value = "1234")
+		@Fixture(value = "1234")
 		public void setFoo(final String value) {
 			foo = value;
 		}
@@ -126,7 +127,7 @@ public class JSONFixtureHelperTest {
 			return foo;
 		}
 
-		@JSONFixture(value = "1234")
+		@Fixture(value = "1234")
 		public BadBean3 setFoo(final String value) {
 			foo = value;
 			return this;

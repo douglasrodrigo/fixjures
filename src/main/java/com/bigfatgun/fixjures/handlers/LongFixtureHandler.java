@@ -15,8 +15,6 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import javax.annotation.Nullable;
-
 /**
  * Handles {@code Long}s.
  *
@@ -43,7 +41,7 @@ final class LongFixtureHandler extends NumberFixtureHandler<Long> {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Long apply(@Nullable final Number number) {
+	public Long apply(final HandlerHelper helper, final Number number) {
 		return number.longValue();
 	}
 }

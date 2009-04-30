@@ -15,9 +15,6 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import javax.annotation.Nullable;
-
-
 /**
  * Handles {@code Byte}s.
  *
@@ -44,7 +41,7 @@ final class ByteFixtureHandler extends NumberFixtureHandler<Byte> {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Byte apply(@Nullable final Number number) {
+	public Byte apply(final HandlerHelper helper, final Number number) {
 		return number.byteValue();
 	}
 }

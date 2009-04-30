@@ -15,8 +15,6 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.google.common.base.Function;
-
 /**
  * Handles conversion of source data to destination data.
  *
@@ -24,7 +22,7 @@ import com.google.common.base.Function;
  * @param <R> return type
  * @author Steve Reed
  */
-public interface FixtureHandler<S,R> extends Function<S,R> {
+public interface FixtureHandler<S,R> {
 
 	/**
 	 * Evaluates a source object and desired type, returning true if the object can be passed to
@@ -47,4 +45,13 @@ public interface FixtureHandler<S,R> extends Function<S,R> {
 	 * @return the type of object required by this handler
 	 */
 	Class<S> getSourceType();
+
+	/**
+	 * Convers the source object to the return type object.
+	 *
+	 * @param helper fixture handler helper
+	 * @param s source object
+	 * @return return object
+	 */
+   R apply(HandlerHelper helper, S s);
 }

@@ -16,7 +16,6 @@
 package com.bigfatgun.fixjures.handlers;
 
 import java.math.BigDecimal;
-import javax.annotation.Nullable;
 
 /**
  * Created by IntelliJ IDEA.
@@ -35,7 +34,7 @@ class BigDecimalFixtureHandler extends AbstractFixtureHandler<Number, BigDecimal
 		return Number.class;
 	}
 
-	public BigDecimal apply(@Nullable final Number number) {
+	public BigDecimal apply(final HandlerHelper helper, final Number number) {
 		return BigDecimal.valueOf(number.doubleValue());
 	}
 }

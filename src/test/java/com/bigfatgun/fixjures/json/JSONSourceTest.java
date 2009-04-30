@@ -6,11 +6,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.Nullable;
 
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.handlers.AbstractFixtureHandler;
+import com.bigfatgun.fixjures.handlers.HandlerHelper;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
@@ -140,7 +140,7 @@ public class JSONSourceTest {
 				return String.class;
 			}
 
-			public Object apply(@Nullable final Object o) {
+			public Object apply(final HandlerHelper helper, final Object o) {
 				return 1;
 			}
 		}).create().getStr();

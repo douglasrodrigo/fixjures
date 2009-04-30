@@ -16,32 +16,13 @@
 package com.bigfatgun.fixjures.handlers;
 
 /**
- * Handles {@code Short}s.
- *
- * @author Steve Reed
+ * Created by IntelliJ IDEA.
+ * User: steve
+ * Date: Apr 20, 2009
+ * Time: 8:38:42 PM
+ * To change this template use File | Settings | File Templates.
  */
-final class ShortFixtureHandler extends NumberFixtureHandler<Short> {
+public interface HandlerHelper {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected Class<Short> getPrimitiveType() {
-		return Short.TYPE;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Class<Short> getReturnType() {
-		return Short.class;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public Short apply(final HandlerHelper helper, final Number number) {
-		return number.shortValue();
-	}
+	<S, R> FixtureHandler<S, R> findHandler(S src, final Class<R> type);
 }

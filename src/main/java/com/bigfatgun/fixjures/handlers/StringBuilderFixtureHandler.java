@@ -15,8 +15,6 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import javax.annotation.Nullable;
-
 /**
  * Converts a {@code String} to a {@code StringBuilder}.
  *
@@ -46,7 +44,7 @@ final class StringBuilderFixtureHandler extends AbstractFixtureHandler<CharSeque
 	 * <p>
 	 * {@inheritDoc}
 	 */
-	public StringBuilder apply(@Nullable final CharSequence s) {
+	public StringBuilder apply(final HandlerHelper helper, final CharSequence s) {
 		return new StringBuilder(s);
 	}
 }

@@ -1,7 +1,5 @@
 package com.bigfatgun.fixjures.handlers;
 
-import javax.annotation.Nullable;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import org.junit.Test;
@@ -23,7 +21,7 @@ public class NumberFixtureHandlerTest {
 				return null;  //To change body of implemented methods use File | Settings | File Templates.
 			}
 
-			public Number apply(@Nullable final Number o) {
+			public Number apply(final HandlerHelper helper, final Number o) {
 				return null;  //To change body of implemented methods use File | Settings | File Templates.
 			}
 		};
@@ -37,8 +35,8 @@ public class NumberFixtureHandlerTest {
 		assertSame(Byte.class, handler.getReturnType());
 		assertSame(Number.class, handler.getSourceType());
 		for (long i = -100; i < 100; i++) {
-			assertEquals((byte) i, handler.apply(i));
-			assertEquals((byte) i, handler.apply(i));
+			assertEquals((byte) i, handler.apply(null, i));
+			assertEquals((byte) i, handler.apply(null, i));
 		}
 	}
 
@@ -49,8 +47,8 @@ public class NumberFixtureHandlerTest {
 		assertSame(Short.class, handler.getReturnType());
 		assertSame(Number.class, handler.getSourceType());
 		for (long i = -100; i < 100; i++) {
-			assertEquals((short) i, handler.apply(i));
-			assertEquals((short) i, handler.apply(i));
+			assertEquals((short) i, handler.apply(null, i));
+			assertEquals((short) i, handler.apply(null, i));
 		}
 	}
 
@@ -61,8 +59,8 @@ public class NumberFixtureHandlerTest {
 		assertSame(Integer.class, handler.getReturnType());
 		assertSame(Number.class, handler.getSourceType());
 		for (long i = -100; i < 100; i++) {
-			assertEquals((int) i, handler.apply(i));
-			assertEquals((int) i, handler.apply(i));
+			assertEquals((int) i, handler.apply(null, i));
+			assertEquals((int) i, handler.apply(null, i));
 		}
 	}
 
@@ -73,8 +71,8 @@ public class NumberFixtureHandlerTest {
 		assertSame(Long.class, handler.getReturnType());
 		assertSame(Number.class, handler.getSourceType());
 		for (long i = -100; i < 100; i++) {
-			assertEquals(i, handler.apply(i));
-			assertEquals(i, handler.apply(i));
+			assertEquals(i, handler.apply(null, i));
+			assertEquals(i, handler.apply(null, i));
 		}
 	}
 
@@ -85,8 +83,8 @@ public class NumberFixtureHandlerTest {
 		assertSame(Float.class, handler.getReturnType());
 		assertSame(Number.class, handler.getSourceType());
 		for (long i = -100; i < 100; i++) {
-			assertEquals((float) i, handler.apply(i));
-			assertEquals((float) i, handler.apply(i));
+			assertEquals((float) i, handler.apply(null, i));
+			assertEquals((float) i, handler.apply(null, i));
 		}
 	}
 
@@ -97,7 +95,7 @@ public class NumberFixtureHandlerTest {
 		assertSame(Double.class, handler.getReturnType());
 		assertSame(Number.class, handler.getSourceType());
 		for (long i = -100; i < 100; i++) {
-			assertEquals((double) i, handler.apply(i));
+			assertEquals((double) i, handler.apply(null, i));
 		}
 	}
 }

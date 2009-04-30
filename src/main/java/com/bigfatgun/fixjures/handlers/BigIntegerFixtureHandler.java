@@ -16,7 +16,6 @@
 package com.bigfatgun.fixjures.handlers;
 
 import java.math.BigInteger;
-import javax.annotation.Nullable;
 
 /**
  * Created by IntelliJ IDEA.
@@ -35,7 +34,7 @@ class BigIntegerFixtureHandler extends AbstractFixtureHandler<Number,BigInteger>
 		return Number.class;
 	}
 
-	public BigInteger apply(@Nullable final Number number) {
+	public BigInteger apply(final HandlerHelper helper, final Number number) {
 		return BigInteger.valueOf(number.longValue());
 	}
 }

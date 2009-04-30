@@ -42,4 +42,7 @@ public abstract class AbstractFixtureHandler<S,R> implements FixtureHandler<S,R>
 				  && (obj == null || getSourceType().isAssignableFrom(obj.getClass()));
 	}
 
+	protected final <K, V> V help(final HandlerHelper helper, final K k, final Class<V> type) {
+		return helper.findHandler(k, type).apply(helper, k);
+	}
 }

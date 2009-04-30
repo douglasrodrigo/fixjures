@@ -36,8 +36,8 @@
     <ciManagement />
     <mailingLists />
     <scm>
-        <connection>scm:svn:http://fixjures.googlecode.com/svn/branches/1.0-j5</connection>
-        <developerConnection>scm:svn:https://fixjures.googlecode.com/svn/branches/1.0-j5</developerConnection>
+        <connection>scm:svn:http://fixjures.googlecode.com/svn/trunk</connection>
+        <developerConnection>scm:svn:https://fixjures.googlecode.com/svn/trunk</developerConnection>
         <url>http://code.google.com/p/fixjures/source/browse/</url>
     </scm>
     <prerequisites />
@@ -147,6 +147,17 @@
                         pageTracker._trackPageview();
                         } catch(err) {}&lt;/script&gt;
                     </footer>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <!--<version>2.3</version>-->
+                <configuration>
+                    <!--<linkXref>true</linkXref>-->
+                    <sourceEncoding>utf-8</sourceEncoding>
+                    <minimumTokens>100</minimumTokens>
+                    <targetJdk>1.6</targetJdk>
                 </configuration>
             </plugin>
         </plugins>

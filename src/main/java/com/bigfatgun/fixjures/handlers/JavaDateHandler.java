@@ -18,28 +18,34 @@ package com.bigfatgun.fixjures.handlers;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
-import javax.annotation.Nullable;
 
 import com.bigfatgun.fixjures.FixtureException;
 
 /**
- * Created by IntelliJ IDEA.
- * User: steve
- * Date: Apr 11, 2009
- * Time: 9:20:47 PM
- * To change this template use File | Settings | File Templates.
+ * Converts character sequences into {@code java.util.Date}s.
+ *
+ * @author Steve Reed
  */
 class JavaDateHandler extends AbstractFixtureHandler<CharSequence, Date> {
 
+	/**
+	 * @return {@code java.util.Date.class}
+	 */
 	public Class<Date> getReturnType() {
 		return Date.class;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public Class<CharSequence> getSourceType() {
 		return CharSequence.class;
 	}
 
-	public Date apply(@Nullable final CharSequence charSequence) {
+	/**
+	 * {@inheritDoc}
+	 */
+	public Date apply(final HandlerHelper helper, final CharSequence charSequence) {
 		try {
 			return DateFormat.getDateTimeInstance().parse(charSequence.toString());
 		} catch (ParseException e) {
