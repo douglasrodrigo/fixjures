@@ -64,6 +64,13 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+	<distributionManagement>
+		<repository>
+			<id>local.repo</id>
+			<name>file repository to svn</name>
+			<url>file://${basedir}/../repo</url>
+		</repository>
+	</distributionManagement>
     <build>
         <plugins>
             <plugin>
