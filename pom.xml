@@ -103,6 +103,24 @@
 					<showDeprecation>true</showDeprecation>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>com.atlassian.maven.plugins</groupId>
+				<artifactId>maven-clover2-plugin</artifactId>
+				<configuration>
+					<jdk>1.6</jdk>
+					<targetPercentage>80%</targetPercentage>
+				</configuration>
+				<executions>
+					<execution>
+						<id>verify</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>instrument</goal>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<reporting>
