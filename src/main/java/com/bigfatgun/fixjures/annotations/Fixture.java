@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * @author Steve Reed
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = { ElementType.FIELD, ElementType.METHOD })
+@Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
 public @interface Fixture {
 
 	/**
