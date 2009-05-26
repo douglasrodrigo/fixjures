@@ -76,6 +76,7 @@
 	<distributionManagement>
 		<repository>
 			<id>local.repo</id>
+			<uniqueVersion>false</uniqueVersion>
 			<name>file repository to svn</name>
 			<url>file://${basedir}/../repo</url>
 		</repository>
@@ -115,6 +116,7 @@
 			<plugin>
 				<groupId>com.atlassian.maven.plugins</groupId>
 				<artifactId>maven-clover2-plugin</artifactId>
+				<version>2.5.0</version>
 				<configuration>
 					<jdk>1.6</jdk>
 					<targetPercentage>80%</targetPercentage>
