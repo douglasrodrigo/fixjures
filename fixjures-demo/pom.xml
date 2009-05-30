@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.bigfatgun</groupId>
+		<artifactId>fixjures-project</artifactId>
+		<version>1.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>fixjures-demo</artifactId>
+	<packaging>jar</packaging>
+	<name>fixjures-demo</name>
+	<description>Demo project that uses fixjures.</description>
+	<dependencies>
+		<dependency>
+			<groupId>com.bigfatgun</groupId>
+			<artifactId>fixjures</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.bigfatgun</groupId>
+			<artifactId>fixjures-junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.bigfatgun</groupId>
+			<artifactId>fixjures-guice</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>
