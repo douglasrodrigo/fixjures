@@ -3,12 +3,14 @@ package com.bigfatgun.fixjures.sample;
 import javax.annotation.Nullable;
 
 import com.bigfatgun.fixjures.annotations.Fixture;
-import com.bigfatgun.fixjures.annotations.NativeSourceType;
+import static com.bigfatgun.fixjures.annotations.NativeSourceType.Literal;
+import static com.bigfatgun.fixjures.annotations.NativeSourceType.Resource;
 import com.bigfatgun.fixjures.guice.GuiceFixtureSuite;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -27,8 +29,11 @@ public class SampleTest {
 		}));
 	}
 
-	@Fixture(type = NativeSourceType.Resource, value = "fakeLeague.json")
+	@Fixture(type = Resource, value = "fakeLeague.json")
 	private League league;
+
+	@Fixture(type = Literal, value = "{ name : 'MFL' }")
+	private League other;
 
 	@Test
 	public void passTheLeagueAround() {
@@ -36,5 +41,12 @@ public class SampleTest {
 		assertNotNull(league);
 		log(league);
 		assertTrue(new Sample().containsFavoriteTeam(league));
+	}
+
+	@Test
+	public void thatOtherLeague() {
+		// not that this is the type of test you'd use with fixjures...
+		// this is just to illustrate the most terse usage
+		assertEquals("MFL", other.getName());
 	}
 }
