@@ -103,6 +103,10 @@
 			<name>repository to svn</name>
 			<url>svn:https://fixjures.googlecode.com/svn/repo/</url>
 		</repository>
+		<site>
+			<id>bigfatgun.com</id>
+			<url>scp://fixjures.bigfatgun.com/home/rthsmshr/fixjures.bigfatgun.com/site/</url>
+		</site>
 	</distributionManagement>
 	<repositories>
 		<repository>

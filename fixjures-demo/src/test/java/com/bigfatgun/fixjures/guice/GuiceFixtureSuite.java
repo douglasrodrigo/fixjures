@@ -5,6 +5,7 @@ import com.google.inject.Injector;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 
+// TODO : get this moved into either the junit or guice sub-module
 public class GuiceFixtureSuite extends BlockJUnit4ClassRunner {
 
 	private static final Injector INJ = Guice.createInjector(new FixtureModule());
