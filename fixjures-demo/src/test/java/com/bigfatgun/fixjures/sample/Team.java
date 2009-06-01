@@ -7,4 +7,6 @@ public interface Team {
 	String getName();
 
 	Set<Player> getPlayers();
+
+	League getLeague();
 }

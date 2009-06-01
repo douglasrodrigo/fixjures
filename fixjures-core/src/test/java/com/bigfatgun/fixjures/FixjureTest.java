@@ -171,11 +171,11 @@ public class FixjureTest {
 
 	@Test
 	public void inMemoryStrategy() {
-		Map<Class<?>, Map<String, byte[]>> mem = Maps.newHashMap();
-		mem.put(String.class, ImmutableMap.of("foo", "foo".getBytes(), "bar", "bar".getBytes()));
-		mem.put(Integer.class, ImmutableMap.of("one", "1".getBytes(), "two", "2".getBytes()));
-		mem.put(Map.class, ImmutableMap.of("map", "{ one : 1, two : 2 }".getBytes()));
-		mem.put(NyTimes.class, ImmutableMap.of("nyt", "{ version: '2.1' }".getBytes()));
+		Map<Class<?>, Map<String, String>> mem = Maps.newHashMap();
+		mem.put(String.class, ImmutableMap.of("foo", "foo", "bar", "bar"));
+		mem.put(Integer.class, ImmutableMap.of("one", "1", "two", "2"));
+		mem.put(Map.class, ImmutableMap.of("map", "{ one : 1, two : 2 }"));
+		mem.put(NyTimes.class, ImmutableMap.of("nyt", "{ version: '2.1' }"));
 		FixjureFactory fact = FixjureFactory.newJsonFactory(Strategies.newInMemoryStrategy(mem));
 		assertEquals("foo", fact.createFixture(String.class, "foo"));
 		assertEquals("bar", fact.createFixture(String.class, "bar"));

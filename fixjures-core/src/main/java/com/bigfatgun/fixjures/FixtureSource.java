@@ -28,6 +28,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 import com.bigfatgun.fixjures.handlers.ChainedFixtureHandler;
 import com.bigfatgun.fixjures.handlers.FixtureHandler;
@@ -131,6 +132,12 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	private final Set<? super Fixjure.Option> options;
 
 	/**
+	 * Identity resolver.
+	 */
+	@Nullable
+	private IdentityResolver identityResolver;
+
+	/**
 	 * Initializes the source.
 	 *
 	 * @param source source data
@@ -152,6 +159,9 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * @param opt option
 	 */
 	public void addOption(final Fixjure.Option opt) {
+		if (opt == null) {
+			throw new NullPointerException("opt");
+		}
 		options.add(opt);
 	}
 
@@ -173,6 +183,42 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * @return new fixture object
 	 */
 	public abstract <T> T createFixture(final Class<T> type, final ImmutableList<Class<?>> typeParams);
+
+	/**
+	 * Package-local method to configure the identity resolver. Used when data refers to related objects by
+	 * id.
+	 *
+	 * @param resolver identity resolver
+	 */
+	void setIdentityResolver(@Nullable final IdentityResolver resolver) {
+		this.identityResolver = resolver;
+	}
+
+	/**
+	 * If the identityResolver is non null, it is asked if the given value is a valid identity.
+	 *
+	 * @param type required object type
+	 * @param rawIdentityValue the raw identity value
+	 * @return true if identityResolver is not null and value seems to be a valid identifier
+	 */
+	private boolean canHandleIdentity(final Class<?> type, @Nullable final Object rawIdentityValue) {
+		return identityResolver != null && rawIdentityValue != null && identityResolver.canHandleIdentity(type, rawIdentityValue);
+	}
+
+	/**
+	 * Uses the identityResolver to resolve an id.
+	 * @param type required object type
+	 * @param rawIdentityValue raw id value
+	 * @return object with id, null if none found
+	 */
+	private Object resolveIdentity(final Class<?> type, final Object rawIdentityValue) {
+		if (canHandleIdentity(type, rawIdentityValue)) {
+			assert identityResolver != null : "Don't attempt to resolve an id if the resolver is null!";
+			return identityResolver.resolve(type, identityResolver.coerceIdentity(rawIdentityValue));
+		} else {
+			return null;
+		}
+	}
 
 	/**
 	 * Exposes map of desired type handlers to subclasses.
@@ -226,16 +272,17 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * @return proxied object
 	 */
 	protected final Object findValue(final Type type, final Type typeVariable, final Object value, final String name) {
+		final Class<Class> proto = Class.class;
 		final Class<?> getterClass;
 		final Type[] typeParams;
 		if (type instanceof ParameterizedType) {
-			getterClass = (Class<?>) ((ParameterizedType) type).getRawType();
+			getterClass = proto.cast(((ParameterizedType) type).getRawType());
 			typeParams = ((ParameterizedType) type).getActualTypeArguments();
 		} else if (type instanceof TypeVariable && typeVariable != null) {
-			getterClass = (Class) typeVariable;
+			getterClass = proto.cast(typeVariable);
 			typeParams = new Type[0];
 		} else {
-			getterClass = (Class) type;
+			getterClass = proto.cast(type);
 			typeParams = new Type[0];
 		}
 		return findValue(getterClass, ImmutableList.of(typeParams), value, name);
@@ -244,7 +291,6 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	/**
 	 * {@inheritDoc}
 	 */
-	@SuppressWarnings({"unchecked"})
 	public <S, R> FixtureHandler<S, R> findHandler(final S src, final Class<R> type) {
 		for (Class<?> cls = type; cls != null; cls = cls.getSuperclass()) {
 			for (final FixtureHandler handler : getRequiredTypeHandlers().get(cls)) {
@@ -272,7 +318,6 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * @param name object name
 	 * @return proxied object
 	 */
-	@SuppressWarnings({"unchecked"})
 	protected final Object findValue(final Class type, final ImmutableList<? extends Type> typeParams, final Object value, final String name) {
 		final FixtureHandler handler = findHandler(value, type);
 		if (handler == null) {
@@ -283,7 +328,8 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	}
 
 	/**
-	 * Unimplements source value conversion handler method. Subclasses should override this to catch
+	 * Source value conversion handler method that attempts to resolve an object by identity only.
+	 * Subclasses should override this (first invoking super.handle(...)) to catch
 	 * any source-specific types and perform their own conversion there.
 	 *
 	 * @param requiredType required type
@@ -293,7 +339,7 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * @return value
 	 */
 	protected Object handle(final Class<?> requiredType, final ImmutableList<? extends Type> typeParams, final Object sourceValue, final String name) {
-		return null;
+		return resolveIdentity(requiredType, sourceValue);
 	}
 
 	/**

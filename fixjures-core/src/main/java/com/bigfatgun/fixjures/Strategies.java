@@ -105,8 +105,8 @@ public final class Strategies {
 	 * @param mem map that holds fixture data in memory
 	 * @return new source strategy
 	 */
-	public static SourceStrategy newInMemoryStrategy(final Map<Class<?>, Map<String, byte[]>> mem) {
-		final ImmutableMap<Class<?>, Map<String, byte[]>> copy = ImmutableMap.copyOf(mem);
+	public static SourceStrategy newInMemoryStrategy(final Map<Class<?>, Map<String, String>> mem) {
+		final ImmutableMap<Class<?>, Map<String, String>> copy = ImmutableMap.copyOf(mem);
 		return new SourceStrategy() {
 			public ReadableByteChannel findStream(final Class<?> type, final String name) throws IOException {
 				assert type != null : "Type cannot be null.";
@@ -117,7 +117,7 @@ public final class Strategies {
 				} else if (!copy.get(type).containsKey(name)) {
 					throw new IOException("Data for " + type.getName() + " named " + name + " not found.");
 				} else {
-					final byte[] bytes = copy.get(type).get(name);
+					final byte[] bytes = copy.get(type).get(name).getBytes();
 					final ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
 					return Channels.newChannel(bais);
 				}

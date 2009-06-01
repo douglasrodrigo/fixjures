@@ -40,7 +40,7 @@ import com.google.common.collect.Sets;
  *
  * @author Steve Reed
  */
-public final class FixjureFactory {
+public final class FixjureFactory implements IdentityResolver {
 
 	/**
 	 * Creates a new factory that will use the given source factory.
@@ -140,23 +140,65 @@ public final class FixjureFactory {
 				  .expiration(10, TimeUnit.MINUTES)
 				  .makeComputingMap(new Function<Class<?>, ConcurrentMap<String, Object>>() {
 			public ConcurrentMap<String, Object> apply(@Nullable final Class<?> type) {
-				assert type != null : "Type cannot be null.";
+				if (type == null) {
+					throw new NullPointerException("type");
+				}
 				return new MapMaker()
 						  .expiration(1, TimeUnit.MINUTES)
 						  .weakValues()
 						  .makeComputingMap(new Function<String, Object>() {
 							  public Object apply(@Nullable final String name) {
-								  assert name != null : "Name cannot be null.";
+								  if (name == null) {
+									  throw new NullPointerException("name");
+								  }
 
 								  Fixjure.SourcedFixtureBuilder<?> fixtureBuilder = Fixjure.of(type).from(srcFactory.newInstance(type, name)).withOptions(ImmutableSet.copyOf(options));
 								  for (final FixtureHandler<?, ?> handler : handlers) {
 									  fixtureBuilder = fixtureBuilder.with(handler);
 								  }
+								  fixtureBuilder = fixtureBuilder.resolveIdsWith(FixjureFactory.this);
 								  return fixtureBuilder.create();
 							  }
 						  });
 			}
 		});
+	}
+
+	/**
+	 * Returns true if the raw value is a string.
+	 * <p>
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean canHandleIdentity(final Class<?> requiredType, @Nullable final Object rawIdentityValue) {
+		return rawIdentityValue instanceof String;
+	}
+
+	/**
+	 * Converts the raw identity value into a string.
+	 * @param rawIdentityValue raw identity value
+	 * @return identity as string
+	 */
+	@Override
+	public String coerceIdentity(final Object rawIdentityValue) {
+		return (String) rawIdentityValue;
+	}
+
+	/**
+	 * Resolves the given object by type and name.
+	 *
+	 * @param requiredType object type
+	 * @param id object name
+	 * @return object of type identified by id, null if not found
+	 */
+	@Override
+	public Object resolve(final Class<?> requiredType, final String id) {
+		try {
+			return createFixture(requiredType, id);
+		} catch (FixtureException e) {
+			// TODO : test option to see if this should be thrown up the stack
+			return null;
+		}
 	}
 
 	/**
@@ -167,6 +209,9 @@ public final class FixjureFactory {
 	 * @return this
 	 */
 	public FixjureFactory enableOption(final Fixjure.Option option) {
+		if (option == null) {
+			throw new NullPointerException("option");
+		}
 		options.add(option);
 		return this;
 	}
@@ -177,6 +222,9 @@ public final class FixjureFactory {
 	 * @return this
 	 */
 	public FixjureFactory disableOption(final Fixjure.Option option) {
+		if (option == null) {
+			throw new NullPointerException("option");
+		}
 		options.remove(option);
 		return this;
 	}
@@ -188,6 +236,9 @@ public final class FixjureFactory {
 	 * @return this
 	 */
 	public FixjureFactory addFixtureHandler(final FixtureHandler<?, ?> handler) {
+		if (handler == null) {
+			throw new NullPointerException("handler");
+		}
 		handlers.add(handler);
 		return this;
 	}
@@ -199,6 +250,9 @@ public final class FixjureFactory {
 	 * @return this
 	 */
 	public FixjureFactory removeFixtureHandler(final FixtureHandler<?, ?> handler) {
+		if (handler == null) {
+			throw new NullPointerException("handler");
+		}
 		handlers.remove(handler);
 		return this;
 	}

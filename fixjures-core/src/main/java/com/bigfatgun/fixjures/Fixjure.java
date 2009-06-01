@@ -214,7 +214,6 @@ public class Fixjure {
 		 * @param cls class
 		 * @param params type params
 		 */
-		@SuppressWarnings({"unchecked"})
 		FixtureBuilder(final Class<?> cls, final ImmutableList<Class<?>> params) {
 			clazz = (Class<T>) cls;
 			typeParams = params;
@@ -231,6 +230,12 @@ public class Fixjure {
 			return new SourcedFixtureBuilder<T>(this, source);
 		}
 
+		/**
+		 * Wraps this in a stream fixture builder.
+		 *
+		 * @param stream stream to load from
+		 * @return new builder
+		 */
 		public final StreamedFixtureBuilder<T> fromStream(final FixtureStream stream) {
 			return new StreamedFixtureBuilder<T>(this, stream.asSourceStream());
 		}
@@ -385,6 +390,17 @@ public class Fixjure {
 			for (final Option opt : opts) {
 				this.fixtureSource.addOption(opt);
 			}
+			return this;
+		}
+
+		/**
+		 * Sets the identity resolver of the fixture source.
+		 *
+		 * @param identityResolver identity resolver, may be null to clear an existing resolver
+		 * @return fixture builder
+		 */
+		public SourcedFixtureBuilder<T> resolveIdsWith(final IdentityResolver identityResolver) {
+			this.fixtureSource.setIdentityResolver(identityResolver);
 			return this;
 		}
 	}

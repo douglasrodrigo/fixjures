@@ -199,6 +199,11 @@ public final class JSONSource extends FixtureSource {
 	 */
 	@Override
 	protected Object handle(final Class<?> requiredType, final ImmutableList<? extends Type> typeParams, final Object sourceValue, final String name) {
+		final Object fromSuper = super.handle(requiredType, typeParams, sourceValue, name);
+		if (fromSuper != null) {
+			return fromSuper;
+		}
+		
 		try {
 			if (JSONObject.class.isAssignableFrom(sourceValue.getClass())) {
 				final JSONObject jsonObj = (JSONObject) sourceValue;
@@ -226,8 +231,8 @@ public final class JSONSource extends FixtureSource {
 				} else {
 					final Multiset<Object> source = LinkedHashMultiset.create();
 					final Type collectionType = typeParams.size() > 0
-						? typeParams.get(0)
-						: Object.class;
+							  ? typeParams.get(0)
+							  : Object.class;
 
 					for (int i = 0; i < array.length(); i++) {
 						source.add(findValue(collectionType, null, array.get(i), name + "[" + i + "]"));
