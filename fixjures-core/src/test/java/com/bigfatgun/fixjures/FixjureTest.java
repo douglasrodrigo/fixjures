@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import static com.bigfatgun.fixjures.Fixjure.Option.SKIP_UNMAPPABLE;
 import com.bigfatgun.fixjures.json.JSONSource;
 import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
@@ -30,6 +32,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 public class FixjureTest {
@@ -236,5 +239,38 @@ public class FixjureTest {
 		assertEquals(3, cal.get(Calendar.MONTH));
 		assertEquals(11, cal.get(Calendar.DAY_OF_MONTH));
 		assertEquals(2009, cal.get(Calendar.YEAR));
+	}
+
+	private static interface Thing {
+		Thing getNext();
+	}
+
+	@Test
+	public void anonymousIdentityResolver() {
+		final Thing expected = new Thing() {
+			@Override
+			public Thing getNext() {
+				return null;
+			}
+		};
+		Thing t = Fixjure.of(Thing.class).from(JSONSource.newJsonString("{next:'_'}")).resolveIdsWith(new IdentityResolver() {
+			@Override
+			public boolean canHandleIdentity(final Class<?> requiredType, @Nullable final Object rawIdentityValue) {
+				return "_".equals(rawIdentityValue);
+			}
+
+			@Override
+			public String coerceIdentity(@Nullable final Object rawIdentityValue) {
+				return (String) rawIdentityValue;
+			}
+
+			@Override
+			public Object resolve(final Class<?> requiredType, final String id) {
+				return ("_".equals(id)) ? expected : null;
+			}
+		}).create();
+		assertNotNull(t);
+		assertSame(expected, t.getNext());
+		assertNull(t.getNext().getNext());
 	}
 }
