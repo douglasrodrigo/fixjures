@@ -29,5 +29,5 @@ public interface IdentityResolver {
 	 * @param id object id
 	 * @return object; if not found, null is returned
 	 */
-	Object resolve(Class<?> requiredType, String id);
+	<T> T resolve(Class<T> requiredType, String id);
 }

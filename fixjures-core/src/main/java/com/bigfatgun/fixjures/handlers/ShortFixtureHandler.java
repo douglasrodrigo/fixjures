@@ -15,6 +15,9 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ValueProviders;
+
 /**
  * Handles {@code Short}s.
  *
@@ -41,7 +44,7 @@ final class ShortFixtureHandler extends NumberFixtureHandler<Short> {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Short apply(final HandlerHelper helper, final Number number) {
-		return number.shortValue();
+	public ValueProvider<Short> apply(final HandlerHelper helper, final Number number) {
+		return ValueProviders.of(number.shortValue());
 	}
 }

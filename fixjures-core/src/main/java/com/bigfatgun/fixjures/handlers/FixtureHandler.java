@@ -15,6 +15,8 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.bigfatgun.fixjures.ValueProvider;
+
 /**
  * Handles conversion of source data to destination data.
  *
@@ -47,11 +49,11 @@ public interface FixtureHandler<S,R> {
 	Class<S> getSourceType();
 
 	/**
-	 * Convers the source object to the return type object.
+	 * Converts the source object to the return type object.
 	 *
 	 * @param helper fixture handler helper
 	 * @param s source object
-	 * @return return object
+	 * @return return object producer
 	 */
-   R apply(HandlerHelper helper, S s);
+   ValueProvider<? extends R> apply(HandlerHelper helper, S s);
 }

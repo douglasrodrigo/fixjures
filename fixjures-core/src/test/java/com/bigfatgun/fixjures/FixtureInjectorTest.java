@@ -25,6 +25,7 @@ public class FixtureInjectorTest {
 		assertEquals(4321, bean.getParent().getBar().intValue());
 		assertEquals(1234, bean.getBar().intValue());
 		assertEquals("value of foo", bean.getFoo());
+		assertEquals("firstsecond", bean.getFirstAndSecond());
 		assertNotNull(bean.getParent().getParent());
 		assertNull(bean.getParent().getParent().getBar());
 		assertNull(bean.getParent().getParent().getParent());
@@ -39,7 +40,7 @@ public class FixtureInjectorTest {
 		assertNotNull(ctor.newInstance());
 	}
 
-	@Test
+	@Test(expected = FixtureException.class)
 	public void badMarkup1() throws Exception {
 		FixtureInjector.scan(new BadBean1());
 	}
@@ -49,7 +50,7 @@ public class FixtureInjectorTest {
 		FixtureInjector.scan(new BadBean2());
 	}
 
-	@Test
+	@Test(expected = FixtureException.class)
 	public void badMarkup3() throws Exception {
 		FixtureInjector.scan(new BadBean3());
 	}
@@ -61,6 +62,18 @@ public class FixtureInjectorTest {
 		private Integer bar;
 
 		private MyBean parent;
+
+		private String first, second;
+
+		public String getFirstAndSecond() {
+			return first + second;
+		}
+
+		public void setFirstAndSecond(@Fixture(value = "first") final String s1,
+												@Fixture(value = "second") final String s2) {
+			first = s1;
+			second = s2;
+		}
 
 		public String getFoo() {
 			return foo;

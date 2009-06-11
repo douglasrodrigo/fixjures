@@ -17,6 +17,7 @@ package com.bigfatgun.fixjures.proxy;
 
 import java.util.Map;
 
+import com.bigfatgun.fixjures.ValueProvider;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -32,7 +33,7 @@ abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 	private final Class<T> clazz;
 
 	/** Map of method name to stub. */
-	private final Map<String, Object> stubs;
+	private final Map<String, ValueProvider<?>> stubs;
 
 	/**
 	 * Constructor required to be invoked by subclasses in order to set up the class and stubs.
@@ -60,7 +61,7 @@ abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 	 * Returns an immutable map of getter name to value stub.
 	 * @return an immutable map of getter name to value stub
 	 */
-	protected final ImmutableMap<String, Object> getStubs() {
+	protected final ImmutableMap<String, ValueProvider<?>> getStubs() {
 		return ImmutableMap.copyOf(stubs);
 	}
 
@@ -70,7 +71,7 @@ abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 	 * @param methodName method name
 	 * @param valueStub method return value stub
 	 */
-	public final void addValueStub(final String methodName, final Object valueStub) {
+	public final void addValueStub(final String methodName, final ValueProvider<?> valueStub) {
 		stubs.put(methodName, valueStub);
 	}
 }

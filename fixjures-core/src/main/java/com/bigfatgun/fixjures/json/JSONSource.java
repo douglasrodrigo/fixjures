@@ -35,6 +35,9 @@ import java.util.Set;
 import static com.bigfatgun.fixjures.Fixjure.Option.SKIP_UNMAPPABLE;
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureSource;
+import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ValueProviders;
+import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.proxy.ObjectProxy;
 import com.bigfatgun.fixjures.proxy.Proxies;
 import com.google.common.collect.ImmutableList;
@@ -58,16 +61,6 @@ import org.json.JSONObject;
  * @author Steve Reed
  */
 public final class JSONSource extends FixtureSource {
-
-	/**
-	 * An enumeration of source types.
-	 */
-	public static enum SourceType {
-		/** String literal. */
-		LITERAL,
-		/** File. */
-		FILE
-	}
 
 	public static FixtureSource newJsonStream(final ReadableByteChannel channel) {
 		return new JSONSource(channel);
@@ -180,7 +173,9 @@ public final class JSONSource extends FixtureSource {
 				}
 			}
 
-			return type.cast(findValue(type, typeParams, rawValue, "ROOT"));
+			final ValueProvider<?> provider = findValue(type, typeParams, rawValue, "ROOT");
+			final Object value = provider.get();
+			return (value == null) ? null : type.cast(value);
 		} catch (FixtureException e) {
 			throw e;
 		} catch (Exception e) {
@@ -198,12 +193,12 @@ public final class JSONSource extends FixtureSource {
 	 * @return converted value
 	 */
 	@Override
-	protected Object handle(final Class<?> requiredType, final ImmutableList<? extends Type> typeParams, final Object sourceValue, final String name) {
-		final Object fromSuper = super.handle(requiredType, typeParams, sourceValue, name);
+	protected ValueProvider<?> handle(final Class<?> requiredType, final ImmutableList<? extends Type> typeParams, final Object sourceValue, final String name) {
+		final ValueProvider<?> fromSuper = super.handle(requiredType, typeParams, sourceValue, name);
 		if (fromSuper != null) {
 			return fromSuper;
 		}
-		
+
 		try {
 			if (JSONObject.class.isAssignableFrom(sourceValue.getClass())) {
 				final JSONObject jsonObj = (JSONObject) sourceValue;
@@ -211,13 +206,15 @@ public final class JSONSource extends FixtureSource {
 					ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder();
 					for (final Iterator i = jsonObj.keys(); i.hasNext();) {
 						final Object lookupKey = i.next();
-						Object key = findValue(typeParams.size() > 0 ? typeParams.get(0) : Object.class, null, lookupKey, "key");
-						Object keyValue = findValue(typeParams.size() > 1 ? typeParams.get(1) : Object.class, null, jsonObj.get(String.valueOf(lookupKey)), "sourceValue");
-						builder = builder.put(key, keyValue);
+						Object key = findValue(typeParams.size() > 0 ? typeParams.get(0) : Object.class, null, lookupKey, "key").get();
+						Object keyValue = findValue(typeParams.size() > 1 ? typeParams.get(1) : Object.class, null, jsonObj.get(String.valueOf(lookupKey)), "sourceValue").get();
+						if (key != null && keyValue != null) {
+							builder = builder.put(key, keyValue);
+						}
 					}
-					return Maps.newHashMap(builder.build());
+					return ValueProviders.of(Maps.newHashMap(builder.build()));
 				} else {
-					return newConfiguredProxy(requiredType, typeParams, (JSONObject) sourceValue);
+					return ValueProviders.of(newConfiguredProxy(requiredType, typeParams, (JSONObject) sourceValue));
 				}
 			} else if (JSONArray.class.isAssignableFrom(sourceValue.getClass())) {
 				final JSONArray array = (JSONArray) sourceValue;
@@ -225,9 +222,9 @@ public final class JSONSource extends FixtureSource {
 					final Class<?> collectionType = requiredType.getComponentType();
 					final Object actualArray = Array.newInstance(collectionType, array.length());
 					for (int i = 0; i < array.length(); i++) {
-						Array.set(actualArray, i, findValue(collectionType, ImmutableList.<Type>of(), array.get(i), name + "[" + i + "]"));
+						Array.set(actualArray, i, findValue(collectionType, ImmutableList.<Type>of(), array.get(i), name + "[" + i + "]").get());
 					}
-					return actualArray;
+					return ValueProviders.of(actualArray);
 				} else {
 					final Multiset<Object> source = LinkedHashMultiset.create();
 					final Type collectionType = typeParams.size() > 0
@@ -235,21 +232,21 @@ public final class JSONSource extends FixtureSource {
 							  : Object.class;
 
 					for (int i = 0; i < array.length(); i++) {
-						source.add(findValue(collectionType, null, array.get(i), name + "[" + i + "]"));
+						source.add(findValue(collectionType, null, array.get(i), name + "[" + i + "]").get());
 					}
 
 					if (List.class.isAssignableFrom(requiredType)) {
-						return Lists.newArrayList(source);
+						return ValueProviders.of(Lists.newArrayList(source));
 					} else if (Set.class.isAssignableFrom(requiredType)) {
-						return Sets.newHashSet(source);
+						return ValueProviders.of(Sets.newHashSet(source));
 					} else if (Multiset.class.isAssignableFrom(requiredType)) {
-						return source;
+						return ValueProviders.of(source);
 					} else {
 						throw new FixtureException("Unhandled destination requiredType: " + requiredType);
 					}
 				}
 			} else if (Object.class.equals(requiredType)) {
-				return sourceValue;
+				return ValueProviders.of(sourceValue);
 			} else {
 				throw new FixtureException("Could not convert source value " + sourceValue + " to type " + requiredType);
 			}
@@ -268,12 +265,27 @@ public final class JSONSource extends FixtureSource {
 	 */
 	private <T> void configureProxy(final ObjectProxy<T> proxy, final ImmutableList<? extends Type> typeParams, final JSONObject obj) {
 		final Iterator objIterator = obj.keys();
-
+		// TODO : round here is where to test for lazy eval
 		for (int i = 0; objIterator.hasNext(); i++) {
 			final String key = objIterator.next().toString();
 			final Type type = (typeParams.size() <= i) ? null : typeParams.get(i);
 			try {
-				final Object stub = findValue(proxy.getType(), type, key, obj.get(key));
+				final ValueProvider<?> stub;
+				if (isOptionEnabled(Fixjure.Option.LAZY_REFERENCE_EVALUATION)) {
+					stub = new ValueProvider<Object>() {
+						@Override
+						public Object get() {
+							try {
+								return findValue(proxy.getType(), type, key, obj.get(key)).get();
+							} catch (JSONException e) {
+								throw new FixtureException(e);
+							}
+						}
+					};
+				} else {
+					stub = findValue(proxy.getType(), type, key, obj.get(key));
+				}
+
 				if (stub == null) {
 					if (isOptionEnabled(SKIP_UNMAPPABLE)) {
 						continue;
@@ -298,7 +310,7 @@ public final class JSONSource extends FixtureSource {
 	 * @param value json value
 	 * @return value stub
 	 */
-	private Object findValue(final Class parentCls, final Type probableType, final String keyName, final Object value) {
+	private ValueProvider<?> findValue(final Class parentCls, final Type probableType, final String keyName, final Object value) {
 		final String getterName = getterName(keyName);
 		final Method getter;
 		try {

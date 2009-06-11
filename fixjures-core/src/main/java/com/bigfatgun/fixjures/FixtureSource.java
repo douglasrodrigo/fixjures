@@ -211,10 +211,10 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * @param rawIdentityValue raw id value
 	 * @return object with id, null if none found
 	 */
-	private Object resolveIdentity(final Class<?> type, final Object rawIdentityValue) {
+	private ValueProvider<?> resolveIdentity(final Class<?> type, final Object rawIdentityValue) {
 		if (canHandleIdentity(type, rawIdentityValue)) {
 			assert identityResolver != null : "Don't attempt to resolve an id if the resolver is null!";
-			return identityResolver.resolve(type, identityResolver.coerceIdentity(rawIdentityValue));
+			return ValueProviders.ofIdentity(identityResolver, type, rawIdentityValue);
 		} else {
 			return null;
 		}
@@ -271,7 +271,7 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * @param name object name
 	 * @return proxied object
 	 */
-	protected final Object findValue(final Type type, final Type typeVariable, final Object value, final String name) {
+	protected final ValueProvider<?> findValue(final Type type, final Type typeVariable, final Object value, final String name) {
 		final Class<Class> proto = Class.class;
 		final Class<?> getterClass;
 		final Type[] typeParams;
@@ -318,7 +318,7 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * @param name object name
 	 * @return proxied object
 	 */
-	protected final Object findValue(final Class type, final ImmutableList<? extends Type> typeParams, final Object value, final String name) {
+	protected final ValueProvider<?> findValue(final Class type, final ImmutableList<? extends Type> typeParams, final Object value, final String name) {
 		final FixtureHandler handler = findHandler(value, type);
 		if (handler == null) {
 			return handle(type, typeParams, value, name);
@@ -338,7 +338,7 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * @param name value name, for logging
 	 * @return value
 	 */
-	protected Object handle(final Class<?> requiredType, final ImmutableList<? extends Type> typeParams, final Object sourceValue, final String name) {
+	protected ValueProvider<?> handle(final Class<?> requiredType, final ImmutableList<? extends Type> typeParams, final Object sourceValue, final String name) {
 		return resolveIdentity(requiredType, sourceValue);
 	}
 
@@ -399,8 +399,8 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 				return CharSequence.class;
 			}
 
-			public Number apply(final HandlerHelper helper, final CharSequence charSequence) {
-				return Double.parseDouble(charSequence.toString());
+			public ValueProvider<Double> apply(final HandlerHelper helper, final CharSequence charSequence) {
+				return ValueProviders.of(Double.parseDouble(charSequence.toString()));
 			}
 		};
 		installUniversalHandler(chainedHandler.link(byteHandler));

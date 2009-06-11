@@ -9,6 +9,8 @@ import java.util.Set;
 
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
+import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ValueProviders;
 import com.bigfatgun.fixjures.handlers.AbstractFixtureHandler;
 import com.bigfatgun.fixjures.handlers.HandlerHelper;
 import com.google.common.collect.ImmutableMultiset;
@@ -140,8 +142,8 @@ public class JSONSourceTest {
 				return String.class;
 			}
 
-			public Object apply(final HandlerHelper helper, final Object o) {
-				return 1;
+			public ValueProvider<Integer> apply(final HandlerHelper helper, final Object o) {
+				return ValueProviders.of(1);
 			}
 		}).create().getStr();
 	}

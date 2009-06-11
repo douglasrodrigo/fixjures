@@ -15,6 +15,9 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ValueProviders;
+
 /**
  * Handles integers.
  *
@@ -41,7 +44,7 @@ final class IntegerFixtureHandler extends NumberFixtureHandler<Integer> {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Integer apply(final HandlerHelper helper, final Number number) {
-		return number.intValue();
+	public ValueProvider<Integer> apply(final HandlerHelper helper, final Number number) {
+		return ValueProviders.of(number.intValue());
 	}
 }

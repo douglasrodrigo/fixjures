@@ -15,6 +15,9 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ValueProviders;
+
 /**
  * Handles {@code Float}s.
  *
@@ -41,7 +44,7 @@ final class FloatFixtureHandler extends NumberFixtureHandler<Float> {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Float apply(final HandlerHelper helper, final Number number) {
-		return number.floatValue();
+	public ValueProvider<Float> apply(final HandlerHelper helper, final Number number) {
+		return ValueProviders.of(number.floatValue());
 	}
 }

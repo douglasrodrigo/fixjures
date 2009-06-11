@@ -20,6 +20,8 @@ import java.text.ParseException;
 import java.util.Date;
 
 import com.bigfatgun.fixjures.FixtureException;
+import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ValueProviders;
 
 /**
  * Converts character sequences into {@code java.util.Date}s.
@@ -45,15 +47,15 @@ class JavaDateHandler extends AbstractFixtureHandler<CharSequence, Date> {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Date apply(final HandlerHelper helper, final CharSequence charSequence) {
+	public ValueProvider<Date> apply(final HandlerHelper helper, final CharSequence charSequence) {
 		try {
-			return DateFormat.getDateTimeInstance().parse(charSequence.toString());
+			return ValueProviders.of(DateFormat.getDateTimeInstance().parse(charSequence.toString()));
 		} catch (ParseException e) {
 			try {
-				return DateFormat.getDateInstance().parse(charSequence.toString());
+				return ValueProviders.of(DateFormat.getDateInstance().parse(charSequence.toString()));
 			} catch (ParseException e1) {
 				try {
-					return DateFormat.getTimeInstance().parse(charSequence.toString());
+					return ValueProviders.of(DateFormat.getTimeInstance().parse(charSequence.toString()));
 				} catch (ParseException e2) {
 					throw new FixtureException("Failed to parse date: " + charSequence);
 				}

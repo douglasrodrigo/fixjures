@@ -18,7 +18,7 @@ public class StringBuilderFixtureHandlerTest {
 
 	@Test
 	public void stringWorks() {
-		assertEquals(toString(), handler.apply(null, toString()).toString());
+		assertEquals(toString(), handler.apply(null, toString()).get().toString());
 	}
 
 	@Test

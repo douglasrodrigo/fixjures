@@ -15,6 +15,8 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.bigfatgun.fixjures.ValueProvider;
+
 /**
  * Fixture handler plugin which can intercept object deserialization and provide its
  * own behavior during fixture instantiation.
@@ -42,7 +44,7 @@ public abstract class AbstractFixtureHandler<S,R> implements FixtureHandler<S,R>
 				  && (obj == null || getSourceType().isAssignableFrom(obj.getClass()));
 	}
 
-	protected final <K, V> V help(final HandlerHelper helper, final K k, final Class<V> type) {
+	protected final <K, V> ValueProvider<? extends V> help(final HandlerHelper helper, final K k, final Class<V> type) {
 		return helper.findHandler(k, type).apply(helper, k);
 	}
 }

@@ -265,8 +265,8 @@ public class FixjureTest {
 			}
 
 			@Override
-			public Object resolve(final Class<?> requiredType, final String id) {
-				return ("_".equals(id)) ? expected : null;
+			public <T> T resolve(final Class<T> requiredType, final String id) {
+				return requiredType.cast(("_".equals(id)) ? expected : null);
 			}
 		}).create();
 		assertNotNull(t);

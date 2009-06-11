@@ -15,6 +15,8 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.bigfatgun.fixjures.ValueProvider;
+
 /**
  * Chained handler that can join two fixture handlers that have a return and source type
  * in common.
@@ -43,8 +45,8 @@ public abstract class ChainedFixtureHandler<S,I> extends AbstractFixtureHandler<
 				return ChainedFixtureHandler.this.getSourceType();
 			}
 
-			public O apply(final HandlerHelper helper, final S s) {
-				return handler.apply(helper, ChainedFixtureHandler.this.apply(helper, s));
+			public ValueProvider<? extends O> apply(final HandlerHelper helper, final S s) {
+				return handler.apply(helper, ChainedFixtureHandler.this.apply(helper, s).get());
 			}
 		};
 	}

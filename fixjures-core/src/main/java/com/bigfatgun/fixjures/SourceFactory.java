@@ -16,8 +16,7 @@
 package com.bigfatgun.fixjures;
 
 /**
- * Implemented by classes that can instantiate fixture sources
- * by class and object name.
+ * Implemented by classes that can instantiate fixture sources by id.
  *
  * @author Steve Reed
  */
@@ -25,11 +24,11 @@ public interface SourceFactory {
 
 	/**
 	 * Creates a new instance of a fixture source, ready to create a fixture
-	 * of the given type.
+	 * of the given id.
 	 *
-	 * @param type fixture object type
-	 * @param name fixture object name or identifier
+	 * @param fixtureType fixture object type
+	 * @param fixtureId fixture object name or identifier
 	 * @return fixture source
 	 */
-	FixtureSource newInstance(Class<?> type, String name);
+	FixtureSource newInstance(Class<?> fixtureType, String fixtureId);
 }

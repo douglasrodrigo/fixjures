@@ -15,6 +15,9 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ValueProviders;
+
 /**
  * Handles {@code Long}s.
  *
@@ -41,7 +44,7 @@ final class LongFixtureHandler extends NumberFixtureHandler<Long> {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Long apply(final HandlerHelper helper, final Number number) {
-		return number.longValue();
+	public ValueProvider<Long> apply(final HandlerHelper helper, final Number number) {
+		return ValueProviders.of(number.longValue());
 	}
 }

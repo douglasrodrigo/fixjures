@@ -1,18 +1,31 @@
 package com.bigfatgun.fixjures.annotations;
 
-import java.io.IOException;
-
-import com.bigfatgun.fixjures.FixtureException;
-import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.SourceFactory;
-import com.bigfatgun.fixjures.json.JSONSource;
+import com.bigfatgun.fixjures.json.JsonSourceFactory;
+import com.bigfatgun.fixjures.serializable.ObjectInputStreamSourceFactory;
 
 /**
- * An enumeration of source formats.
+ * An enumeration of source formats supported by the core library. Every source format is smart enough to know
+ * how to create a {@link com.bigfatgun.fixjures.SourceFactory} from a
+ * {@link com.bigfatgun.fixjures.annotations.Fixture} annotation.
  *
  * @author Steve Reed
  */
 public enum NativeSourceFormat implements SourceFormat {
+
+	/**
+	 * {@code java.io.Serializable}.
+	 */
+	IoSerializable {
+		/**
+		 * Creates a new serializable source factory.
+		 * <p>
+		 * {@inheritDoc}
+		 */
+		@Override
+		public SourceFactory createSourceFactory(final ClassLoader fixtureClassLoader, final SourceType sourceType) {
+			return ObjectInputStreamSourceFactory.newFactoryFromSourceType(fixtureClassLoader, sourceType);
+		}},
 
 	/**
 	 * JSON.
@@ -24,21 +37,17 @@ public enum NativeSourceFormat implements SourceFormat {
 		 * {@inheritDoc}
 		 */
 		@Override
-		public SourceFactory createSourceFactory(final ClassLoader clsLoader, final Fixture fixtureAnnotation) {
-			return new SourceFactory() {
-				public FixtureSource newInstance(final Class<?> type, final String name) {
-					try {
-						return JSONSource.newJsonStream(fixtureAnnotation.type().openStream(clsLoader, fixtureAnnotation.value()));
-					} catch (IOException e) {
-						throw new FixtureException(e);
-					}
-				}
-			};
+		public SourceFactory createSourceFactory(final ClassLoader fixtureClassLoader, final SourceType sourceType) {
+			return JsonSourceFactory.newFactoryFromSourceType(fixtureClassLoader, sourceType);
 		}
 	};
 
 	/**
-	 * {@inheritDoc}
+	 * Creates a format-specific source factory with a classloader and source type.
+	 *
+	 * @param fixtureClassLoader class loader to use
+	 * @param sourceType fixture source type
+	 * @return new source factory
 	 */
-	public abstract SourceFactory createSourceFactory(ClassLoader clsLoader, Fixture fixtureAnnotation);
+	public abstract SourceFactory createSourceFactory(final ClassLoader fixtureClassLoader, final SourceType sourceType);
 }

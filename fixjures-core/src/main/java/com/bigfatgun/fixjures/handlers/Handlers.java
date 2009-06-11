@@ -21,18 +21,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import com.bigfatgun.fixjures.json.JSONSource;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import sun.font.LayoutPathImpl;
 
-/**
- * Created by IntelliJ IDEA.
- * User: steve
- * Date: Apr 5, 2009
- * Time: 9:10:37 PM
- * To change this template use File | Settings | File Templates.
- */
 public final class Handlers {
 
 	public static FixtureHandler<Number,Byte> byteHandler() {
@@ -63,12 +54,12 @@ public final class Handlers {
 		return new StringBuilderFixtureHandler();
 	}
 
-	public static <SourceType, InterimType, EndType> Iterable<FixtureHandler<JSONSource.SourceType,? extends LayoutPathImpl.EndType>> createChain(
-			  final ChainedFixtureHandler<JSONSource.SourceType, InterimType> chained,
-			  final ImmutableList<FixtureHandler<InterimType, LayoutPathImpl.EndType>> handlers) {
+	public static <SourceType, InterimType, EndType> Iterable<FixtureHandler<SourceType,? extends EndType>> createChain(
+			  final ChainedFixtureHandler<SourceType, InterimType> chained,
+			  final ImmutableList<FixtureHandler<InterimType, EndType>> handlers) {
 
-		final List<FixtureHandler<JSONSource.SourceType,? extends LayoutPathImpl.EndType>> fixtures = Lists.newLinkedList();
-		for (final FixtureHandler<InterimType, LayoutPathImpl.EndType> handler : handlers) {
+		final List<FixtureHandler<SourceType,? extends EndType>> fixtures = Lists.newLinkedList();
+		for (final FixtureHandler<InterimType, EndType> handler : handlers) {
 			fixtures.add(chained.link(handler));
 		}
 		return Collections.unmodifiableList(fixtures);

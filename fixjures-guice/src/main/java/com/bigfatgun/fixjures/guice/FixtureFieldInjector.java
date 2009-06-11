@@ -6,6 +6,7 @@ import com.bigfatgun.fixjures.annotations.Fixture;
 import com.bigfatgun.fixjures.annotations.NativeSourceFormat;
 import com.bigfatgun.fixjures.SourceFactory;
 import com.bigfatgun.fixjures.FixjureFactory;
+import com.bigfatgun.fixjures.Fixjure;
 import com.google.inject.MembersInjector;
 
 public class FixtureFieldInjector<T> implements MembersInjector<T> {
@@ -23,14 +24,16 @@ public class FixtureFieldInjector<T> implements MembersInjector<T> {
 		}
 
 		final NativeSourceFormat fmt = fix.format();
-		final SourceFactory fact = fmt.createSourceFactory(field.getDeclaringClass().getClassLoader(), fix);
-		factory = FixjureFactory.newFactory(fact);
+		final SourceFactory fact = fmt.createSourceFactory(field.getDeclaringClass().getClassLoader(), fix.type());
+		factory = FixjureFactory.newFactory(fact)
+				  .enableOption(Fixjure.Option.SKIP_UNMAPPABLE)
+				  .enableOption(Fixjure.Option.LAZY_REFERENCE_EVALUATION);
 	}
 
 	@Override
 	public void injectMembers(final T t) {
 		try {
-			f.set(t, factory.createFixture(f.getType(), fix.name()));
+			f.set(t, factory.createFixture(f.getType(), fix.value()));
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		}

@@ -12,9 +12,9 @@ public interface SourceFormat {
 	/**
 	 * Creates a source factory based on a fixture annotation.
 	 *
-	 * @param clsLoader class loader of fixture requestor
-	 * @param fixtureAnnotation fixture annotation
+	 * @param fixtureClassLoader class loader of fixture requestor
+	 * @param sourceType fixture source type
 	 * @return new source factory
 	 */
-	SourceFactory createSourceFactory(ClassLoader clsLoader, Fixture fixtureAnnotation);
+	SourceFactory createSourceFactory(ClassLoader fixtureClassLoader, SourceType sourceType);
 }

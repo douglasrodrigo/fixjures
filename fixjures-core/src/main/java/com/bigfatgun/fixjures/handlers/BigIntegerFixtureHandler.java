@@ -17,13 +17,9 @@ package com.bigfatgun.fixjures.handlers;
 
 import java.math.BigInteger;
 
-/**
- * Created by IntelliJ IDEA.
- * User: steve
- * Date: Apr 11, 2009
- * Time: 9:15:49 PM
- * To change this template use File | Settings | File Templates.
- */
+import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ValueProviders;
+
 class BigIntegerFixtureHandler extends AbstractFixtureHandler<Number,BigInteger> {
 
 	public Class<BigInteger> getReturnType() {
@@ -34,7 +30,7 @@ class BigIntegerFixtureHandler extends AbstractFixtureHandler<Number,BigInteger>
 		return Number.class;
 	}
 
-	public BigInteger apply(final HandlerHelper helper, final Number number) {
-		return BigInteger.valueOf(number.longValue());
+	public ValueProvider<BigInteger> apply(final HandlerHelper helper, final Number number) {
+		return ValueProviders.of(BigInteger.valueOf(number.longValue()));
 	}
 }

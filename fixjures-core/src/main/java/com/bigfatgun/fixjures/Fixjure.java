@@ -39,7 +39,9 @@ public class Fixjure {
 	/** An enumeration of fixture options. */
 	public static enum Option {
 		/** When enabled, unmappable data from the input source will be ignored. */
-		SKIP_UNMAPPABLE
+		SKIP_UNMAPPABLE,
+		/** When enabled, objects references by id will be lazily-evaluated */
+		LAZY_REFERENCE_EVALUATION
 	}
 
 	/** Logger. */

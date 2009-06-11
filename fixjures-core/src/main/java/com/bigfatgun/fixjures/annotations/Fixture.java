@@ -15,22 +15,19 @@ import java.lang.annotation.Target;
 public @interface Fixture {
 
 	/**
-	 * @return fixture name
-	 */
-	String name() default "";
-
-	/**
 	 * @return fixture source
 	 */
 	String value();
 
 	/**
-	 * @return fixture source format
+	 * @return fixture source format, default is {@link com.bigfatgun.fixjures.annotations.NativeSourceFormat#Json}
+	 * if not specified
 	 */
 	NativeSourceFormat format() default NativeSourceFormat.Json;
 
 	/**
-	 * @return fixture source type
+	 * @return fixture source type, default is {@link com.bigfatgun.fixjures.annotations.NativeSourceType#Literal}
+	 * if not specified
 	 */
 	NativeSourceType type() default NativeSourceType.Literal;
 }

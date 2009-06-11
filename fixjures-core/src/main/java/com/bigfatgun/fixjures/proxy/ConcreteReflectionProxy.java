@@ -20,6 +20,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import com.bigfatgun.fixjures.ValueProvider;
+
 /**
  * "Proxies" concrete types by using reflection to instantiate the object
  * and invoke property setters.
@@ -54,8 +56,8 @@ final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 		ctor.setAccessible(true);
 		final T object = ctor.newInstance();
 
-		for (final Map.Entry<String, Object> entry : getStubs().entrySet()) {
-			setInstanceValue(object, entry.getKey(), convertNameToSetter(entry.getKey()), entry.getValue());
+		for (final Map.Entry<String, ValueProvider<?>> entry : getStubs().entrySet()) {
+			setInstanceValue(object, entry.getKey(), convertNameToSetter(entry.getKey()), entry.getValue().get());
 		}
 
 		return object;

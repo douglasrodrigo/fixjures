@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import com.google.common.collect.Lists;
+import com.bigfatgun.fixjures.ValueProvider;
 
 /**
  * Simple interface getter proxy using {@code java.lang.reflect.Proxy}. This will only proxy methods that
@@ -67,6 +68,7 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 			throw new RuntimeException("Proxied methods shall take no arguments. Call: " + callToString(method, objects));
 		}
 
+		// TODO : hash values of stubs
 		if (method.getName().equals("hashCode")) {
 			return getStubs().values().hashCode();
 		} else if (method.getName().equals("toString")) {
@@ -77,7 +79,8 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 			throw new RuntimeException("Method has not been stubbed. Call: " + callToString(method, objects));
 		}
 
-		return getStubs().get(method.getName());
+		final ValueProvider<?> valueProvider = getStubs().get(method.getName());
+		return valueProvider.get();
 	}
 
 	/**

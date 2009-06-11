@@ -15,6 +15,9 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ValueProviders;
+
 /**
  * Handles {@code Double}s.
  *
@@ -41,7 +44,7 @@ final class DoubleFixtureHandler extends NumberFixtureHandler<Double> {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Double apply(final HandlerHelper helper, final Number number) {
-		return number.doubleValue();
+	public ValueProvider<Double> apply(final HandlerHelper helper, final Number number) {
+		return ValueProviders.of(number.doubleValue());
 	}
 }

@@ -15,6 +15,9 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ValueProviders;
+
 /**
  * Simple object pass-through for when no conversion is necessary.
  *
@@ -65,7 +68,7 @@ public final class NoConversionFixtureHandler<T> extends AbstractFixtureHandler<
 	/**
 	 * {@inheritDoc}
 	 */
-	public T apply(final HandlerHelper helper, final T t) {
-		return t;
+	public ValueProvider<T> apply(final HandlerHelper helper, final T t) {
+		return ValueProviders.of(t);
 	}
 }

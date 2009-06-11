@@ -15,6 +15,9 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ValueProviders;
+
 /**
  * Converts a {@code String} to a {@code StringBuilder}.
  *
@@ -44,7 +47,7 @@ final class StringBuilderFixtureHandler extends AbstractFixtureHandler<CharSeque
 	 * <p>
 	 * {@inheritDoc}
 	 */
-	public StringBuilder apply(final HandlerHelper helper, final CharSequence s) {
-		return new StringBuilder(s);
+	public ValueProvider<StringBuilder> apply(final HandlerHelper helper, final CharSequence s) {
+		return ValueProviders.of(new StringBuilder(s));
 	}
 }

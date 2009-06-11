@@ -17,6 +17,8 @@ package com.bigfatgun.fixjures.proxy;
 
 import java.lang.reflect.InvocationTargetException;
 
+import com.bigfatgun.fixjures.ValueProvider;
+
 /**
  * This interface is implemented by any class that can produce a proxy object of some sort based on a
  * pre-configured map of property accessor name to value.
@@ -38,7 +40,7 @@ public interface ObjectProxy<T> {
 	 * @param methodName method name
 	 * @param stub value stub
 	 */
-	void addValueStub(String methodName, Object stub);
+	void addValueStub(String methodName, ValueProvider<?> stub);
 
 	/**
 	 * Creates a new proxy instance.

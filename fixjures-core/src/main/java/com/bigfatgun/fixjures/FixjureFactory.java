@@ -136,8 +136,10 @@ public final class FixjureFactory implements IdentityResolver {
 		srcFactory = sourceFactory;
 		options = EnumSet.noneOf(Fixjure.Option.class);
 		handlers = Sets.newHashSet();
+
 		objectCache = new MapMaker()
 				  .expiration(10, TimeUnit.MINUTES)
+				  .softValues()
 				  .makeComputingMap(new Function<Class<?>, ConcurrentMap<String, Object>>() {
 			public ConcurrentMap<String, Object> apply(@Nullable final Class<?> type) {
 				if (type == null) {
@@ -145,7 +147,7 @@ public final class FixjureFactory implements IdentityResolver {
 				}
 				return new MapMaker()
 						  .expiration(1, TimeUnit.MINUTES)
-						  .weakValues()
+						  .softValues()
 						  .makeComputingMap(new Function<String, Object>() {
 							  public Object apply(@Nullable final String name) {
 								  if (name == null) {
@@ -171,7 +173,7 @@ public final class FixjureFactory implements IdentityResolver {
 	 */
 	@Override
 	public boolean canHandleIdentity(final Class<?> requiredType, @Nullable final Object rawIdentityValue) {
-		return rawIdentityValue instanceof String;
+		return !requiredType.isAssignableFrom(CharSequence.class) && rawIdentityValue instanceof String;
 	}
 
 	/**
@@ -192,7 +194,7 @@ public final class FixjureFactory implements IdentityResolver {
 	 * @return object of type identified by id, null if not found
 	 */
 	@Override
-	public Object resolve(final Class<?> requiredType, final String id) {
+	public <T> T resolve(final Class<T> requiredType, final String id) {
 		try {
 			return createFixture(requiredType, id);
 		} catch (FixtureException e) {
@@ -274,7 +276,9 @@ public final class FixjureFactory implements IdentityResolver {
 		}
 
 		try {
-			return type.cast(objectCache.get(type).get(name));
+			final ConcurrentMap<String, Object> classMap = objectCache.get(type);
+			final Object obj = classMap.get(name);
+			return type.cast(obj);
 		} catch (ComputationException e) {
 			throw FixtureException.convert(e.getCause());
 		}

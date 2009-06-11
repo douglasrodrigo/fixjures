@@ -15,6 +15,9 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ValueProviders;
+
 /**
  * Handles {@code Byte}s.
  *
@@ -41,7 +44,7 @@ final class ByteFixtureHandler extends NumberFixtureHandler<Byte> {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Byte apply(final HandlerHelper helper, final Number number) {
-		return number.byteValue();
+	public ValueProvider<Byte> apply(final HandlerHelper helper, final Number number) {
+		return ValueProviders.of(number.byteValue());
 	}
 }

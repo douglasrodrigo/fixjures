@@ -17,13 +17,9 @@ package com.bigfatgun.fixjures.handlers;
 
 import java.math.BigDecimal;
 
-/**
- * Created by IntelliJ IDEA.
- * User: steve
- * Date: Apr 11, 2009
- * Time: 9:17:51 PM
- * To change this template use File | Settings | File Templates.
- */
+import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ValueProviders;
+
 class BigDecimalFixtureHandler extends AbstractFixtureHandler<Number, BigDecimal> {
 
 	public Class<BigDecimal> getReturnType() {
@@ -34,7 +30,7 @@ class BigDecimalFixtureHandler extends AbstractFixtureHandler<Number, BigDecimal
 		return Number.class;
 	}
 
-	public BigDecimal apply(final HandlerHelper helper, final Number number) {
-		return BigDecimal.valueOf(number.doubleValue());
+	public ValueProvider<BigDecimal> apply(final HandlerHelper helper, final Number number) {
+		return ValueProviders.of(BigDecimal.valueOf(number.doubleValue()));
 	}
 }
