@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 
 import com.bigfatgun.fixjures.Fixjure;
 import static com.bigfatgun.fixjures.Fixjure.Option.SKIP_UNMAPPABLE;
-import com.bigfatgun.fixjures.FixjureFactory;
+import com.bigfatgun.fixjures.FixtureFactory;
 import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.Strategies;
 import com.bigfatgun.fixjures.annotations.Fixture;
@@ -91,7 +91,7 @@ public class SampleTest {
 				  League.class, leagues,
 				  Team.class, teams
 				  );
-		final FixjureFactory fact = FixjureFactory.newJsonFactory(Strategies.newInMemoryStrategy(json));
+		final FixtureFactory fact = FixtureFactory.newJsonFactory(Strategies.newInMemoryStrategy(json));
 		final Team t = fact.createFixture(Team.class, "the team");
 		assertNotNull(t);
 		assertEquals("The Team", t.getName());

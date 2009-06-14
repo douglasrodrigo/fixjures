@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import static com.bigfatgun.fixjures.Fixjure.Option.SKIP_UNMAPPABLE;
 import com.bigfatgun.fixjures.json.JSONSource;
 import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
+import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Iterables;
@@ -112,7 +113,7 @@ public class FixjureTest {
 
 	@Test
 	public void serializableTest1() throws IOException {
-		FixjureFactory fact = FixjureFactory.newObjectInputStreamFactory(Strategies.newResourceStrategy(FixjureTest.class.getClassLoader(), new Strategies.ResourceNameStrategy() {
+		FixtureFactory fact = FixtureFactory.newObjectInputStreamFactory(Strategies.newResourceStrategy(FixjureTest.class.getClassLoader(), new Strategies.ResourceNameStrategy() {
 			public String getResourceName(final Class<?> type, final String name) {
 				return "" + name + ".ser";
 			}
@@ -132,7 +133,7 @@ public class FixjureTest {
 
 	@Test
 	public void factory() {
-		FixjureFactory fact = FixjureFactory.newFactory(new SourceFactory() {
+		FixtureFactory fact = FixtureFactory.newFactory(new SourceFactory() {
 			public FixtureSource newInstance(final Class<?> type, final String name) {
 				try {
 					return JSONSource.newJsonResource(FixjureTest.class.getClassLoader(), String.format("fixjures/%s/%s.json", type.getName(), name));
@@ -157,7 +158,7 @@ public class FixjureTest {
 
 	@Test
 	public void factoryWithStrategy() {
-		FixjureFactory fact = FixjureFactory.newJsonFactory(Strategies.newClasspathStrategy(Strategies.DEFAULT_CLASSPATH_NAME_STRATEGY));
+		FixtureFactory fact = FixtureFactory.newJsonFactory(Strategies.newClasspathStrategy(Strategies.DEFAULT_CLASSPATH_NAME_STRATEGY));
 		fact.enableOption(SKIP_UNMAPPABLE);
 		final NyTimes n1 = fact.createFixture(NyTimes.class, "one");
 		assertNotNull(n1);
@@ -179,7 +180,7 @@ public class FixjureTest {
 		mem.put(Integer.class, ImmutableMap.of("one", "1", "two", "2"));
 		mem.put(Map.class, ImmutableMap.of("map", "{ one : 1, two : 2 }"));
 		mem.put(NyTimes.class, ImmutableMap.of("nyt", "{ version: '2.1' }"));
-		FixjureFactory fact = FixjureFactory.newJsonFactory(Strategies.newInMemoryStrategy(mem));
+		FixtureFactory fact = FixtureFactory.newJsonFactory(Strategies.newInMemoryStrategy(mem));
 		assertEquals("foo", fact.createFixture(String.class, "foo"));
 		assertEquals("bar", fact.createFixture(String.class, "bar"));
 		assertEquals(1, fact.createFixture(Integer.class, "one").intValue());
@@ -188,7 +189,7 @@ public class FixjureTest {
 		assertEquals("2.1", fact.createFixture(NyTimes.class, "nyt").getVersion());
 	}
 
-	private <T> double doPerf(final FixjureFactory fact, final Class<T> type, final String name, final int num, final boolean clearCache, final String desc) {
+	private <T> double doPerf(final FixtureFactory fact, final Class<T> type, final String name, final int num, final boolean clearCache, final String desc) {
 		System.out.format("Creating %d of %s named %s [%s]...\n", num, type.getName(), name, desc);
 		final long start = System.nanoTime();
 		T obj;
@@ -211,15 +212,15 @@ public class FixjureTest {
 
 	@Test
 	public void perf() {
-		FixjureFactory fact = FixjureFactory.newJsonFactory(Strategies.newClasspathStrategy());
+		FixtureFactory fact = FixtureFactory.newJsonFactory(Strategies.newClasspathStrategy());
 		double cpwc = doPerf(fact, NyTimes.class, "one", 1000000, false, "classpath w/ cache");
 		double cpwoc = doPerf(fact, NyTimes.class, "one", 1000, true, "classpath w/o cache");
-		fact = FixjureFactory.newFactory(new SourceFactory() {
+		fact = FixtureFactory.newFactory(new SourceFactory() {
 			public FixtureSource newInstance(final Class<?> type, final String name) {
 				try {
 					return JSONSource.newJsonResource(FixjureTest.class.getClassLoader(), String.format("fixjures/%s/%s.json", type.getName(), name));
 				} catch (FileNotFoundException e) {
-					throw new FixtureException(e);
+					throw convert(e);
 				}
 			}
 		});

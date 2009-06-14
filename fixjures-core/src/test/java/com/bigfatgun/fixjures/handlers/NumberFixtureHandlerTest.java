@@ -14,12 +14,12 @@ public class NumberFixtureHandlerTest {
 	public void theTypeIsRight() {
 		handler = new NumberFixtureHandler<Number>() {
 			@Override
-			protected Class getPrimitiveType() {
+			protected Class<Number> getPrimitiveType() {
 				return null;  //To change body of implemented methods use File | Settings | File Templates.
 			}
 
 			@Override
-			public Class getReturnType() {
+			public Class<Number> getReturnType() {
 				return null;  //To change body of implemented methods use File | Settings | File Templates.
 			}
 

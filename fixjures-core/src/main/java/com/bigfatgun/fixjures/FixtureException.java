@@ -15,6 +15,8 @@
  */
 package com.bigfatgun.fixjures;
 
+import java.util.Arrays;
+
 /**
  * A runtime exception used during fixture object creation to wrap any sort
  * of underlying failure.
@@ -32,23 +34,36 @@ public class FixtureException extends RuntimeException {
 		if (cause instanceof FixtureException) {
 			return (FixtureException) cause;
 		} else {
-			return new FixtureException(cause);
+			final FixtureException converted = new FixtureException(cause);
+			converted.peelTopOfStackTrace();
+			return converted;
 		}
 	}
 
-	/**
-	 * Creates a new exception.
-	 * @param message message
-	 */
+	public static FixtureException convert(final String supplementalMessage, final Throwable cause) {
+		if (cause instanceof FixtureException) {
+			return (FixtureException) cause;
+		} else {
+			final FixtureException converted = new FixtureException(supplementalMessage, cause);
+			converted.peelTopOfStackTrace();
+			return converted;
+		}
+	}
+
 	public FixtureException(final String message) {
 		super(message);
 	}
 
-	/**
-	 * Creates a new exception.
-	 * @param throwable cause
-	 */
-	public FixtureException(final Throwable throwable) {
+	private FixtureException(final Throwable throwable) {
 		super(throwable);
+	}
+
+	private FixtureException(final String message, final Throwable cause) {
+		super(message, cause);
+	}
+
+	private void peelTopOfStackTrace() {
+		final StackTraceElement[] stackTraceElements = this.getStackTrace();
+		this.setStackTrace(Arrays.copyOfRange(stackTraceElements, 1, stackTraceElements.length));
 	}
 }

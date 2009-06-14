@@ -35,6 +35,7 @@ import com.google.common.collect.Multiset;
  * @author Steve Reed
  */
 public class Fixjure {
+	private Fixjure() {}
 
 	/** An enumeration of fixture options. */
 	public static enum Option {
@@ -44,7 +45,6 @@ public class Fixjure {
 		LAZY_REFERENCE_EVALUATION
 	}
 
-	/** Logger. */
 	private static final Logger LOGGER = Logger.getLogger("com.bigfatgun.fixjures");
 
 	/**
@@ -104,13 +104,6 @@ public class Fixjure {
 	}
 
 	/**
-	 * Empty private utility constructor.
-	 */
-	private Fixjure() {
-		// utility constructor is empty
-	}
-
-	/**
     * Your basic fixture builder that provides the simplest implementation of
 	 * the {@code from} method, which passes the type info into a fixture source
 	 * in order to create a {@link com.bigfatgun.fixjures.Fixjure.SourcedFixtureBuilder}.
@@ -120,105 +113,45 @@ public class Fixjure {
 	 */
 	public static class FixtureBuilder<T> {
 
-		/**
-		 * Builds list fixtures.
-		 *
-		 * @param <T> collection object type
-		 */
 		static final class FixtureListBuilder<T> extends FixtureBuilder<List<T>> {
-
-			/**
-			 * Creates a new fixture builder.
-			 * @param cls collection object type
-			 */
 			FixtureListBuilder(final Class<T> cls) {
 				super(List.class, ImmutableList.<Class<?>>of(cls));
 			}
 		}
 
-		/**
-		 * Builds set fixtures.
-		 *
-		 * @param <T> collection object type
-		 */
 		static final class FixtureSetBuilder<T> extends FixtureBuilder<Set<T>> {
-
-			/**
-			 * Creates a new fixture builder.
-			 * @param cls collection object type
-			 */
 			FixtureSetBuilder(final Class<T> cls) {
 				super(Set.class, ImmutableList.<Class<?>>of(cls));
 			}
 		}
 
-		/**
-		 * Builds map fixtures.
-		 *
-		 * @param <K> collection object key type
-		 * @param <V> collection object value type
-		 */
 		static final class FixtureMapBuilder<K,V> extends FixtureBuilder<Map<K,V>> {
-
-			/**
-			 * Creates a new fixture builder.
-			 * @param keyCls collection object key type
-			 * @param valCls collection object value type
-			 */
 			FixtureMapBuilder(final Class<K> keyCls, final Class<V> valCls) {
 				super(Map.class, ImmutableList.<Class<?>>of(keyCls, valCls));
 			}
 		}
 
-		/**
-		 * Builds multiset fixtures.
-		 *
-		 * @param <T> collection object type
-		 */
 		static final class FixtureMultisetBuilder<T> extends FixtureBuilder<Multiset<T>> {
-
-			/**
-			 * Creates a new fixture builder.
-			 * @param cls collection object type
-			 */
 			FixtureMultisetBuilder(final Class<T> cls) {
 				super(Multiset.class, ImmutableList.<Class<?>>of(cls));
 			}
 		}
 
-		/** Fixture object type. */
-		private final Class<T> clazz;
+		private final Class<T> fixtureObjectType;
+		private final ImmutableList<Class<?>> fixtureObjectTypeParams;
 
-		/** List of type params. */
-		private final ImmutableList<Class<?>> typeParams;
-
-		/**
-		 * Instantiates a new fixture builder.
-		 *
-		 * @param cls fixture object type
-		 */
 		FixtureBuilder(final Class<T> cls) {
 			this(cls, ImmutableList.<Class<?>>of());
 		}
 
-		/**
-		 * Copies the given fixture builder.
-		 *
-		 * @param builder builder to copy
-		 */
 		FixtureBuilder(final FixtureBuilder<T> builder) {
-			this(builder.getType(), builder.getTypeParams());
+			this(builder.getType(), builder.getFixtureObjectTypeParams());
 		}
 
-		/**
-		 * Private copy ctor.
-		 *
-		 * @param cls class
-		 * @param params type params
-		 */
+		@SuppressWarnings({"unchecked"})
 		FixtureBuilder(final Class<?> cls, final ImmutableList<Class<?>> params) {
-			clazz = (Class<T>) cls;
-			typeParams = params;
+			fixtureObjectType = (Class<T>) cls;
+			fixtureObjectTypeParams = params;
 		}
 
 		/**
@@ -242,18 +175,12 @@ public class Fixjure {
 			return new StreamedFixtureBuilder<T>(this, stream.asSourceStream());
 		}
 
-		/**
-		 * @return fixture object type
-		 */
 		protected final Class<T> getType() {
-			return clazz;
+			return fixtureObjectType;
 		}
 
-		/**
-		 * @return list of type params
-		 */
-		protected final ImmutableList<Class<?>> getTypeParams() {
-			return ImmutableList.copyOf(typeParams);
+		protected final ImmutableList<Class<?>> getFixtureObjectTypeParams() {
+			return fixtureObjectTypeParams;
 		}
 
 		/**
@@ -263,18 +190,12 @@ public class Fixjure {
 		 * @return this
 		 */
 		public final FixtureBuilder<T> of(final Class<?>... classes) {
-			return new FixtureBuilder<T>(clazz, ImmutableList.<Class<?>>builder().addAll(typeParams).addAll(ImmutableList.of(classes)).build());
+			return new FixtureBuilder<T>(fixtureObjectType, ImmutableList.<Class<?>>builder().addAll(fixtureObjectTypeParams).addAll(ImmutableList.of(classes)).build());
 		}
 	}
 
 	public static final class StreamedFixtureBuilder<T> extends SourcedFixtureBuilder<T> {
 
-		/**
-		 * Protected constructor that stores the given builder's state.
-		 *
-		 * @param builder builder to copy
-		 * @param source  fixture data source
-		 */
 		StreamedFixtureBuilder(final FixtureBuilder<T> builder, final FixtureSource source) {
 			super(builder, source);
 		}
@@ -287,7 +208,7 @@ public class Fixjure {
 
 						public boolean hasNext() {
 							try {
-								next = StreamedFixtureBuilder.this.getSource().createFixture(getType(), getTypeParams());
+								next = StreamedFixtureBuilder.this.getSource().createFixture(getType(), getFixtureObjectTypeParams());
 							} catch (Exception e) {
 								next = null;
 							}
@@ -316,27 +237,13 @@ public class Fixjure {
 	 */
 	public static class SourcedFixtureBuilder<T> extends FixtureBuilder<T> {
 
-		/**
-		 * Fixture data source.
-		 */
 		private final FixtureSource fixtureSource;
 
-		/**
-		 * Protected constructor that stores the given builder's state.
-		 *
-		 * @param builder builder to copy
-		 * @param source fixture data source
-		 */
 		SourcedFixtureBuilder(final FixtureBuilder<T> builder, final FixtureSource source) {
 			super(builder);
 			fixtureSource = source;
 		}
 
-		/**
-		 * Exposes the source to subclasses.
-		 *
-		 * @return the source
-		 */
 		protected final FixtureSource getSource() {
 			return fixtureSource;
 		}
@@ -361,7 +268,7 @@ public class Fixjure {
 		 */
 		public final T create() {
 			try {
-				return this.fixtureSource.createFixture(getType(), getTypeParams());
+				return this.fixtureSource.createFixture(getType(), getFixtureObjectTypeParams());
 			} finally {
 				try {
 					fixtureSource.close();
@@ -397,7 +304,6 @@ public class Fixjure {
 
 		/**
 		 * Sets the identity resolver of the fixture source.
-		 *
 		 * @param identityResolver identity resolver, may be null to clear an existing resolver
 		 * @return fixture builder
 		 */

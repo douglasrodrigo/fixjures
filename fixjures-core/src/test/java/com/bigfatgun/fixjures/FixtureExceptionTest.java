@@ -17,8 +17,8 @@ public class FixtureExceptionTest {
 
 	@Test
 	public void testCauseCtor() {
-		assertEquals("java.lang.RuntimeException: the message", new FixtureException(new RuntimeException("the message")).getMessage());
-		assertNotNull(new FixtureException(new RuntimeException()).getCause());
+		assertEquals("java.lang.RuntimeException: the message", FixtureException.convert(new RuntimeException("the message")).getMessage());
+		assertNotNull(FixtureException.convert(new RuntimeException()).getCause());
 	}
 
 	@Test

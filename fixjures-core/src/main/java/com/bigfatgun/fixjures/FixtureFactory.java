@@ -25,7 +25,9 @@ import javax.annotation.Nullable;
 import com.bigfatgun.fixjures.handlers.FixtureHandler;
 import com.bigfatgun.fixjures.json.JSONSource;
 import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
+import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.google.common.base.Function;
+import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
@@ -40,7 +42,7 @@ import com.google.common.collect.Sets;
  *
  * @author Steve Reed
  */
-public final class FixjureFactory implements IdentityResolver {
+public final class FixtureFactory implements IdentityResolver {
 
 	/**
 	 * Creates a new factory that will use the given source factory.
@@ -48,11 +50,9 @@ public final class FixjureFactory implements IdentityResolver {
 	 * @param sourceFactory source factory
 	 * @return new fixture factory
 	 */
-	public static FixjureFactory newFactory(final SourceFactory sourceFactory) {
-		if (sourceFactory == null) {
-			throw new NullPointerException("sourceFactory");
-		}
-		return new FixjureFactory(sourceFactory);
+	public static FixtureFactory newFactory(final SourceFactory sourceFactory) {
+		checkNotNull(sourceFactory);
+		return new FixtureFactory(sourceFactory);
 	}
 
 	/**
@@ -62,11 +62,9 @@ public final class FixjureFactory implements IdentityResolver {
 	 * @param sourceStrategy strategy to use to find json source
 	 * @return new fixture factory
 	 */
-	public static FixjureFactory newJsonFactory(final Strategies.SourceStrategy sourceStrategy) {
-		if (sourceStrategy == null) {
-			throw new NullPointerException("sourceStrategy");
-		}
-		return new FixjureFactory(new SourceFactory() {
+	public static FixtureFactory newJsonFactory(final Strategies.SourceStrategy sourceStrategy) {
+		checkNotNull(sourceStrategy);
+		return new FixtureFactory(new SourceFactory() {
 			public FixtureSource newInstance(final Class<?> type, final String name) {
 				assert type != null : "Type cannot be null.";
 				assert name != null : "Name cannot be null.";
@@ -74,7 +72,7 @@ public final class FixjureFactory implements IdentityResolver {
 				try {
 					return JSONSource.newJsonStream(sourceStrategy.findStream(type, name));
 				} catch (IOException e) {
-					throw new FixtureException(e);
+					throw convert(e);
 				}
 			}
 		});
@@ -87,11 +85,9 @@ public final class FixjureFactory implements IdentityResolver {
 	 * @param sourceStrategy strategy to use to find source data
 	 * @return new fixture factory
 	 */
-	public static FixjureFactory newObjectInputStreamFactory(final Strategies.SourceStrategy sourceStrategy) {
-		if (sourceStrategy == null) {
-			throw new NullPointerException("sourceStrategy");
-		}
-		return new FixjureFactory(new SourceFactory() {
+	public static FixtureFactory newObjectInputStreamFactory(final Strategies.SourceStrategy sourceStrategy) {
+		checkNotNull(sourceStrategy);
+		return new FixtureFactory(new SourceFactory() {
 			public FixtureSource newInstance(final Class<?> type, final String name) {
 				assert type != null : "Type cannot be null.";
 				assert name != null : "Name cannot be null.";
@@ -99,7 +95,7 @@ public final class FixjureFactory implements IdentityResolver {
 				try {
 					return ObjectInputStreamSource.newObjectInputStream(sourceStrategy.findStream(type, name));
 				} catch (IOException e) {
-					throw new FixtureException(e);
+					throw convert(e);
 				}
 			}
 		});
@@ -130,7 +126,7 @@ public final class FixjureFactory implements IdentityResolver {
 	 *
 	 * @param sourceFactory source factory
 	 */
-	private FixjureFactory(final SourceFactory sourceFactory) {
+	private FixtureFactory(final SourceFactory sourceFactory) {
 		assert sourceFactory != null : "Source factory cannot be null.";
 
 		srcFactory = sourceFactory;
@@ -158,7 +154,7 @@ public final class FixjureFactory implements IdentityResolver {
 								  for (final FixtureHandler<?, ?> handler : handlers) {
 									  fixtureBuilder = fixtureBuilder.with(handler);
 								  }
-								  fixtureBuilder = fixtureBuilder.resolveIdsWith(FixjureFactory.this);
+								  fixtureBuilder = fixtureBuilder.resolveIdsWith(FixtureFactory.this);
 								  return fixtureBuilder.create();
 							  }
 						  });
@@ -195,12 +191,7 @@ public final class FixjureFactory implements IdentityResolver {
 	 */
 	@Override
 	public <T> T resolve(final Class<T> requiredType, final String id) {
-		try {
-			return createFixture(requiredType, id);
-		} catch (FixtureException e) {
-			// TODO : test option to see if this should be thrown up the stack
-			return null;
-		}
+		return createFixture(requiredType, id);
 	}
 
 	/**
@@ -210,7 +201,7 @@ public final class FixjureFactory implements IdentityResolver {
 	 * @param option option to enable, not null
 	 * @return this
 	 */
-	public FixjureFactory enableOption(final Fixjure.Option option) {
+	public FixtureFactory enableOption(final Fixjure.Option option) {
 		if (option == null) {
 			throw new NullPointerException("option");
 		}
@@ -223,7 +214,7 @@ public final class FixjureFactory implements IdentityResolver {
 	 * @param option option to disable, not null
 	 * @return this
 	 */
-	public FixjureFactory disableOption(final Fixjure.Option option) {
+	public FixtureFactory disableOption(final Fixjure.Option option) {
 		if (option == null) {
 			throw new NullPointerException("option");
 		}
@@ -237,7 +228,7 @@ public final class FixjureFactory implements IdentityResolver {
 	 * @param handler handler to add, not null
 	 * @return this
 	 */
-	public FixjureFactory addFixtureHandler(final FixtureHandler<?, ?> handler) {
+	public FixtureFactory addFixtureHandler(final FixtureHandler<?, ?> handler) {
 		if (handler == null) {
 			throw new NullPointerException("handler");
 		}
@@ -251,7 +242,7 @@ public final class FixjureFactory implements IdentityResolver {
 	 * @param handler handler to remove, not null
 	 * @return this
 	 */
-	public FixjureFactory removeFixtureHandler(final FixtureHandler<?, ?> handler) {
+	public FixtureFactory removeFixtureHandler(final FixtureHandler<?, ?> handler) {
 		if (handler == null) {
 			throw new NullPointerException("handler");
 		}
@@ -280,7 +271,7 @@ public final class FixjureFactory implements IdentityResolver {
 			final Object obj = classMap.get(name);
 			return type.cast(obj);
 		} catch (ComputationException e) {
-			throw FixtureException.convert(e.getCause());
+			throw convert(e.getCause());
 		}
 	}
 

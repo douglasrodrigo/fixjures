@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 import com.bigfatgun.fixjures.annotations.Fixture;
 import com.bigfatgun.fixjures.annotations.NativeSourceFormat;
 import com.bigfatgun.fixjures.SourceFactory;
-import com.bigfatgun.fixjures.FixjureFactory;
+import com.bigfatgun.fixjures.FixtureFactory;
 import com.bigfatgun.fixjures.Fixjure;
 import com.google.inject.MembersInjector;
 
@@ -13,7 +13,7 @@ public class FixtureFieldInjector<T> implements MembersInjector<T> {
 
 	private final Field f;
 	private final Fixture fix;
-	private final FixjureFactory factory;
+	private final FixtureFactory factory;
 
 	public FixtureFieldInjector(final Field field, final Fixture fixture) {
 		f = field;
@@ -25,7 +25,7 @@ public class FixtureFieldInjector<T> implements MembersInjector<T> {
 
 		final NativeSourceFormat fmt = fix.format();
 		final SourceFactory fact = fmt.createSourceFactory(field.getDeclaringClass().getClassLoader(), fix.type());
-		factory = FixjureFactory.newFactory(fact)
+		factory = FixtureFactory.newFactory(fact)
 				  .enableOption(Fixjure.Option.SKIP_UNMAPPABLE)
 				  .enableOption(Fixjure.Option.LAZY_REFERENCE_EVALUATION);
 	}

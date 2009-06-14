@@ -16,16 +16,17 @@
 package com.bigfatgun.fixjures.serializable;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.RandomAccessFile;
-import java.io.FileNotFoundException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.FixtureStream;
+import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -40,16 +41,12 @@ import com.google.common.collect.ImmutableList;
 public class ObjectInputStreamSource extends FixtureSource implements FixtureStream {
 
 	public static ObjectInputStreamSource newFile(final File file) throws FileNotFoundException {
-		if (file == null) {
-			throw new NullPointerException("file");
-		}
+		checkNotNull(file);
 		return new ObjectInputStreamSource(new RandomAccessFile(file, "r").getChannel());
 	}
 
 	public static ObjectInputStreamSource newResource(final ClassLoader clsLoader, final String resourceName) throws FileNotFoundException {
-		if (resourceName == null) {
-			throw new NullPointerException("file");
-		}
+		checkNotNull(resourceName);
 		return new ObjectInputStreamSource(Channels.newChannel(clsLoader.getResourceAsStream(resourceName)));
 	}
 
@@ -83,10 +80,8 @@ public class ObjectInputStreamSource extends FixtureSource implements FixtureStr
 				objIn = new ObjectInputStream(Channels.newInputStream(getSource()));
 			}
 			return type.cast(objIn.readObject());
-		} catch (IOException e) {
-			throw new FixtureException(e);
-		} catch (ClassNotFoundException e) {
-			throw new FixtureException(e);
+		} catch (Exception e) {
+			throw FixtureException.convert(e);
 		}
 	}
 

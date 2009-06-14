@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import com.bigfatgun.fixjures.annotations.Fixture;
+import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -21,60 +22,49 @@ import com.google.common.collect.Maps;
  * @author Steve Reed
  */
 public class FixtureInjector {
+	private FixtureInjector() {}
 
-	/** Singleton instance. */
 	private static final FixtureInjector INSTANCE = new FixtureInjector();
 
-	/**
-	 * An invokable target that performs an injection.
-	 */
 	private static interface FixtureInjectionTarget {
-		/**
-		 * Invokes the method on the target object.
-		 *
-		 * @param obj object to inject fixture into
-		 * @throws FixtureException if there's any error in creating the fixture or performing the injection
-		 */
 		void invoke(final Object obj) throws FixtureException;
 	}
 
-	/**
-	 * Creates stubs and passes them in as parameters to a method.
-	 */
 	private static class AnnotatedMethodParameterTarget implements FixtureInjectionTarget {
 
 		private final Method m;
-
 		private final LinkedHashMap<Fixture, Class<?>> fixtures;
 
 		public AnnotatedMethodParameterTarget(final Method method, final LinkedHashMap<Fixture, Class<?>> annotations) {
 			m = method;
-			fixtures = annotations;
+			fixtures = Maps.newLinkedHashMap(annotations);
 		}
 
 		@Override
 		public void invoke(final Object obj) throws FixtureException {
-			final Iterable<Object> values = Iterables.transform(fixtures.entrySet(), new Function<Map.Entry<Fixture, Class<?>>, Object>() {
+			final Iterable<?> values = transformAnnotationsToValues(obj);
+			try {
+				m.invoke(obj, ImmutableList.copyOf(values).toArray());
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw convert(e);
+			}
+		}
+
+		private Iterable<?> transformAnnotationsToValues(final Object obj) {
+			return Iterables.transform(fixtures.entrySet(), new Function<Map.Entry<Fixture, Class<?>>, Object>() {
 				@Override
 				public Object apply(@Nullable final Map.Entry<Fixture, Class<?>> entry) {
 					return newFactory(obj.getClass().getClassLoader(), entry.getKey()).createFixture(entry.getValue(), entry.getKey().value());
 				}
 			});
-			try {
-				m.invoke(obj, ImmutableList.copyOf(values).toArray());
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw new FixtureException(e);
-			}
 		}
 	}
 
 	private static class AnnotatedMethodTarget implements FixtureInjectionTarget {
 
 		private final Fixture a;
-
 		private final Method m;
-
 		private final Class<?> t;
 
 		public AnnotatedMethodTarget(final Method method, final Fixture fixture) {
@@ -89,7 +79,7 @@ public class FixtureInjector {
 				m.invoke(obj, newFactory(obj.getClass().getClassLoader(), a).createFixture(t, a.value()));
 			} catch (Exception e) {
 				e.printStackTrace();
-				throw new FixtureException(e);
+				throw convert(e);
 			}
 		}
 	}
@@ -111,41 +101,21 @@ public class FixtureInjector {
 		}
 	}
 
-	/**
-	 * New factory from annotation.
-	 *
-	 * @param clsLoader class loader
-	 * @param fixtureAnnotation fixture annotation
-	 * @return new factory
-	 */
-	private static FixjureFactory newFactory(final ClassLoader clsLoader, final Fixture fixtureAnnotation) {
+	private static FixtureFactory newFactory(final ClassLoader clsLoader, final Fixture fixtureAnnotation) {
 		assert fixtureAnnotation != null : "Annotation cannot be null.";
 		assert clsLoader != null : "Classloader cannot be null.";
 
-		return FixjureFactory.newFactory(
+		return FixtureFactory.newFactory(
 				  fixtureAnnotation.format().createSourceFactory(clsLoader, fixtureAnnotation.type())
 		);
 	}
 
-	/** Util ctor. */
-	private FixtureInjector() {
-		// utility constructor
-	}
-
-	/**
-	 * Searches for single-arg methods annotated with {@literal @Fixture}.
-	 *
-	 * @param obj object to scan
-	 * @return set of methods
-	 */
 	private Iterable<AnnotatedMethodTarget> findAnnotatedMethods(final Object obj) {
 		assert obj != null : "Object cannot be null.";
 
 		final ImmutableSet.Builder<AnnotatedMethodTarget> builder = ImmutableSet.builder();
 		for (final Method m : obj.getClass().getMethods()) {
          if (m.isAnnotationPresent(Fixture.class)) {
-				// found one
-				// want a signature with one argument, matching annotation type
 				final Class<?>[] paramTypes = m.getParameterTypes();
 				if (paramTypes.length == 1) {
 					builder.add(new AnnotatedMethodTarget(m, m.getAnnotation(Fixture.class)));

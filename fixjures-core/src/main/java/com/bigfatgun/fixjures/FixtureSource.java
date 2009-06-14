@@ -49,10 +49,8 @@ import com.google.common.collect.Sets;
  */
 public abstract class FixtureSource implements Closeable, HandlerHelper {
 
-	/** Charset to use when reading byte streams and channels. */
 	private static final String CHARSET = "UTF-8";
 
-	/** Array of numeric types. */
 	private static final ImmutableSet<Class<?>> NUMERIC_TYPES = ImmutableSet.<Class<?>>of(
 			  Byte.class,
 			  Byte.TYPE,
@@ -68,7 +66,6 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 			  Double.TYPE
 	);
 
-	/** Default options, currently none. */
 	private static final ImmutableSet<Fixjure.Option> DEFAULT_OPTIONS = ImmutableSet.of();
 
 	/**
@@ -81,7 +78,7 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 		try {
 			return str.getBytes(CHARSET);
 		} catch (UnsupportedEncodingException e) {
-			throw new FixtureException("JSONSource requires UTF-8.");
+			throw FixtureException.convert("JSONSource requires UTF-8.", e);
 		}
 	}
 
@@ -111,37 +108,12 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 		}
 	}
 
-	/**
-	 * Map of desired type to fixture handlers.
-	 */
 	private final Multimap<Class<?>, FixtureHandler<?,?>> requiredTypeHandlers;
-
-	/**
-	 * Raw data.
-	 */
 	private final ReadableByteChannel sourceChannel;
-
-	/**
-	 * Map of source type to fixture handlers.
-	 */
 	private final Multimap<Class<?>, FixtureHandler<?,?>> sourceTypeHandlers;
-
-	/**
-	 * Set of options.
-	 */
 	private final Set<? super Fixjure.Option> options;
+	@Nullable private IdentityResolver identityResolver;
 
-	/**
-	 * Identity resolver.
-	 */
-	@Nullable
-	private IdentityResolver identityResolver;
-
-	/**
-	 * Initializes the source.
-	 *
-	 * @param source source data
-	 */
 	protected FixtureSource(final ReadableByteChannel source) {
 		if (source == null) {
 			throw new NullPointerException("source");
@@ -165,11 +137,6 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 		options.add(opt);
 	}
 
-	/**
-	 * Closes the source channel.
-	 * <p>
-	 * {@inheritDoc}
-	 */
 	public void close() throws IOException {
 		sourceChannel.close();
 	}
@@ -184,34 +151,17 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 */
 	public abstract <T> T createFixture(final Class<T> type, final ImmutableList<Class<?>> typeParams);
 
-	/**
-	 * Package-local method to configure the identity resolver. Used when data refers to related objects by
-	 * id.
-	 *
-	 * @param resolver identity resolver
-	 */
 	void setIdentityResolver(@Nullable final IdentityResolver resolver) {
 		this.identityResolver = resolver;
 	}
 
-	/**
-	 * If the identityResolver is non null, it is asked if the given value is a valid identity.
-	 *
-	 * @param type required object type
-	 * @param rawIdentityValue the raw identity value
-	 * @return true if identityResolver is not null and value seems to be a valid identifier
-	 */
 	private boolean canHandleIdentity(final Class<?> type, @Nullable final Object rawIdentityValue) {
-		return identityResolver != null && rawIdentityValue != null && identityResolver.canHandleIdentity(type, rawIdentityValue);
+		return identityResolver != null
+				  && rawIdentityValue != null
+				  && identityResolver.canHandleIdentity(type, rawIdentityValue);
 	}
 
-	/**
-	 * Uses the identityResolver to resolve an id.
-	 * @param type required object type
-	 * @param rawIdentityValue raw id value
-	 * @return object with id, null if none found
-	 */
-	private ValueProvider<?> resolveIdentity(final Class<?> type, final Object rawIdentityValue) {
+	private <T> ValueProvider<T> resolveIdentity(final Class<T> type, final Object rawIdentityValue) {
 		if (canHandleIdentity(type, rawIdentityValue)) {
 			assert identityResolver != null : "Don't attempt to resolve an id if the resolver is null!";
 			return ValueProviders.ofIdentity(identityResolver, type, rawIdentityValue);
@@ -220,57 +170,26 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 		}
 	}
 
-	/**
-	 * Exposes map of desired type handlers to subclasses.
-	 *
-	 * @return immutable multimap of desired type to fixture handler
-	 */
 	protected final ImmutableMultimap<Class<?>, FixtureHandler<?,?>> getRequiredTypeHandlers() {
 		return ImmutableMultimap.copyOf(requiredTypeHandlers);
 	}
 
-	/**
-	 * Exposes the source data to sub-classes.
-	 *
-	 * @return source data
-	 */
 	protected final ReadableByteChannel getSource() {
 		return sourceChannel;
 	}
 
-	/**
-	 * Exposes map of source type handlers to subclasses.
-	 *
-	 * @return immutable multimap of source type to fixture handler
-	 */
 	protected final ImmutableMultimap<Class<?>, FixtureHandler<?,?>> getSourceTypeHandlers() {
 		return ImmutableMultimap.copyOf(sourceTypeHandlers);
 	}
 
-	/**
-	 * Installs a desired type handler by mapping its return type to itself.
-	 *
-	 * @param handler handler to install
-	 */
 	protected final void installRequiredTypeHandler(final FixtureHandler<?,?> handler) {
 		requiredTypeHandlers.put(handler.getReturnType(), handler);
 	}
 
-	/**
-	 * @param option option to test
-	 * @return true if option is enabled
-	 */
 	protected final boolean isOptionEnabled(final Fixjure.Option option) {
 		return options.contains(option);
 	}
 
-	/**
-	 * @param type object type
-	 * @param typeVariable object type's type param if applicable
-	 * @param value object value
-	 * @param name object name
-	 * @return proxied object
-	 */
 	protected final ValueProvider<?> findValue(final Type type, final Type typeVariable, final Object value, final String name) {
 		final Class<Class> proto = Class.class;
 		final Class<?> getterClass;
@@ -291,19 +210,20 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	/**
 	 * {@inheritDoc}
 	 */
+	@SuppressWarnings({"unchecked"})
 	public <S, R> FixtureHandler<S, R> findHandler(final S src, final Class<R> type) {
 		for (Class<?> cls = type; cls != null; cls = cls.getSuperclass()) {
-			for (final FixtureHandler handler : getRequiredTypeHandlers().get(cls)) {
+			for (final FixtureHandler<?,?> handler : getRequiredTypeHandlers().get(cls)) {
 				if (handler.canDeserialize(src, type)) {
-					return handler;
+					return (FixtureHandler<S, R>) handler;
 				}
 			}
 		}
 
 		for (Class cls = src.getClass(); cls != null; cls = cls.getSuperclass()) {
-			for (final FixtureHandler handler : getSourceTypeHandlers().get(cls)) {
+			for (final FixtureHandler<?,?> handler : getSourceTypeHandlers().get(cls)) {
 				if (handler.canDeserialize(src, type)) {
-					return handler;
+					return (FixtureHandler<S, R>) handler;
 				}
 			}
 		}
@@ -318,10 +238,11 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * @param name object name
 	 * @return proxied object
 	 */
-	protected final ValueProvider<?> findValue(final Class type, final ImmutableList<? extends Type> typeParams, final Object value, final String name) {
-		final FixtureHandler handler = findHandler(value, type);
+	@SuppressWarnings({"unchecked"})
+	protected final <T> ValueProvider<? extends T> findValue(final Class<T> type, final ImmutableList<? extends Type> typeParams, final Object value, final String name) {
+		final FixtureHandler<Object, T> handler = findHandler(value, type);
 		if (handler == null) {
-			return handle(type, typeParams, value, name);
+			return (ValueProvider<? extends T>) handle(type, typeParams, value, name);
 		} else {
 			return handler.apply(this, value);
 		}

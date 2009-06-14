@@ -38,6 +38,7 @@ import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.ValueProvider;
 import com.bigfatgun.fixjures.ValueProviders;
 import com.bigfatgun.fixjures.Fixjure;
+import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.bigfatgun.fixjures.proxy.ObjectProxy;
 import com.bigfatgun.fixjures.proxy.Proxies;
 import com.google.common.collect.ImmutableList;
@@ -62,6 +63,12 @@ import org.json.JSONObject;
  */
 public final class JSONSource extends FixtureSource {
 
+	/**
+	 * Static factory for stream source.
+	 *
+	 * @param channel source channel
+	 * @return new fixture source
+	 */
 	public static FixtureSource newJsonStream(final ReadableByteChannel channel) {
 		return new JSONSource(channel);
 	}
@@ -77,10 +84,25 @@ public final class JSONSource extends FixtureSource {
 		return new JSONSource(jsonFile);
 	}
 
+	/**
+	 * Static factory for resource-name based source.
+	 *
+	 * @param resourceName name of resource to load from class loader
+	 * @return new json resource
+	 * @throws FileNotFoundException if the resource is not found
+	 */
 	public static FixtureSource newJsonResource(final String resourceName) throws FileNotFoundException {
 		return newJsonResource(FixtureSource.class.getClassLoader(), resourceName);
 	}
 
+	/**
+	 * Static factory for resource-name based source.
+	 *
+	 * @param clsLoader classloader to use to locate resource
+	 * @param resourceName resource to load
+	 * @return new json resource
+	 * @throws FileNotFoundException if the resource is not found
+	 */
 	public static FixtureSource newJsonResource(final ClassLoader clsLoader, final String resourceName) throws FileNotFoundException {
 		final InputStream input = clsLoader.getResourceAsStream(resourceName);
 		if (input == null) {
@@ -111,42 +133,22 @@ public final class JSONSource extends FixtureSource {
 		return new JSONSource(url);
 	}
 
-	/**
-	 * @param jsonFile file with JSON
-	 * @throws FileNotFoundException if the file does not exist
-	 */
 	private JSONSource(final File jsonFile) throws FileNotFoundException {
 		this(new RandomAccessFile(jsonFile, "r").getChannel());
 	}
 
-	/**
-	 * @param input input stream with data
-	 */
 	private JSONSource(final InputStream input) {
 		this(Channels.newChannel(input));
 	}
 
-	/**
-	 * Creates a new JSON source from the given {@code ReadableByteChannel}. The channel isn't read
-	 * until the fixture object is created.
-	 *
-	 * @param source byte source
-	 */
 	private JSONSource(final ReadableByteChannel source) {
 		super(source);
 	}
 
-	/**
-	 * @param raw raw JSON
-	 */
 	private JSONSource(final String raw) {
 		this(new ByteArrayInputStream(getBytes(raw)));
 	}
 
-	/**
-	 * @param url url with json
-	 * @throws IOException if there is an error retrieving data at url
-	 */
 	private JSONSource(final URL url) throws IOException {
 		this(url.openStream());
 	}
@@ -158,29 +160,38 @@ public final class JSONSource extends FixtureSource {
 	 */
 	public <T> T createFixture(final Class<T> type, final ImmutableList<Class<?>> typeParams) {
 		try {
-			final String sourceJson = loadTextFromChannel(getSource());
-			Object rawValue;
-			final String sourceJsonTrimmed = sourceJson.trim();
-			if (sourceJsonTrimmed.startsWith("{")) {
-				rawValue = new JSONObject(sourceJsonTrimmed);
-			} else if (sourceJsonTrimmed.startsWith("[")) {
-				rawValue = new JSONArray(sourceJsonTrimmed);
-			} else {
-				try {
-					rawValue = Double.parseDouble(sourceJsonTrimmed);
-				} catch (Exception e1) {
-					rawValue = String.valueOf(sourceJsonTrimmed);
-				}
-			}
-
-			final ValueProvider<?> provider = findValue(type, typeParams, rawValue, "ROOT");
+			final String sourceJson = loadSource();
+			final Object jsonValue = parseJson(sourceJson);
+			final ValueProvider<?> provider = findValue(type, typeParams, jsonValue, "ROOT");
 			final Object value = provider.get();
 			return (value == null) ? null : type.cast(value);
-		} catch (FixtureException e) {
-			throw e;
 		} catch (Exception e) {
-			throw new FixtureException(e);
+			throw convert(e);
 		}
+	}
+
+	private Object parseJson(final String json) throws JSONException {
+		assert json != null : "JSON data cannot be null.";
+		if (json.startsWith("{")) {
+			return new JSONObject(json);
+		} else if (json.startsWith("[")) {
+			return new JSONArray(json);
+		} else {
+			return tryToParseStringToNumber(json);
+		}
+	}
+
+	private Object tryToParseStringToNumber(final String string) {
+		try {
+			return Double.parseDouble(string);
+		} catch (Exception e) {
+			return string;
+		}
+	}
+
+	private String loadSource() throws IOException {
+		final String untrimmed = loadTextFromChannel(getSource());
+		return untrimmed.trim();
 	}
 
 	/**
@@ -251,7 +262,7 @@ public final class JSONSource extends FixtureSource {
 				throw new FixtureException("Could not convert source value " + sourceValue + " to type " + requiredType);
 			}
 		} catch (JSONException e) {
-			throw new FixtureException(e);
+			throw convert(e);
 		}
 	}
 
@@ -278,7 +289,7 @@ public final class JSONSource extends FixtureSource {
 							try {
 								return findValue(proxy.getType(), type, key, obj.get(key)).get();
 							} catch (JSONException e) {
-								throw new FixtureException(e);
+								throw convert(e);
 							}
 						}
 					};
@@ -296,7 +307,7 @@ public final class JSONSource extends FixtureSource {
 					proxy.addValueStub(getterName(key), stub);
 				}
 			} catch (JSONException e) {
-				throw new FixtureException(e);
+				throw convert(e);
 			}
 		}
 	}
@@ -310,7 +321,7 @@ public final class JSONSource extends FixtureSource {
 	 * @param value json value
 	 * @return value stub
 	 */
-	private ValueProvider<?> findValue(final Class parentCls, final Type probableType, final String keyName, final Object value) {
+	private ValueProvider<?> findValue(final Class<?> parentCls, final Type probableType, final String keyName, final Object value) {
 		final String getterName = getterName(keyName);
 		final Method getter;
 		try {
@@ -320,7 +331,7 @@ public final class JSONSource extends FixtureSource {
 			if (isOptionEnabled(SKIP_UNMAPPABLE)) {
 				return null;
 			} else {
-				throw new FixtureException(e);
+				throw convert(e);
 			}
 		}
 	}
@@ -339,7 +350,7 @@ public final class JSONSource extends FixtureSource {
 		try {
 			return proxy.create();
 		} catch (Exception e) {
-			throw new FixtureException(e);
+			throw convert(e);
 		}
 	}
 
