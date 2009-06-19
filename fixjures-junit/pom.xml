@@ -16,20 +16,8 @@
 			<artifactId>fixjures</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.bigfatgun</groupId>
-			<artifactId>fixjures-guice</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.google.collections</groupId>
 			<artifactId>google-collections</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.code.guice</groupId>
-			<artifactId>guice</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>aopalliance</groupId>
-			<artifactId>aopalliance</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.findbugs</groupId>
