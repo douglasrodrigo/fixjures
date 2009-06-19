@@ -42,7 +42,7 @@ public class Fixjure {
 	public static enum Option {
 		/** When enabled, unmappable data from the input source will be ignored. */
 		SKIP_UNMAPPABLE,
-		/** When enabled, objects references by id will be lazily-evaluated */
+		/** When enabled, objects referenced by id will be lazily-evaluated */
 		LAZY_REFERENCE_EVALUATION,
 		/** Return null from interface proxies when property is not mapped. */
 		NULL_ON_UNMAPPED
