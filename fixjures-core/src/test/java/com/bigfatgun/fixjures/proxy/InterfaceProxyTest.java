@@ -4,6 +4,7 @@ import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.json.JSONSource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 public class InterfaceProxyTest {
@@ -51,6 +52,6 @@ public class InterfaceProxyTest {
 
 	@Test
 	public void proxiesHaveToStr() {
-		assertEquals("Proxy of " + Foo3.class, new InterfaceProxy<Foo3>(Foo3.class).create().toString());
+		assertTrue(new InterfaceProxy<Foo3>(Foo3.class).create().toString().startsWith("Proxy of " + Foo3.class));
 	}
 }

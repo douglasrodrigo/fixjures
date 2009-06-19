@@ -18,6 +18,7 @@ package com.bigfatgun.fixjures.proxy;
 import java.util.Map;
 
 import com.bigfatgun.fixjures.ValueProvider;
+import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -42,10 +43,7 @@ abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 	 * @throws NullPointerException if {@code cls} is null
 	 */
 	protected AbstractObjectProxy(final Class<T> cls) {
-		if (cls == null) {
-			throw new NullPointerException("cls");
-		}
-		clazz = cls;
+		clazz = checkNotNull(cls);
 		stubs = Maps.newHashMap();
 	}
 

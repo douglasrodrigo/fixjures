@@ -18,9 +18,17 @@ package com.bigfatgun.fixjures.proxy;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.Set;
+import javax.annotation.Nullable;
 
-import com.google.common.collect.Lists;
+import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.ValueProvider;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Simple interface getter proxy using {@code java.lang.reflect.Proxy}. This will only proxy methods that
@@ -30,6 +38,8 @@ import com.bigfatgun.fixjures.ValueProvider;
  * @author Steve Reed
  */
 final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements InvocationHandler {
+
+	private final Set<Fixjure.Option> options;
 
 	/**
 	 * Creates a new proxy of the given class.
@@ -43,6 +53,11 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 		if (!cls.isInterface()) {
 			throw new RuntimeException(String.format("Class %s is not an interface.", cls.getName()));
 		}
+		options = Sets.newEnumSet(ImmutableList.<Fixjure.Option>of(), Fixjure.Option.class);
+	}
+
+	public void enableOptions(final Fixjure.Option[] options) {
+		this.options.addAll(Arrays.asList(options));
 	}
 
 	/**
@@ -68,19 +83,24 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 			throw new RuntimeException("Proxied methods shall take no arguments. Call: " + callToString(method, objects));
 		}
 
-		// TODO : hash values of stubs
 		if (method.getName().equals("hashCode")) {
-			return getStubs().values().hashCode();
+			return Iterables.transform(getStubs().values(), new Function<ValueProvider<?>, Object>() {
+				@Override
+				public Object apply(@Nullable final ValueProvider<?> valueProvider) {
+					return valueProvider.get();
+				}
+			}).hashCode();
 		} else if (method.getName().equals("toString")) {
-			return "Proxy of " + getType();
+			return "Proxy of " + getType() + "; " + getStubs().values();
 		}
 
-		if (!getStubs().containsKey(method.getName())) {
+		if (getStubs().containsKey(method.getName())) {
+			return getStubs().get(method.getName()).get();
+		} else if (options.contains(Fixjure.Option.NULL_ON_UNMAPPED)) {
+			return null;
+		} else {
 			throw new RuntimeException("Method has not been stubbed. Call: " + callToString(method, objects));
 		}
-
-		final ValueProvider<?> valueProvider = getStubs().get(method.getName());
-		return valueProvider.get();
 	}
 
 	/**

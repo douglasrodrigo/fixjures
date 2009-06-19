@@ -15,6 +15,8 @@
  */
 package com.bigfatgun.fixjures.proxy;
 
+import com.bigfatgun.fixjures.Fixjure;
+
 /**
  * Static proxy factory.
  */
@@ -43,10 +45,13 @@ public final class Proxies {
 	 *
 	 * @param cls proxy object type
 	 * @param <T> proxy object type
+	 * @param options fixjure options
 	 * @return new object proxy
 	 */
-	public static <T> ObjectProxy<T> newInterfaceProxy(final Class<T> cls) {
-		return new InterfaceProxy<T>(cls);
+	public static <T> ObjectProxy<T> newInterfaceProxy(final Class<T> cls, final Fixjure.Option... options) {
+		final InterfaceProxy<T> proxy = new InterfaceProxy<T>(cls);
+		proxy.enableOptions(options);
+		return proxy;
 	}
 
 	/**
