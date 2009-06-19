@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import com.bigfatgun.fixjures.handlers.FixtureHandler;
+import static com.bigfatgun.fixjures.FixtureTypeDefinition.newDefinition;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 
@@ -89,7 +90,7 @@ public class Fixjure {
 	 * @return new un-sourced fixture builder
 	 */
 	public static <T> FixtureBuilder<T> of(final Class<T> cls) {
-		return new FixtureBuilder<T>(cls);
+		return new FixtureBuilder<T>(newDefinition(cls));
 	}
 
 	/**
@@ -115,43 +116,37 @@ public class Fixjure {
 
 		static final class FixtureListBuilder<T> extends FixtureBuilder<List<T>> {
 			FixtureListBuilder(final Class<T> cls) {
-				super(List.class, ImmutableList.<Class<?>>of(cls));
+				super(newDefinition(List.class, ImmutableList.<Class<?>>of(cls)));
 			}
 		}
 
 		static final class FixtureSetBuilder<T> extends FixtureBuilder<Set<T>> {
 			FixtureSetBuilder(final Class<T> cls) {
-				super(Set.class, ImmutableList.<Class<?>>of(cls));
+				super(newDefinition(Set.class, ImmutableList.<Class<?>>of(cls)));
 			}
 		}
 
 		static final class FixtureMapBuilder<K,V> extends FixtureBuilder<Map<K,V>> {
 			FixtureMapBuilder(final Class<K> keyCls, final Class<V> valCls) {
-				super(Map.class, ImmutableList.<Class<?>>of(keyCls, valCls));
+				super(newDefinition(Map.class, ImmutableList.<Class<?>>of(keyCls, valCls)));
 			}
 		}
 
 		static final class FixtureMultisetBuilder<T> extends FixtureBuilder<Multiset<T>> {
 			FixtureMultisetBuilder(final Class<T> cls) {
-				super(Multiset.class, ImmutableList.<Class<?>>of(cls));
+				super(newDefinition(Multiset.class, ImmutableList.<Class<?>>of(cls)));
 			}
 		}
 
-		private final Class<T> fixtureObjectType;
-		private final ImmutableList<Class<?>> fixtureObjectTypeParams;
-
-		FixtureBuilder(final Class<T> cls) {
-			this(cls, ImmutableList.<Class<?>>of());
-		}
+		private final FixtureTypeDefinition<T> fixtureObjectType;
 
 		FixtureBuilder(final FixtureBuilder<T> builder) {
-			this(builder.getType(), builder.getFixtureObjectTypeParams());
+			this(builder.getType());
 		}
 
 		@SuppressWarnings({"unchecked"})
-		FixtureBuilder(final Class<?> cls, final ImmutableList<Class<?>> params) {
-			fixtureObjectType = (Class<T>) cls;
-			fixtureObjectTypeParams = params;
+		FixtureBuilder(final FixtureTypeDefinition<?> typeDefinition) {
+			fixtureObjectType = (FixtureTypeDefinition<T>) typeDefinition;
 		}
 
 		/**
@@ -175,12 +170,8 @@ public class Fixjure {
 			return new StreamedFixtureBuilder<T>(this, stream.asSourceStream());
 		}
 
-		protected final Class<T> getType() {
+		protected final FixtureTypeDefinition<T> getType() {
 			return fixtureObjectType;
-		}
-
-		protected final ImmutableList<Class<?>> getFixtureObjectTypeParams() {
-			return fixtureObjectTypeParams;
 		}
 
 		/**
@@ -190,7 +181,7 @@ public class Fixjure {
 		 * @return this
 		 */
 		public final FixtureBuilder<T> of(final Class<?>... classes) {
-			return new FixtureBuilder<T>(fixtureObjectType, ImmutableList.<Class<?>>builder().addAll(fixtureObjectTypeParams).addAll(ImmutableList.of(classes)).build());
+			return new FixtureBuilder<T>(fixtureObjectType.addParams(classes));
 		}
 	}
 
@@ -208,7 +199,7 @@ public class Fixjure {
 
 						public boolean hasNext() {
 							try {
-								next = StreamedFixtureBuilder.this.getSource().createFixture(getType(), getFixtureObjectTypeParams());
+								next = StreamedFixtureBuilder.this.getSource().createFixture(getType());
 							} catch (Exception e) {
 								next = null;
 							}
@@ -268,7 +259,7 @@ public class Fixjure {
 		 */
 		public final T create() {
 			try {
-				return this.fixtureSource.createFixture(getType(), getFixtureObjectTypeParams());
+				return this.fixtureSource.createFixture(getType());
 			} finally {
 				try {
 					fixtureSource.close();

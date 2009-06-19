@@ -15,13 +15,6 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-/**
- * Created by IntelliJ IDEA.
- * User: steve
- * Date: Apr 20, 2009
- * Time: 8:38:42 PM
- * To change this template use File | Settings | File Templates.
- */
 public interface HandlerHelper {
 
 	<S, R> FixtureHandler<S, R> findHandler(S src, final Class<R> type);

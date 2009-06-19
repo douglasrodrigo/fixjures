@@ -26,8 +26,8 @@ import java.nio.channels.ReadableByteChannel;
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.FixtureStream;
+import com.bigfatgun.fixjures.FixtureTypeDefinition;
 import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.common.collect.ImmutableList;
 
 /**
  * This fixture source implements {@link com.bigfatgun.fixjures.FixtureStream}, meaning
@@ -35,7 +35,7 @@ import com.google.common.collect.ImmutableList;
  * <p>
  * It lazily creates an {@code ObjectInputStream} from the underlying
  * {@code ReadableByteChannel} during the first call to
- * {@link #createFixture(Class, com.google.common.collect.ImmutableList)} and does not close it until
+ * {@link #createFixture(FixtureTypeDefinition)} and does not close it until
  * {@link #close()} is invoked.
  */
 public class ObjectInputStreamSource extends FixtureSource implements FixtureStream {
@@ -69,17 +69,16 @@ public class ObjectInputStreamSource extends FixtureSource implements FixtureStr
 	 * Lazy-creates an {@code ObjectInputStream} and reads an object from it.
 	 *
 	 * @param type fixture object type
-	 * @param typeParams type params
 	 * @param <T> fixture object type
 	 * @return new fixture object
 	 */
 	@Override
-	public <T> T createFixture(final Class<T> type, final ImmutableList<Class<?>> typeParams) {
+	public <T> T createFixture(final FixtureTypeDefinition<T> type) {
 		try {
 			if (objIn == null) {
 				objIn = new ObjectInputStream(Channels.newInputStream(getSource()));
 			}
-			return type.cast(objIn.readObject());
+			return type.getType().cast(objIn.readObject());
 		} catch (Exception e) {
 			throw FixtureException.convert(e);
 		}

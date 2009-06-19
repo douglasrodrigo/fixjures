@@ -35,12 +35,14 @@ import com.bigfatgun.fixjures.handlers.FixtureHandler;
 import com.bigfatgun.fixjures.handlers.HandlerHelper;
 import com.bigfatgun.fixjures.handlers.Handlers;
 import com.bigfatgun.fixjures.handlers.NoConversionFixtureHandler;
+import static com.bigfatgun.fixjures.FixtureTypeDefinition.newDefinition;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Abstract fixture source.
@@ -130,10 +132,8 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * Adds an option.
 	 * @param opt option
 	 */
-	public void addOption(final Fixjure.Option opt) {
-		if (opt == null) {
-			throw new NullPointerException("opt");
-		}
+	public final void addOption(final Fixjure.Option opt) {
+		checkNotNull(opt);
 		options.add(opt);
 	}
 
@@ -141,15 +141,7 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 		sourceChannel.close();
 	}
 
-	/**
-	 * Creates a fixture object from source.
-	 *
-	 * @param type fixture object type
-	 * @param typeParams type params
-	 * @param <T> fixture object type
-	 * @return new fixture object
-	 */
-	public abstract <T> T createFixture(final Class<T> type, final ImmutableList<Class<?>> typeParams);
+	protected abstract <T> T createFixture(final FixtureTypeDefinition<T> type);
 
 	void setIdentityResolver(@Nullable final IdentityResolver resolver) {
 		this.identityResolver = resolver;
@@ -204,7 +196,7 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 			getterClass = proto.cast(type);
 			typeParams = new Type[0];
 		}
-		return findValue(getterClass, ImmutableList.of(typeParams), value, name);
+		return findValue(newDefinition(getterClass, ImmutableList.of(typeParams)), value, name);
 	}
 
 	/**
@@ -233,16 +225,15 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 
 	/**
 	 * @param type object type
-	 * @param typeParams object type's type params
 	 * @param value object value
 	 * @param name object name
 	 * @return proxied object
 	 */
 	@SuppressWarnings({"unchecked"})
-	protected final <T> ValueProvider<? extends T> findValue(final Class<T> type, final ImmutableList<? extends Type> typeParams, final Object value, final String name) {
-		final FixtureHandler<Object, T> handler = findHandler(value, type);
+	protected final <T> ValueProvider<? extends T> findValue(final FixtureTypeDefinition<T> type, final Object value, final String name) {
+		final FixtureHandler<Object, T> handler = findHandler(value, type.getType());
 		if (handler == null) {
-			return (ValueProvider<? extends T>) handle(type, typeParams, value, name);
+			return (ValueProvider<? extends T>) handle(type, value, name);
 		} else {
 			return handler.apply(this, value);
 		}
@@ -254,13 +245,12 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * any source-specific types and perform their own conversion there.
 	 *
 	 * @param requiredType required type
-	 * @param typeParams required type params, never null
 	 * @param sourceValue source value
 	 * @param name value name, for logging
 	 * @return value
 	 */
-	protected ValueProvider<?> handle(final Class<?> requiredType, final ImmutableList<? extends Type> typeParams, final Object sourceValue, final String name) {
-		return resolveIdentity(requiredType, sourceValue);
+	protected ValueProvider<?> handle(final FixtureTypeDefinition<?> requiredType, final Object sourceValue, final String name) {
+		return resolveIdentity(requiredType.getType(), sourceValue);
 	}
 
 	/**
