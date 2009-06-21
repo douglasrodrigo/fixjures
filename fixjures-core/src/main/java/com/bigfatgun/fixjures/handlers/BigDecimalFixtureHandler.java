@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 
 import com.bigfatgun.fixjures.ValueProvider;
 import com.bigfatgun.fixjures.ValueProviders;
-import com.bigfatgun.fixjures.FixtureTypeDefinition;
+import com.bigfatgun.fixjures.FixtureType;
 
 class BigDecimalFixtureHandler extends AbstractFixtureHandler<BigDecimal> {
 
@@ -28,7 +28,7 @@ class BigDecimalFixtureHandler extends AbstractFixtureHandler<BigDecimal> {
 	}
 
 	@Override
-	public ValueProvider<BigDecimal> apply(final HandlerHelper helper, final FixtureTypeDefinition typeDef, final Object source) {
+	public ValueProvider<BigDecimal> apply(final HandlerHelper helper, final FixtureType typeDef, final Object source) {
 		return ValueProviders.of(BigDecimal.valueOf(castSourceValue(Number.class, source).doubleValue()));
 	}
 }

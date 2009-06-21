@@ -15,7 +15,7 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.bigfatgun.fixjures.FixtureTypeDefinition;
+import com.bigfatgun.fixjures.FixtureType;
 import com.bigfatgun.fixjures.ValueProvider;
 import com.bigfatgun.fixjures.ValueProviders;
 
@@ -54,7 +54,7 @@ abstract class NumberFixtureHandler<T extends Number> extends AbstractFixtureHan
 	}
 
 	@Override
-	public final ValueProvider<T> apply(final HandlerHelper helper, final FixtureTypeDefinition typeDef, final Object source) {
+	public final ValueProvider<T> apply(final HandlerHelper helper, final FixtureType typeDef, final Object source) {
 		return ValueProviders.of(narrowNumericValue(castSourceValue(Number.class, source)));
 	}
 

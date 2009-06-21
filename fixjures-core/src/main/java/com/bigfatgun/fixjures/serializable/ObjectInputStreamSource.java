@@ -26,7 +26,7 @@ import java.nio.channels.ReadableByteChannel;
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.FixtureStream;
-import com.bigfatgun.fixjures.FixtureTypeDefinition;
+import com.bigfatgun.fixjures.FixtureType;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -35,7 +35,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * <p>
  * It lazily creates an {@code ObjectInputStream} from the underlying
  * {@code ReadableByteChannel} during the first call to
- * {@link #createFixture(FixtureTypeDefinition)} and does not close it until
+ * {@link #createFixture(com.bigfatgun.fixjures.FixtureType)} and does not close it until
  * {@link #close()} is invoked.
  */
 public class ObjectInputStreamSource extends FixtureSource implements FixtureStream {
@@ -72,7 +72,7 @@ public class ObjectInputStreamSource extends FixtureSource implements FixtureStr
 	 * @return new fixture object
 	 */
 	@Override
-	public Object createFixture(final FixtureTypeDefinition type) {
+	public Object createFixture(final FixtureType type) {
 		try {
 			if (objIn == null) {
 				objIn = new ObjectInputStream(Channels.newInputStream(getSource()));

@@ -19,7 +19,7 @@ import java.math.BigInteger;
 
 import com.bigfatgun.fixjures.ValueProvider;
 import com.bigfatgun.fixjures.ValueProviders;
-import com.bigfatgun.fixjures.FixtureTypeDefinition;
+import com.bigfatgun.fixjures.FixtureType;
 
 class BigIntegerFixtureHandler extends AbstractFixtureHandler<BigInteger> {
 
@@ -28,7 +28,7 @@ class BigIntegerFixtureHandler extends AbstractFixtureHandler<BigInteger> {
 	}
 
 	@Override
-	public ValueProvider<? extends BigInteger> apply(final HandlerHelper helper, final FixtureTypeDefinition typeDef, final Object source) {
+	public ValueProvider<? extends BigInteger> apply(final HandlerHelper helper, final FixtureType typeDef, final Object source) {
 		return ValueProviders.of(BigInteger.valueOf(castSourceValue(Number.class, source).longValue()));
 	}
 }

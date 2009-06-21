@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import static com.bigfatgun.fixjures.FixtureTypeDefinition.wrap;
 import com.bigfatgun.fixjures.handlers.FixtureHandler;
 import com.google.common.collect.Multiset;
 
@@ -91,7 +90,7 @@ public class Fixjure {
 	 * @return new un-sourced fixture builder
 	 */
 	public static <T> FixtureBuilder<T> of(final Class<T> cls) {
-		return new FixtureBuilder<T>(wrap(cls));
+		return new FixtureBuilder<T>(TypeWrapper.wrap(cls));
 	}
 
 	/**
@@ -117,36 +116,36 @@ public class Fixjure {
 
 		static final class FixtureListBuilder<T> extends FixtureBuilder<List<T>> {
 			FixtureListBuilder(final Class<T> cls) {
-				super(wrap(List.class).of(cls));
+				super(TypeWrapper.wrap(List.class).of(cls));
 			}
 		}
 
 		static final class FixtureSetBuilder<T> extends FixtureBuilder<Set<T>> {
 			FixtureSetBuilder(final Class<T> cls) {
-				super(wrap(Set.class).of(cls));
+				super(TypeWrapper.wrap(Set.class).of(cls));
 			}
 		}
 
 		static final class FixtureMapBuilder<K,V> extends FixtureBuilder<Map<K,V>> {
 			FixtureMapBuilder(final Class<K> keyCls, final Class<V> valCls) {
-				super(wrap(Map.class).of(keyCls, valCls));
+				super(TypeWrapper.wrap(Map.class).of(keyCls, valCls));
 			}
 		}
 
 		static final class FixtureMultisetBuilder<T> extends FixtureBuilder<Multiset<T>> {
 			FixtureMultisetBuilder(final Class<T> cls) {
-				super(wrap(Multiset.class).of(cls));
+				super(TypeWrapper.wrap(Multiset.class).of(cls));
 			}
 		}
 
-		private final FixtureTypeDefinition fixtureObjectType;
+		private final FixtureType fixtureObjectType;
 
 		FixtureBuilder(final FixtureBuilder<T> builder) {
 			this(builder.getType());
 		}
 
-		FixtureBuilder(final FixtureTypeDefinition typeDefinition) {
-			fixtureObjectType = typeDefinition;
+		FixtureBuilder(final FixtureType type) {
+			fixtureObjectType = type;
 		}
 
 		/**
@@ -156,6 +155,7 @@ public class Fixjure {
 		 * @param source fixture source, could be JSON or otherwise
 		 * @return sourced fixture builder
 		 */
+		@SuppressWarnings({"ClassReferencesSubclass"})
 		public final SourcedFixtureBuilder<T> from(final FixtureSource source) {
 			return new SourcedFixtureBuilder<T>(this, source);
 		}
@@ -166,11 +166,12 @@ public class Fixjure {
 		 * @param stream stream to load from
 		 * @return new builder
 		 */
+		@SuppressWarnings({"ClassReferencesSubclass"})
 		public final StreamedFixtureBuilder<T> fromStream(final FixtureStream stream) {
 			return new StreamedFixtureBuilder<T>(this, stream.asSourceStream());
 		}
 
-		protected final FixtureTypeDefinition getType() {
+		protected final FixtureType getType() {
 			return fixtureObjectType;
 		}
 
@@ -206,6 +207,7 @@ public class Fixjure {
 							return next != null;
 						}
 
+						@SuppressWarnings({"unchecked"})
 						public T next() {
 							return (T) next;
 						}
@@ -257,6 +259,7 @@ public class Fixjure {
 		 *
 		 * @return new fixture object
 		 */
+		@SuppressWarnings({"unchecked"})
 		public final T create() {
 			try {
 				return (T) this.fixtureSource.createFixture(getType());

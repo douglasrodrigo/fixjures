@@ -15,7 +15,7 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.bigfatgun.fixjures.FixtureTypeDefinition;
+import com.bigfatgun.fixjures.FixtureType;
 import com.bigfatgun.fixjures.ValueProvider;
 
 /**
@@ -47,5 +47,5 @@ public interface FixtureHandler<T> {
 	 * @param helper fixture handler helper
 	 * @return return object producer
 	 */
-   ValueProvider<? extends T> apply(HandlerHelper helper, FixtureTypeDefinition typeDef, Object source);
+   ValueProvider<? extends T> apply(HandlerHelper helper, FixtureType typeDef, Object source);
 }

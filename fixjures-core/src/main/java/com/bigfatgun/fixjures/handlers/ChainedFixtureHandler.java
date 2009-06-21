@@ -16,7 +16,8 @@
 package com.bigfatgun.fixjures.handlers;
 
 import com.bigfatgun.fixjures.ValueProvider;
-import com.bigfatgun.fixjures.FixtureTypeDefinition;
+import com.bigfatgun.fixjures.FixtureType;
+import com.bigfatgun.fixjures.TypeWrapper;
 
 /**
  * Chained handler that can join two fixture handlers that have a return and source type
@@ -29,10 +30,10 @@ public abstract class ChainedFixtureHandler<T> extends AbstractFixtureHandler<T>
 	}
 
 	public final <T1> FixtureHandler<T1> link(final FixtureHandler<T1> handler) {
-		final FixtureTypeDefinition interimTypeDef = FixtureTypeDefinition.wrap(getReturnType());
+		final FixtureType interimTypeDef = TypeWrapper.wrap(getReturnType());
 		return new AbstractFixtureHandler<T1>(getSourceType(), handler.getReturnType()) {
 			@Override
-			public ValueProvider<? extends T1> apply(final HandlerHelper helper, final FixtureTypeDefinition typeDef, final Object source) {
+			public ValueProvider<? extends T1> apply(final HandlerHelper helper, final FixtureType typeDef, final Object source) {
 				return handler.apply(helper, typeDef, ChainedFixtureHandler.this.apply(helper, interimTypeDef, source).get());
 			}
 		};

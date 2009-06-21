@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
-import com.bigfatgun.fixjures.FixtureSource;
+import com.bigfatgun.fixjures.ByteUtil;
 
 /**
  * An enumeration of source types.
@@ -63,7 +63,7 @@ public enum NativeSourceType implements SourceType {
 		 */
 		@Override
 		public ReadableByteChannel openStream(final ClassLoader clsLoader, final String literal) {
-			return Channels.newChannel(new ByteArrayInputStream(FixtureSource.getBytes(literal)));
+			return Channels.newChannel(new ByteArrayInputStream(ByteUtil.getBytes(literal)));
 		}
 	};
 

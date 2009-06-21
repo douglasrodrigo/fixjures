@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import com.bigfatgun.fixjures.Fixjure;
 import static com.bigfatgun.fixjures.Fixjure.Option.SKIP_UNMAPPABLE;
+import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureFactory;
 import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.Strategies;
@@ -17,6 +18,7 @@ import com.bigfatgun.fixjures.json.JSONSource;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -97,5 +99,29 @@ public class SampleTest {
 		assertEquals("The Team", t.getName());
 		assertNotNull(t.getLeague());
 		assertEquals("NFL", t.getLeague().getName());
+	}
+
+	@Test
+	public void nullReferenceTest() {
+		final Map<String, String> teams = ImmutableMap.of("the team", "{ name: 'The Team' }");
+		final Map<Class<?>, Map<String, String>> json = ImmutableMap.<Class<?>, Map<String, String>>of(
+				  Team.class, teams
+				  );
+		final FixtureFactory fact = FixtureFactory
+				  .newJsonFactory(Strategies.newInMemoryStrategy(json))
+				  .enableOption(Fixjure.Option.NULL_ON_UNMAPPED);
+		final Team t = fact.createFixture(Team.class, "the team");
+		assertNull(t.getLeague());
+	}
+
+	@Test(expected = FixtureException.class)
+	public void nullReferenceTestFailsByDefault() {
+		final Map<String, String> teams = ImmutableMap.of("the team", "{ name: 'The Team' }");
+		final Map<Class<?>, Map<String, String>> json = ImmutableMap.<Class<?>, Map<String, String>>of(
+				  Team.class, teams
+				  );
+		final FixtureFactory fact = FixtureFactory.newJsonFactory(Strategies.newInMemoryStrategy(json));
+		final Team t = fact.createFixture(Team.class, "the team");
+		assertNull(t.getLeague());
 	}
 }

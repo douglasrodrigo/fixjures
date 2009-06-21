@@ -16,7 +16,7 @@
 package com.bigfatgun.fixjures.handlers;
 
 import com.bigfatgun.fixjures.FixtureException;
-import com.bigfatgun.fixjures.FixtureTypeDefinition;
+import com.bigfatgun.fixjures.FixtureType;
 import com.bigfatgun.fixjures.ValueProvider;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -65,7 +65,7 @@ public abstract class AbstractFixtureHandler<T> implements FixtureHandler<T>  {
 				  && (obj == null || sourceType.isAssignableFrom(obj.getClass()));
 	}
 
-	protected final ValueProvider<?> help(final HandlerHelper helper, final Object source, final FixtureTypeDefinition type) {
+	protected final ValueProvider<?> help(final HandlerHelper helper, final Object source, final FixtureType type) {
 		return helper.findHandler(source, type).apply(helper, type, source);
 	}
 }

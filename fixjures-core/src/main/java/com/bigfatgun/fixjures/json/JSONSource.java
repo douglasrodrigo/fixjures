@@ -28,8 +28,9 @@ import java.nio.channels.ReadableByteChannel;
 import com.bigfatgun.fixjures.FixtureException;
 import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.bigfatgun.fixjures.FixtureSource;
-import com.bigfatgun.fixjures.FixtureTypeDefinition;
+import com.bigfatgun.fixjures.FixtureType;
 import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ByteUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -61,7 +62,7 @@ public final class JSONSource extends FixtureSource {
 	}
 
 	public static FixtureSource newJsonString(final String json) {
-		return new JSONSource(new ByteArrayInputStream(getBytes(json)));
+		return new JSONSource(new ByteArrayInputStream(ByteUtil.getBytes(json)));
 	}
 
 	public static FixtureSource newRemoteUrl(final URL url) {
@@ -90,7 +91,7 @@ public final class JSONSource extends FixtureSource {
 		installTypeHandler(JsonHandlers.newObjectProxyHandler());
 	}
 
-	public Object createFixture(final FixtureTypeDefinition type) {
+	public Object createFixture(final FixtureType type) {
 		try {
 			final String sourceJson = loadSource();
 			final Object jsonValue = parseJson(sourceJson);
@@ -148,7 +149,7 @@ public final class JSONSource extends FixtureSource {
 	}
 
 	private String loadSource() throws IOException {
-		final String untrimmed = loadTextFromChannel(getSource());
+		final String untrimmed = ByteUtil.loadTextFromChannel(getSource(), getCharset());
 		return untrimmed.trim();
 	}
 }

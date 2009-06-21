@@ -17,18 +17,12 @@ package com.bigfatgun.fixjures;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 import java.util.Set;
 import javax.annotation.Nullable;
 
-import static com.bigfatgun.fixjures.FixtureTypeDefinition.wrap;
 import com.bigfatgun.fixjures.handlers.AbstractFixtureHandler;
 import com.bigfatgun.fixjures.handlers.ChainedFixtureHandler;
 import com.bigfatgun.fixjures.handlers.FixtureHandler;
@@ -51,8 +45,6 @@ import com.google.common.collect.Sets;
  */
 public abstract class FixtureSource implements Closeable, HandlerHelper {
 
-	private static final String CHARSET = "UTF-8";
-
 	private static final ImmutableSet<Class<?>> NUMERIC_TYPES = ImmutableSet.<Class<?>>of(
 			  Byte.class,
 			  Byte.TYPE,
@@ -70,50 +62,11 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 
 	private static final ImmutableSet<Fixjure.Option> DEFAULT_OPTIONS = ImmutableSet.of();
 
-	/**
-	 * Converts the given string into a UTF-8 encoded byte array.
-	 *
-	 * @param str string to convert
-	 * @return byte array
-	 */
-	public static byte[] getBytes(final String str) {
-		try {
-			return str.getBytes(CHARSET);
-		} catch (UnsupportedEncodingException e) {
-			throw FixtureException.convert("JSONSource requires UTF-8.", e);
-		}
-	}
-
-	/**
-	 * Reads the entire contents of the given byte channel into a string builder. The channel is
-	 * still open after this method returns.
-	 *
-	 * @param channel channel to read, will NOT be closed before the method returns
-	 * @return string contents of channel
-	 * @throws IOException if there are any IO errors while reading or closing the given channel
-	 */
-	protected static String loadTextFromChannel(final ReadableByteChannel channel) throws IOException {
-		try {
-			final ByteBuffer buf = ByteBuffer.allocate(Short.MAX_VALUE);
-			final CharsetDecoder decoder = Charset.forName(CHARSET).newDecoder();
-			final StringBuilder string = new StringBuilder();
-
-			while (channel.read(buf) != -1) {
-				buf.flip();
-				string.append(decoder.decode(buf));
-				buf.clear();
-			}
-
-			return string.toString();
-		} finally {
-			channel.close();
-		}
-	}
-
 	private final Multimap<Class<?>, FixtureHandler<?>> typeHandlers;
 	private final ReadableByteChannel sourceChannel;
 	private final Set<Fixjure.Option> options;
-	@Nullable private IdentityResolver identityResolver;
+	@Nullable private String preferredCharset = null;
+	@Nullable private IdentityResolver identityResolver = null;
 
 	protected FixtureSource(final ReadableByteChannel source) {
 		sourceChannel = Preconditions.checkNotNull(source);
@@ -131,6 +84,10 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 		options.add(opt);
 	}
 
+	public final void withCharset(final String charset) {
+		this.preferredCharset = checkNotNull(charset);
+	}
+
 	public void close() throws IOException {
 		sourceChannel.close();
 	}
@@ -139,7 +96,7 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 		return ImmutableSet.copyOf(options);
 	}
 
-	protected abstract Object createFixture(final FixtureTypeDefinition type);
+	protected abstract Object createFixture(final FixtureType type);
 
 	void setIdentityResolver(@Nullable final IdentityResolver resolver) {
 		this.identityResolver = resolver;
@@ -168,6 +125,10 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 		return sourceChannel;
 	}
 
+	protected final String getCharset() {
+		return preferredCharset;
+	}
+
 	protected final void installTypeHandler(final FixtureHandler<?> handler) {
 		typeHandlers.put(handler.getReturnType(), handler);
 		if (handler instanceof PrimitiveHandler) {
@@ -184,7 +145,7 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final FixtureHandler<?> findHandler(final Object src, final FixtureTypeDefinition type) {
+	public final FixtureHandler<?> findHandler(final Object src, final FixtureType type) {
 		final Class<?> cls = type.getType();
 
 		if (cls.isInstance(src)) {
@@ -216,7 +177,7 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 		//noinspection unchecked
 		return new AbstractFixtureHandler(Object.class, cls) {
 			@Override
-			public ValueProvider<?> apply(final HandlerHelper helper, final FixtureTypeDefinition typeDef, final Object source) {
+			public ValueProvider<?> apply(final HandlerHelper helper, final FixtureType typeDef, final Object source) {
 				return resolveIdentity(cls, src);
 			}
 		};
@@ -227,7 +188,7 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * @param value object value
 	 * @return proxied object
 	 */
-	protected final ValueProvider<?> findValue(final FixtureTypeDefinition type, final Object value) {
+	protected final ValueProvider<?> findValue(final FixtureType type, final Object value) {
 		final FixtureHandler<?> handler = findHandler(value, type);
 		return handler.apply(this, type, value);
 	}
@@ -263,7 +224,7 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 		installTypeHandler(bigdecHandler);
 		final ChainedFixtureHandler<Number> chainedHandler = new ChainedFixtureHandler<Number>(CharSequence.class, Number.class) {
 			@Override
-			public ValueProvider<? extends Number> apply(final HandlerHelper helper, final FixtureTypeDefinition typeDef, final Object source) {
+			public ValueProvider<? extends Number> apply(final HandlerHelper helper, final FixtureType typeDef, final Object source) {
 				return ValueProviders.of(Double.parseDouble(castSourceValue(CharSequence.class, source).toString()));
 			}
 		};

@@ -25,6 +25,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -86,9 +87,7 @@ public final class Strategies {
 	 * @return resource name
 	 */
 	public static ResourceNameStrategy newFormatStringStrategy(final String formatStr) {
-		if (formatStr == null) {
-			throw new NullPointerException("formatStr");
-		}
+		checkNotNull(formatStr);
 
 		return new ResourceNameStrategy() {
 			public String getResourceName(final Class<?> type, final String name) {
@@ -186,9 +185,7 @@ public final class Strategies {
 	 * @throws NullPointerException if {@code nameStrategy} is null
 	 */
 	public static SourceStrategy newFileStrategy(final ResourceNameStrategy nameStrategy) {
-		if (nameStrategy == null) {
-			throw new NullPointerException("nameStrategy");
-		}
+		checkNotNull(nameStrategy);
 
 		return new SourceStrategy() {
 			public ReadableByteChannel findStream(final Class<?> type, final String name) throws IOException {
@@ -209,9 +206,7 @@ public final class Strategies {
 	 * @throws NullPointerException if {@code nameStrategy} is null
 	 */
 	public static SourceStrategy newResourceStrategy(final ClassLoader clsLoader, final ResourceNameStrategy nameStrategy) {
-		if (nameStrategy == null) {
-			throw new NullPointerException("nameStrategy");
-		}
+		checkNotNull(nameStrategy);
 
 		return new SourceStrategy() {
 			public ReadableByteChannel findStream(final Class<?> type, final String name) throws IOException {

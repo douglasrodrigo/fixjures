@@ -22,8 +22,9 @@ import java.util.Set;
 
 import com.bigfatgun.fixjures.Fixjure;
 import static com.bigfatgun.fixjures.FixtureException.convert;
-import com.bigfatgun.fixjures.FixtureTypeDefinition;
+import com.bigfatgun.fixjures.FixtureType;
 import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.TypeWrapper;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -56,11 +57,11 @@ abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 	}
 
 	@Override
-	public final FixtureTypeDefinition suggestType(final String key) {
+	public final FixtureType suggestType(final String key) {
 		final Method getter;
 		try {
 			getter = getType().getMethod(key);
-			return FixtureTypeDefinition.wrapMethodReturnType(getter);
+			return TypeWrapper.wrapMethodReturnType(getter);
 		} catch (NoSuchMethodException e) {
 			if (isOptionEnabled(Fixjure.Option.SKIP_UNMAPPABLE)) {
 				return null;

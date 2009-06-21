@@ -21,6 +21,7 @@ import java.lang.reflect.Proxy;
 import javax.annotation.Nullable;
 
 import com.bigfatgun.fixjures.Fixjure;
+import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.ValueProvider;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
@@ -89,7 +90,7 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 		} else if (isOptionEnabled(Fixjure.Option.NULL_ON_UNMAPPED)) {
 			return null;
 		} else {
-			throw new RuntimeException("Method has not been stubbed. Call: " + callToString(method, objects));
+			throw new FixtureException("Method has not been stubbed. Call: " + callToString(method, objects));
 		}
 	}
 

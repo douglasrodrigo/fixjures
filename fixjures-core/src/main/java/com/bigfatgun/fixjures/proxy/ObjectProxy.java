@@ -15,7 +15,7 @@
  */
 package com.bigfatgun.fixjures.proxy;
 
-import com.bigfatgun.fixjures.FixtureTypeDefinition;
+import com.bigfatgun.fixjures.FixtureType;
 import com.bigfatgun.fixjures.ValueProvider;
 
 /**
@@ -47,5 +47,5 @@ public interface ObjectProxy<T> {
 	 */
 	T create();
 
-	FixtureTypeDefinition suggestType(String key);
+	FixtureType suggestType(String key);
 }
