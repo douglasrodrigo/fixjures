@@ -56,87 +56,40 @@ import org.json.JSONObject;
 
 /**
  * Mocks objects based on JSON fixture data.
- * <p/>
- * Date: Mar 25, 2009
- * <p/>
- * Time: 8:48:25 AM
- *
- * @author Steve Reed
  */
 public final class JSONSource extends FixtureSource {
 
-	/**
-	 * Static factory for stream source.
-	 *
-	 * @param channel source channel
-	 * @return new fixture source
-	 */
 	public static FixtureSource newJsonStream(final ReadableByteChannel channel) {
 		return new JSONSource(channel);
 	}
 
-	/**
-	 * Static factory for file source.
-	 *
-	 * @param jsonFile json file
-	 * @return new json source
-	 * @throws FileNotFoundException if file is not found
-	 */
 	public static FixtureSource newJsonFile(final File jsonFile) throws FileNotFoundException {
-		return new JSONSource(jsonFile);
+		return new JSONSource(new RandomAccessFile(jsonFile, "r").getChannel());
 	}
 
-	/**
-	 * Static factory for resource-name based source.
-	 *
-	 * @param resourceName name of resource to load from class loader
-	 * @return new json resource
-	 * @throws FileNotFoundException if the resource is not found
-	 */
 	public static FixtureSource newJsonResource(final String resourceName) throws FileNotFoundException {
 		return newJsonResource(FixtureSource.class.getClassLoader(), resourceName);
 	}
 
-	/**
-	 * Static factory for resource-name based source.
-	 *
-	 * @param clsLoader classloader to use to locate resource
-	 * @param resourceName resource to load
-	 * @return new json resource
-	 * @throws FileNotFoundException if the resource is not found
-	 */
-	public static FixtureSource newJsonResource(final ClassLoader clsLoader, final String resourceName) throws FileNotFoundException {
+	public static FixtureSource newJsonResource(final ClassLoader clsLoader, final String resourceName) {
 		final InputStream input = clsLoader.getResourceAsStream(resourceName);
 		if (input == null) {
-			throw new FileNotFoundException(resourceName);
+			throw new FixtureException("Unable to locate resource: " + resourceName);
 		} else {
 			return new JSONSource(input);
 		}
 	}
 
-	/**
-	 * Static factory for a json string literal.
-	 *
-	 * @param json json string literal
-	 * @return new json source
-	 */
 	public static FixtureSource newJsonString(final String json) {
-		return new JSONSource(json);
+		return new JSONSource(new ByteArrayInputStream(getBytes(json)));
 	}
 
-	/**
-	 * Static factory for URL source.
-	 *
-	 * @param url json url
-	 * @return new json source
-	 * @throws IOException if json cannot be found/retrieved at the given url
-	 */
-	public static FixtureSource newRemoteUrl(final URL url) throws IOException {
-		return new JSONSource(url);
-	}
-
-	private JSONSource(final File jsonFile) throws FileNotFoundException {
-		this(new RandomAccessFile(jsonFile, "r").getChannel());
+	public static FixtureSource newRemoteUrl(final URL url) {
+		try {
+			return new JSONSource(url.openStream());
+		} catch (IOException e) {
+			throw FixtureException.convert(e);
+		}
 	}
 
 	private JSONSource(final InputStream input) {
@@ -145,14 +98,6 @@ public final class JSONSource extends FixtureSource {
 
 	private JSONSource(final ReadableByteChannel source) {
 		super(source);
-	}
-
-	private JSONSource(final String raw) {
-		this(new ByteArrayInputStream(getBytes(raw)));
-	}
-
-	private JSONSource(final URL url) throws IOException {
-		this(url.openStream());
 	}
 
 	public <T> T createFixture(final FixtureTypeDefinition<T> type) {
