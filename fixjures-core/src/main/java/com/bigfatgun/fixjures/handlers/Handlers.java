@@ -26,54 +26,84 @@ import com.google.common.collect.Lists;
 
 public final class Handlers {
 
-	public static FixtureHandler<Number,Byte> byteHandler() {
-		return new ByteFixtureHandler();
+	public static FixtureHandler<Byte> byteHandler() {
+		return new NumberFixtureHandler<Byte>(Byte.class, Byte.TYPE) {
+			@Override
+			protected Byte narrowNumericValue(final Number number) {
+				return number.byteValue();
+			}
+		};
 	}
 
-	public static FixtureHandler<Number,Short> shortHandler() {
-		return new ShortFixtureHandler();
+	public static FixtureHandler<Short> shortHandler() {
+		return new NumberFixtureHandler<Short>(Short.class, Short.TYPE) {
+			@Override
+			protected Short narrowNumericValue(final Number number) {
+				return number.shortValue();
+			}
+		};
 	}
 
-	public static FixtureHandler<Number,Integer> integerHandler() {
-		return new IntegerFixtureHandler();
+	public static FixtureHandler<Integer> integerHandler() {
+		return new NumberFixtureHandler<Integer>(Integer.class, Integer.TYPE) {
+			@Override
+			protected Integer narrowNumericValue(final Number number) {
+				return number.intValue();
+			}
+		};
 	}
 
-	public static FixtureHandler<Number,Long> longHandler() {
-		return new LongFixtureHandler();
+	public static FixtureHandler<Long> longHandler() {
+		return new NumberFixtureHandler<Long>(Long.class, Long.TYPE) {
+			@Override
+			protected Long narrowNumericValue(final Number number) {
+				return number.longValue();
+			}
+		};
 	}
 
-	public static FixtureHandler<Number,Float> floatHandler() {
-		return new FloatFixtureHandler();
+	public static FixtureHandler<Float> floatHandler() {
+		return new NumberFixtureHandler<Float>(Float.class, Float.TYPE) {
+			@Override
+			protected Float narrowNumericValue(final Number number) {
+				return number.floatValue();
+			}
+		};
 	}
 
-	public static FixtureHandler<Number,Double> doubleHandler() {
-		return new DoubleFixtureHandler();
+	public static FixtureHandler<Double> doubleHandler() {
+		return new NumberFixtureHandler<Double>(Double.class, Double.TYPE) {
+			@Override
+			protected Double narrowNumericValue(final Number number) {
+				return number.doubleValue();
+			}
+		};
 	}
 
-	public static FixtureHandler<CharSequence,StringBuilder> stringBuilderHandler() {
+	public static FixtureHandler<StringBuilder> stringBuilderHandler() {
 		return new StringBuilderFixtureHandler();
 	}
 
-	public static <SourceType, InterimType, EndType> Iterable<FixtureHandler<SourceType,? extends EndType>> createChain(
-			  final ChainedFixtureHandler<SourceType, InterimType> chained,
-			  final ImmutableList<FixtureHandler<InterimType, EndType>> handlers) {
+	public static <InterimType, EndType> Iterable<FixtureHandler<? extends EndType>> createChain(
+			  final ChainedFixtureHandler<InterimType> chained,
+			  final ImmutableList<FixtureHandler<EndType>> handlers) {
 
-		final List<FixtureHandler<SourceType,? extends EndType>> fixtures = Lists.newLinkedList();
-		for (final FixtureHandler<InterimType, EndType> handler : handlers) {
+		final List<FixtureHandler<? extends EndType>> fixtures = Lists.newLinkedList();
+		for (final FixtureHandler<EndType> handler : handlers) {
 			fixtures.add(chained.link(handler));
 		}
 		return Collections.unmodifiableList(fixtures);
 	}
 
-	public static FixtureHandler<Number, BigInteger> bigIntegerHandler() {
+	public static FixtureHandler<BigInteger> bigIntegerHandler() {
 		return new BigIntegerFixtureHandler();
 	}
 
-	public static FixtureHandler<Number, BigDecimal> bigDecimalHandler() {
+	public static FixtureHandler<BigDecimal> bigDecimalHandler() {
 		return new BigDecimalFixtureHandler();
 	}
 
-	public static FixtureHandler<CharSequence, Date> javaDateHandler() {
+	public static FixtureHandler<Date> javaDateHandler() {
 		return new JavaDateHandler();
 	}
 }

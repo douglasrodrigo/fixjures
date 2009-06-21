@@ -16,6 +16,7 @@
 package com.bigfatgun.fixjures.proxy;
 
 import com.bigfatgun.fixjures.Fixjure;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Static proxy factory.
@@ -32,9 +33,9 @@ public final class Proxies {
 	 * @param <T> proxy object type
 	 * @return object proxy
 	 */
-	public static <T> ObjectProxy<T> newProxy(final Class<T> cls) {
+	public static <T> ObjectProxy<T> newProxy(final Class<T> cls, final ImmutableSet<Fixjure.Option> options) {
 		if (cls.isInterface()) {
-			return newInterfaceProxy(cls);
+			return newInterfaceProxy(cls, options);
 		} else {
 			return newJavaBeanProxy(cls);
 		}
@@ -48,10 +49,8 @@ public final class Proxies {
 	 * @param options fixjure options
 	 * @return new object proxy
 	 */
-	public static <T> ObjectProxy<T> newInterfaceProxy(final Class<T> cls, final Fixjure.Option... options) {
-		final InterfaceProxy<T> proxy = new InterfaceProxy<T>(cls);
-		proxy.enableOptions(options);
-		return proxy;
+	public static <T> ObjectProxy<T> newInterfaceProxy(final Class<T> cls, final ImmutableSet<Fixjure.Option> options) {
+		return new InterfaceProxy<T>(cls, options);
 	}
 
 	/**

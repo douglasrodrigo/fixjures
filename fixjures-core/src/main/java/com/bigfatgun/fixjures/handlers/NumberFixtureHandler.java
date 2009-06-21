@@ -15,27 +15,31 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.bigfatgun.fixjures.FixtureTypeDefinition;
+import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.ValueProviders;
+
 /**
  * Handles {@code Number}s.
  *
  * @author Steve Reed
  */
-public abstract class NumberFixtureHandler<NumericType extends Number> extends AbstractFixtureHandler<Number, NumericType> {
+abstract class NumberFixtureHandler<T extends Number> extends AbstractFixtureHandler<T> implements PrimitiveHandler<T> {
+
+	private final Class<T> primitiveType;
+
+	protected NumberFixtureHandler(final Class<T> returnType, final Class<T> primitiveType) {
+		super(Number.class, returnType);
+		this.primitiveType = primitiveType;
+	}
 
 	/**
 	 * Abstract method provided by subclasses to provide the primitive type.
 	 *
 	 * @return numeric primitive type
 	 */
-	protected abstract Class<NumericType> getPrimitiveType();
-
-	/**
-	 * Returns {@code Number}.
-	 * <p>
-	 * {@inheritDoc}
-	 */
-	public final Class<Number> getSourceType() {
-		return Number.class;
+	public final Class<T> getPrimitiveType() {
+		return primitiveType;
 	}
 
 	/**
@@ -45,6 +49,14 @@ public abstract class NumberFixtureHandler<NumericType extends Number> extends A
 	 */
 	@Override
 	public final boolean canDeserialize(final Object obj, final Class<?> desiredType) {
-		return super.canDeserialize(obj, desiredType) || getPrimitiveType().equals(desiredType);
+		return (obj == null || Number.class.isAssignableFrom(obj.getClass()))
+				  && (getReturnType().equals(desiredType) || getPrimitiveType().equals(desiredType));
 	}
+
+	@Override
+	public final ValueProvider<T> apply(final HandlerHelper helper, final FixtureTypeDefinition typeDef, final Object source) {
+		return ValueProviders.of(narrowNumericValue(castSourceValue(Number.class, source)));
+	}
+
+	protected abstract T narrowNumericValue(final Number number);
 }

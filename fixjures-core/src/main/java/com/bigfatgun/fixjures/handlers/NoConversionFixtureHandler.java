@@ -17,13 +17,14 @@ package com.bigfatgun.fixjures.handlers;
 
 import com.bigfatgun.fixjures.ValueProvider;
 import com.bigfatgun.fixjures.ValueProviders;
+import com.bigfatgun.fixjures.FixtureTypeDefinition;
 
 /**
  * Simple object pass-through for when no conversion is necessary.
  *
  * @author Steve Reed
  */
-public final class NoConversionFixtureHandler<T> extends AbstractFixtureHandler<T, T> {
+public final class NoConversionFixtureHandler<T> extends AbstractFixtureHandler<T> {
 
 	/**
 	 * Static factory method for better type inference.
@@ -36,39 +37,17 @@ public final class NoConversionFixtureHandler<T> extends AbstractFixtureHandler<
 		return new NoConversionFixtureHandler<T>(cls);
 	}
 
-	/** The type. */
-	private final Class<T> cls;
-
 	/**
 	 * Creates a new handler of a given type.
 	 *
 	 * @param type type
 	 */
 	private NoConversionFixtureHandler(final Class<T> type) {
-		super();
-		cls = type;
+		super(type, type);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public Class<T> getSourceType() {
-		return cls;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Class<T> getReturnType() {
-		return cls;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public ValueProvider<T> apply(final HandlerHelper helper, final T t) {
-		return ValueProviders.of(t);
+	public ValueProvider<? extends T> apply(final HandlerHelper helper, final FixtureTypeDefinition typeDef, final Object source) {
+		return ValueProviders.of(castSourceValue(getReturnType(), source));
 	}
 }

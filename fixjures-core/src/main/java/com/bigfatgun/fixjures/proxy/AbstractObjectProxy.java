@@ -15,48 +15,68 @@
  */
 package com.bigfatgun.fixjures.proxy;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 
+import com.bigfatgun.fixjures.Fixjure;
+import static com.bigfatgun.fixjures.FixtureException.convert;
+import com.bigfatgun.fixjures.FixtureTypeDefinition;
 import com.bigfatgun.fixjures.ValueProvider;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * Base proxy class that holds on to stubs and the object type.
  *
- * @param <T> proxy object type
  * @author Steve Reed
+ * @param <T> proxy object type
  */
 abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 
-	/** Proxy object type. */
 	private final Class<T> clazz;
-
-	/** Map of method name to stub. */
 	private final Map<String, ValueProvider<?>> stubs;
+	private final Set<Fixjure.Option> options;
 
-	/**
-	 * Constructor required to be invoked by subclasses in order to set up the class and stubs.
-	 *
-	 * @param cls proxy object type
-	 * @throws NullPointerException if {@code cls} is null
-	 */
-	protected AbstractObjectProxy(final Class<T> cls) {
-		clazz = checkNotNull(cls);
-		stubs = Maps.newHashMap();
+	protected AbstractObjectProxy(final Class<T> cls, final Set<Fixjure.Option> options) {
+		this.clazz = checkNotNull(cls);
+		this.stubs = Maps.newHashMap();
+		this.options = Sets.newEnumSet(options, Fixjure.Option.class);
 	}
 
-	/**
-	 * Returns the proxy object type.
-	 * @return the proxy object type
-	 */
 	public final Class<T> getType() {
 		return clazz;
 	}
 
+	public void enableOptions(final Fixjure.Option[] options) {
+		this.options.addAll(Arrays.asList(options));
+	}
+
+	@Override
+	public final FixtureTypeDefinition suggestType(final String key) {
+		final Method getter;
+		try {
+			getter = getType().getMethod(key);
+			return FixtureTypeDefinition.wrapMethodReturnType(getter);
+		} catch (NoSuchMethodException e) {
+			if (isOptionEnabled(Fixjure.Option.SKIP_UNMAPPABLE)) {
+				return null;
+			} else {
+				throw convert(e);
+			}
+		}
+	}
+
+	protected boolean isOptionEnabled(final Fixjure.Option option) {
+		return options.contains(option);
+	}
+
 	/**
 	 * Returns an immutable map of getter name to value stub.
+	 *
 	 * @return an immutable map of getter name to value stub
 	 */
 	protected final ImmutableMap<String, ValueProvider<?>> getStubs() {
@@ -67,7 +87,7 @@ abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 	 * Adds a value stub for a method with the given name.
 	 *
 	 * @param methodName method name
-	 * @param valueStub method return value stub
+	 * @param valueStub  method return value stub
 	 */
 	public final void addValueStub(final String methodName, final ValueProvider<?> valueStub) {
 		stubs.put(methodName, valueStub);

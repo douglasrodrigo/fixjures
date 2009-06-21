@@ -1,6 +1,5 @@
 package com.bigfatgun.fixjures;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -12,13 +11,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 
 import static com.bigfatgun.fixjures.Fixjure.Option.SKIP_UNMAPPABLE;
 import com.bigfatgun.fixjures.json.JSONSource;
 import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
-import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Iterables;
@@ -30,10 +27,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 public class FixjureTest {
@@ -135,11 +132,7 @@ public class FixjureTest {
 	public void factory() {
 		FixtureFactory fact = FixtureFactory.newFactory(new SourceFactory() {
 			public FixtureSource newInstance(final Class<?> type, final String name) {
-				try {
-					return JSONSource.newJsonResource(FixjureTest.class.getClassLoader(), String.format("fixjures/%s/%s.json", type.getName(), name));
-				} catch (FileNotFoundException e) {
-					throw new RuntimeException(e);
-				}
+				return JSONSource.newJsonResource(FixjureTest.class.getClassLoader(), String.format("fixjures/%s/%s.json", type.getName(), name));
 			}
 		});
 		fact.enableOption(SKIP_UNMAPPABLE);
@@ -217,11 +210,7 @@ public class FixjureTest {
 		double cpwoc = doPerf(fact, NyTimes.class, "one", 1000, true, "classpath w/o cache");
 		fact = FixtureFactory.newFactory(new SourceFactory() {
 			public FixtureSource newInstance(final Class<?> type, final String name) {
-				try {
-					return JSONSource.newJsonResource(FixjureTest.class.getClassLoader(), String.format("fixjures/%s/%s.json", type.getName(), name));
-				} catch (FileNotFoundException e) {
-					throw convert(e);
-				}
+				return JSONSource.newJsonResource(FixjureTest.class.getClassLoader(), String.format("fixjures/%s/%s.json", type.getName(), name));
 			}
 		});
 		double fwc = doPerf(fact, NyTimes.class, "one", 1000000, false, "file w/ cache");

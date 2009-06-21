@@ -69,11 +69,10 @@ public class ObjectInputStreamSource extends FixtureSource implements FixtureStr
 	 * Lazy-creates an {@code ObjectInputStream} and reads an object from it.
 	 *
 	 * @param type fixture object type
-	 * @param <T> fixture object type
 	 * @return new fixture object
 	 */
 	@Override
-	public <T> T createFixture(final FixtureTypeDefinition<T> type) {
+	public Object createFixture(final FixtureTypeDefinition type) {
 		try {
 			if (objIn == null) {
 				objIn = new ObjectInputStream(Channels.newInputStream(getSource()));

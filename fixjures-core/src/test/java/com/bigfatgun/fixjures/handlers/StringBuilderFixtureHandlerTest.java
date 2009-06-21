@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import static com.bigfatgun.fixjures.FixtureTypeDefinition.wrap;
 
 public class StringBuilderFixtureHandlerTest {
 
@@ -18,7 +19,7 @@ public class StringBuilderFixtureHandlerTest {
 
 	@Test
 	public void stringWorks() {
-		assertEquals(toString(), handler.apply(null, toString()).get().toString());
+		assertEquals(toString(), handler.apply(null, wrap(StringBuilder.class), toString()).get().toString());
 	}
 
 	@Test

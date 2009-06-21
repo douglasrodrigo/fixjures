@@ -9,10 +9,6 @@ import java.util.Set;
 
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
-import com.bigfatgun.fixjures.ValueProvider;
-import com.bigfatgun.fixjures.ValueProviders;
-import com.bigfatgun.fixjures.handlers.AbstractFixtureHandler;
-import com.bigfatgun.fixjures.handlers.HandlerHelper;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
@@ -93,6 +89,7 @@ public class JSONSourceTest {
 		assertEquals("Some String!", complex.getStr());
 		assertEquals((byte) 4, complex.getByte());
 		assertEquals((Double) 1e14, complex.getDouble());
+		// failing because type params aren't getting sent throughF
 		assertEquals(Lists.newArrayList((byte) 1, (byte) 2, (byte) 3, (byte) 4), complex.getList());
 		assertEquals(Sets.newHashSet((byte) 1, (byte) 2, (byte) 3, (byte) 4), complex.getSet());
 		assertEquals(ImmutableMultiset.of((short) 1, (short) 1, (short) 2, (short) 3, (short) 5, (short) 8), complex.getMultiset());
@@ -126,26 +123,6 @@ public class JSONSourceTest {
 	@Test(expected = FileNotFoundException.class)
 	public void fileNotFoundOnBadFile() throws FileNotFoundException {
 		JSONSource.newJsonFile(new File("foo"));
-	}
-
-	@Test(expected = ClassCastException.class)
-	public void youGetErrorsWhenYouUseAFixtureHandlerToHijackYourStuff() throws Exception {
-		Fixjure.of(Complex.class).from(JSONSource.newJsonString("{ str : \"str\"}")).with(new AbstractFixtureHandler() {
-
-			@Override
-			public Class getSourceType() {
-				return String.class;
-			}
-
-			@Override
-			public Class getReturnType() {
-				return String.class;
-			}
-
-			public ValueProvider<Integer> apply(final HandlerHelper helper, final Object o) {
-				return ValueProviders.of(1);
-			}
-		}).create().getStr();
 	}
 
 	@Test(expected = RuntimeException.class)
@@ -228,11 +205,6 @@ public class JSONSourceTest {
 	public void decoratorOfIntegerWorks() {
 		Decorator<Integer> ds = Fixjure.of(Decorator.class).of(Integer.class).from(JSONSource.newJsonString("{ t: -1 }")).create();
 		assertEquals(-1, ds.getT().intValue());
-	}
-
-	@Test(expected = FixtureException.class)
-	public void decoratorOfStringDoesNotWork() {
-		Fixjure.of(Decorator.class).of(String.class).from(JSONSource.newJsonString("{ t: 1234 }")).create();
 	}
 
 	@Test

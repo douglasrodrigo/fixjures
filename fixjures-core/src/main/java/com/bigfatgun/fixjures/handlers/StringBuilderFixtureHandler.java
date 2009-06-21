@@ -17,37 +17,19 @@ package com.bigfatgun.fixjures.handlers;
 
 import com.bigfatgun.fixjures.ValueProvider;
 import com.bigfatgun.fixjures.ValueProviders;
+import com.bigfatgun.fixjures.FixtureTypeDefinition;
 
 /**
- * Converts a {@code String} to a {@code StringBuilder}.
- *
- * @author Steve Reed
+ * Converts a {@code CharSequence} to a {@code StringBuilder}.
  */
-final class StringBuilderFixtureHandler extends AbstractFixtureHandler<CharSequence, StringBuilder> {
+final class StringBuilderFixtureHandler extends AbstractFixtureHandler<StringBuilder> {
 
-	/**
-	 * {@inheritDoc}
-	 */
+	public StringBuilderFixtureHandler() {
+		super(CharSequence.class, StringBuilder.class);
+	}
+
 	@Override
-	public Class<CharSequence> getSourceType() {
-		return CharSequence.class;
-	}
-
-	/**
-	 * Returns {@code StringBuilder.class}.
-	 * <p>
-	 * {@inheritDoc}
-	 */
-	public Class<StringBuilder> getReturnType() {
-		return StringBuilder.class;
-	}
-
-	/**
-	 * Wraps the object in a {@code StringBuilder}.
-	 * <p>
-	 * {@inheritDoc}
-	 */
-	public ValueProvider<StringBuilder> apply(final HandlerHelper helper, final CharSequence s) {
-		return ValueProviders.of(new StringBuilder(s));
+	public ValueProvider<? extends StringBuilder> apply(final HandlerHelper helper, final FixtureTypeDefinition typeDef, final Object source) {
+		return ValueProviders.of(new StringBuilder(castSourceValue(CharSequence.class, source)));
 	}
 }

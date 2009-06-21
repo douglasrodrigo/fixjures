@@ -20,7 +20,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import com.bigfatgun.fixjures.Fixjure;
+import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.ValueProvider;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * "Proxies" concrete types by using reflection to instantiate the object
@@ -39,7 +42,7 @@ final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 	 * @throws RuntimeException if {@code cls} is an interface
 	 */
 	ConcreteReflectionProxy(final Class<T> cls) {
-		super(cls);
+		super(cls, ImmutableSet.<Fixjure.Option>of());
 		if (cls.isInterface()) {
 			throw new RuntimeException(String.format("Class %s is an interface.", cls.getName()));
 		}
@@ -51,16 +54,20 @@ final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 	 * <p>
 	 * {@inheritDoc}
 	 */
-	public T create() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-		final Constructor<T> ctor = getType().getDeclaredConstructor();
-		ctor.setAccessible(true);
-		final T object = ctor.newInstance();
+	public T create() {
+		try {
+			final Constructor<T> ctor = getType().getDeclaredConstructor();
+			ctor.setAccessible(true);
+			final T object = ctor.newInstance();
 
-		for (final Map.Entry<String, ValueProvider<?>> entry : getStubs().entrySet()) {
-			setInstanceValue(object, entry.getKey(), convertNameToSetter(entry.getKey()), entry.getValue().get());
+			for (final Map.Entry<String, ValueProvider<?>> entry : getStubs().entrySet()) {
+				setInstanceValue(object, entry.getKey(), convertNameToSetter(entry.getKey()), entry.getValue().get());
+			}
+
+			return object;
+		} catch (Exception e) {
+			throw FixtureException.convert(e);
 		}
-
-		return object;
 	}
 
 	/**

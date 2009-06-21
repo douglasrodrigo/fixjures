@@ -15,7 +15,13 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.bigfatgun.fixjures.Fixjure;
+import com.bigfatgun.fixjures.FixtureTypeDefinition;
+import com.google.common.collect.ImmutableSet;
+
 public interface HandlerHelper {
 
-	<S, R> FixtureHandler<S, R> findHandler(S src, final Class<R> type);
+	ImmutableSet<Fixjure.Option> getOptions();
+
+	FixtureHandler<?> findHandler(Object src, final FixtureTypeDefinition type);
 }

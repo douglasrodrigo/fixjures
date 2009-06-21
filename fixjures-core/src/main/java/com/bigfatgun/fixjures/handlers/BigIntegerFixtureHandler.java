@@ -19,18 +19,16 @@ import java.math.BigInteger;
 
 import com.bigfatgun.fixjures.ValueProvider;
 import com.bigfatgun.fixjures.ValueProviders;
+import com.bigfatgun.fixjures.FixtureTypeDefinition;
 
-class BigIntegerFixtureHandler extends AbstractFixtureHandler<Number,BigInteger> {
+class BigIntegerFixtureHandler extends AbstractFixtureHandler<BigInteger> {
 
-	public Class<BigInteger> getReturnType() {
-		return BigInteger.class;
+	public BigIntegerFixtureHandler() {
+		super(Number.class, BigInteger.class);
 	}
 
-	public Class<Number> getSourceType() {
-		return Number.class;
-	}
-
-	public ValueProvider<BigInteger> apply(final HandlerHelper helper, final Number number) {
-		return ValueProviders.of(BigInteger.valueOf(number.longValue()));
+	@Override
+	public ValueProvider<? extends BigInteger> apply(final HandlerHelper helper, final FixtureTypeDefinition typeDef, final Object source) {
+		return ValueProviders.of(BigInteger.valueOf(castSourceValue(Number.class, source).longValue()));
 	}
 }

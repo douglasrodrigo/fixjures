@@ -18,17 +18,14 @@ package com.bigfatgun.fixjures.proxy;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Arrays;
-import java.util.Set;
 import javax.annotation.Nullable;
 
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.ValueProvider;
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 /**
  * Simple interface getter proxy using {@code java.lang.reflect.Proxy}. This will only proxy methods that
@@ -39,8 +36,6 @@ import com.google.common.collect.Sets;
  */
 final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements InvocationHandler {
 
-	private final Set<Fixjure.Option> options;
-
 	/**
 	 * Creates a new proxy of the given class.
 	 *
@@ -48,16 +43,11 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 	 * @throws NullPointerException if {@code cls} is null
 	 * @throws RuntimeException if {@code cls} is not an interface
 	 */
-	InterfaceProxy(final Class<T> cls) {
-		super(cls);
+	InterfaceProxy(final Class<T> cls, final ImmutableSet<Fixjure.Option> options) {
+		super(cls, options);
 		if (!cls.isInterface()) {
 			throw new RuntimeException(String.format("Class %s is not an interface.", cls.getName()));
 		}
-		options = Sets.newEnumSet(ImmutableList.<Fixjure.Option>of(), Fixjure.Option.class);
-	}
-
-	public void enableOptions(final Fixjure.Option[] options) {
-		this.options.addAll(Arrays.asList(options));
 	}
 
 	/**
@@ -96,7 +86,7 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 
 		if (getStubs().containsKey(method.getName())) {
 			return getStubs().get(method.getName()).get();
-		} else if (options.contains(Fixjure.Option.NULL_ON_UNMAPPED)) {
+		} else if (isOptionEnabled(Fixjure.Option.NULL_ON_UNMAPPED)) {
 			return null;
 		} else {
 			throw new RuntimeException("Method has not been stubbed. Call: " + callToString(method, objects));

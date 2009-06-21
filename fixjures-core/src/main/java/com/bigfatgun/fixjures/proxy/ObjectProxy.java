@@ -15,8 +15,7 @@
  */
 package com.bigfatgun.fixjures.proxy;
 
-import java.lang.reflect.InvocationTargetException;
-
+import com.bigfatgun.fixjures.FixtureTypeDefinition;
 import com.bigfatgun.fixjures.ValueProvider;
 
 /**
@@ -46,5 +45,7 @@ public interface ObjectProxy<T> {
 	 * Creates a new proxy instance.
 	 * @return a new proxy instance
 	 */
-	T create() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException;
+	T create();
+
+	FixtureTypeDefinition suggestType(String key);
 }

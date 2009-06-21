@@ -16,37 +16,24 @@
 package com.bigfatgun.fixjures.handlers;
 
 import com.bigfatgun.fixjures.ValueProvider;
+import com.bigfatgun.fixjures.FixtureTypeDefinition;
 
 /**
  * Chained handler that can join two fixture handlers that have a return and source type
  * in common.
- *
- * @param <S> source type
- * @param <I> interim type
- * @author Steve Reed
  */
-public abstract class ChainedFixtureHandler<S,I> extends AbstractFixtureHandler<S,I> {
+public abstract class ChainedFixtureHandler<T> extends AbstractFixtureHandler<T> {
 
-	/**
-	 * Links this handler to the given one.
-	 *
-	 * @param handler handler to join
-	 * @param <O> output type
-	 * @return chained handler
-	 */
-	public final <O> FixtureHandler<S,O> link(final FixtureHandler<I,O> handler) {
-		return new AbstractFixtureHandler<S, O>() {
+	public ChainedFixtureHandler(final Class<?> sourceType, final Class<T> interimType) {
+		super(sourceType, interimType);
+	}
 
-			public Class<O> getReturnType() {
-				return handler.getReturnType();
-			}
-
-			public Class<S> getSourceType() {
-				return ChainedFixtureHandler.this.getSourceType();
-			}
-
-			public ValueProvider<? extends O> apply(final HandlerHelper helper, final S s) {
-				return handler.apply(helper, ChainedFixtureHandler.this.apply(helper, s).get());
+	public final <T1> FixtureHandler<T1> link(final FixtureHandler<T1> handler) {
+		final FixtureTypeDefinition interimTypeDef = FixtureTypeDefinition.wrap(getReturnType());
+		return new AbstractFixtureHandler<T1>(getSourceType(), handler.getReturnType()) {
+			@Override
+			public ValueProvider<? extends T1> apply(final HandlerHelper helper, final FixtureTypeDefinition typeDef, final Object source) {
+				return handler.apply(helper, typeDef, ChainedFixtureHandler.this.apply(helper, interimTypeDef, source).get());
 			}
 		};
 	}

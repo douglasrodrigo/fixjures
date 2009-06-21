@@ -22,32 +22,22 @@ import java.util.Date;
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.ValueProvider;
 import com.bigfatgun.fixjures.ValueProviders;
+import com.bigfatgun.fixjures.FixtureTypeDefinition;
 
 /**
  * Converts character sequences into {@code java.util.Date}s.
  *
  * @author Steve Reed
  */
-class JavaDateHandler extends AbstractFixtureHandler<CharSequence, Date> {
+class JavaDateHandler extends AbstractFixtureHandler<Date> {
 
-	/**
-	 * @return {@code java.util.Date.class}
-	 */
-	public Class<Date> getReturnType() {
-		return Date.class;
+	public JavaDateHandler() {
+		super(CharSequence.class, Date.class);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public Class<CharSequence> getSourceType() {
-		return CharSequence.class;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public ValueProvider<Date> apply(final HandlerHelper helper, final CharSequence charSequence) {
+	@Override
+	public ValueProvider<? extends Date> apply(final HandlerHelper helper, final FixtureTypeDefinition typeDef, final Object source) {
+		final CharSequence charSequence = castSourceValue(CharSequence.class, source);
 		try {
 			return ValueProviders.of(DateFormat.getDateTimeInstance().parse(charSequence.toString()));
 		} catch (ParseException e) {

@@ -1,37 +1,61 @@
 package com.bigfatgun.fixjures;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 
 import com.google.common.collect.ImmutableList;
 
-public final class FixtureTypeDefinition<T> {
+public final class FixtureTypeDefinition implements Type {
 
-	public static <T> FixtureTypeDefinition<T> newDefinition(final Class<T> type) {
-		return newDefinition(type, ImmutableList.<Class<?>>of());
+	public static FixtureTypeDefinition wrapMethodReturnType(final Method method) {
+		return wrap(method.getGenericReturnType());
 	}
 
-	public static <T> FixtureTypeDefinition<T> newDefinition(final Class<T> type, final ImmutableList<? extends Type> params) {
-		return new FixtureTypeDefinition<T>(type, params);
+	public static FixtureTypeDefinition wrap(final Type type) {
+		if (type instanceof FixtureTypeDefinition) {
+			return (FixtureTypeDefinition) type;
+		}
+
+		final Class<Class> classOfClass = Class.class;
+		final Class<?> mainClass;
+		final Type[] typeParams;
+		if (type instanceof ParameterizedType) {
+			mainClass = classOfClass.cast(((ParameterizedType) type).getRawType());
+			typeParams = ((ParameterizedType) type).getActualTypeArguments();
+		} else if (type instanceof TypeVariable) {
+			final TypeVariable typeVar = (TypeVariable) type;
+			mainClass = (Class<?>) typeVar.getBounds()[0];
+			typeParams = new Type[0];
+		} else {
+			mainClass = classOfClass.cast(type);
+			if (mainClass.isArray()) {
+				typeParams = new Type[] { mainClass.getComponentType() };
+			} else {
+				typeParams = new Type[0];
+			}
+		}
+		return new FixtureTypeDefinition(mainClass, ImmutableList.of(typeParams));
 	}
 
-	private final Class<T> type;
+	private final Class<?> type;
 	private final ImmutableList<? extends Type> params;
 
-	private FixtureTypeDefinition(final Class<T> type, final ImmutableList<? extends Type> params) {
+	private FixtureTypeDefinition(final Class<?> type, final ImmutableList<? extends Type> params) {
 		this.type = type;
 		this.params = params;
 	}
 
-	public Class<T> getType() { return type; }
+	public Class<?> getType() { return type; }
 
 	public ImmutableList<? extends Type> getParams() { return params; }
 
-	public FixtureTypeDefinition<T> addParams(final Type[] params) {
+	public FixtureTypeDefinition of(final Type... params) {
 		final ImmutableList.Builder<Type> paramBuilder = ImmutableList.builder();
-		paramBuilder.addAll(this.params);
 		paramBuilder.addAll(Arrays.asList(params));
-		return newDefinition(type, paramBuilder.build());
+		return new FixtureTypeDefinition(type, paramBuilder.build());
 	}
 
 	public Type keyType() {
@@ -52,6 +76,22 @@ public final class FixtureTypeDefinition<T> {
 
 	@Override
 	public String toString() {
-		return String.format("%s<%s>", getType(), getParams());
+		if (getParams().isEmpty()) {
+			return getType().toString();
+		} else {
+			return String.format("%s<%s>", getType(), getParams());
+		}
+	}
+
+	public FixtureTypeDefinition keyTypeDefinition() {
+		return wrap(keyType());
+	}
+
+	public FixtureTypeDefinition valueTypeDefinition() {
+		return wrap(valueType());
+	}
+
+	public FixtureTypeDefinition collectionTypeDefinition() {
+		return keyTypeDefinition();
 	}
 }
