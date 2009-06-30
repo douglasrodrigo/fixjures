@@ -25,12 +25,12 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
+import com.bigfatgun.fixjures.ByteUtil;
 import com.bigfatgun.fixjures.FixtureException;
 import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.FixtureType;
-import com.bigfatgun.fixjures.ValueProvider;
-import com.bigfatgun.fixjures.ByteUtil;
+import com.google.common.base.Supplier;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -95,7 +95,7 @@ public final class JSONSource extends FixtureSource {
 		try {
 			final String sourceJson = loadSource();
 			final Object jsonValue = parseJson(sourceJson);
-			final ValueProvider<?> provider = findValue(type, jsonValue);
+			final Supplier<?> provider = findValue(type, jsonValue);
 			final Object value = provider.get();
 			return type.getType().cast(value);
 		} catch (Exception e) {

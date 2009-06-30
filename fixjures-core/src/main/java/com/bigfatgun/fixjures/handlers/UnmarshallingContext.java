@@ -15,21 +15,18 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.bigfatgun.fixjures.ValueProvider;
-import com.bigfatgun.fixjures.ValueProviders;
+import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureType;
+import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableSet;
 
 /**
- * Converts a {@code CharSequence} to a {@code StringBuilder}.
+ * A context maintains fixture marshalling state, and provides
+ * the currently enabled options as well as marshaller finder methods.
  */
-final class StringBuilderFixtureHandler extends AbstractFixtureHandler<StringBuilder> {
+public interface UnmarshallingContext {
 
-	public StringBuilderFixtureHandler() {
-		super(CharSequence.class, StringBuilder.class);
-	}
+	ImmutableSet<Fixjure.Option> getOptions();
 
-	@Override
-	public ValueProvider<? extends StringBuilder> apply(final HandlerHelper helper, final FixtureType typeDef, final Object source) {
-		return ValueProviders.of(new StringBuilder(castSourceValue(CharSequence.class, source)));
-	}
+	Supplier<?> unmarshall(Object rawValue, FixtureType type);
 }

@@ -16,7 +16,7 @@
 package com.bigfatgun.fixjures.proxy;
 
 import com.bigfatgun.fixjures.FixtureType;
-import com.bigfatgun.fixjures.ValueProvider;
+import com.google.common.base.Supplier;
 
 /**
  * This interface is implemented by any class that can produce a proxy object of some sort based on a
@@ -39,7 +39,7 @@ public interface ObjectProxy<T> {
 	 * @param methodName method name
 	 * @param stub value stub
 	 */
-	void addValueStub(String methodName, ValueProvider<?> stub);
+	void addValueStub(String methodName, Supplier<?> stub);
 
 	/**
 	 * Creates a new proxy instance.

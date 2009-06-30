@@ -22,7 +22,7 @@ import java.util.Map;
 
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
-import com.bigfatgun.fixjures.ValueProvider;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -53,7 +53,7 @@ final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 			ctor.setAccessible(true);
 			final T object = ctor.newInstance();
 
-			for (final Map.Entry<String, ValueProvider<?>> entry : getStubs().entrySet()) {
+			for (final Map.Entry<String, Supplier<?>> entry : getStubs().entrySet()) {
 				setInstanceValue(object, entry.getKey(), ProxyUtils.convertNameToSetter(entry.getKey()), entry.getValue().get());
 			}
 

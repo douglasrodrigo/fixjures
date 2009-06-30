@@ -20,32 +20,32 @@ import java.text.ParseException;
 import java.util.Date;
 
 import com.bigfatgun.fixjures.FixtureException;
-import com.bigfatgun.fixjures.ValueProvider;
-import com.bigfatgun.fixjures.ValueProviders;
 import com.bigfatgun.fixjures.FixtureType;
+import com.bigfatgun.fixjures.Suppliers;
+import com.google.common.base.Supplier;
 
 /**
  * Converts character sequences into {@code java.util.Date}s.
  *
  * @author Steve Reed
  */
-class JavaDateHandler extends AbstractFixtureHandler<Date> {
+class DateUnmarshaller extends AbstractUnmarshaller<Date> {
 
-	public JavaDateHandler() {
+	public DateUnmarshaller() {
 		super(CharSequence.class, Date.class);
 	}
 
 	@Override
-	public ValueProvider<? extends Date> apply(final HandlerHelper helper, final FixtureType typeDef, final Object source) {
+	public Supplier<? extends Date> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 		final CharSequence charSequence = castSourceValue(CharSequence.class, source);
 		try {
-			return ValueProviders.of(DateFormat.getDateTimeInstance().parse(charSequence.toString()));
+			return Suppliers.of(DateFormat.getDateTimeInstance().parse(charSequence.toString()));
 		} catch (ParseException e) {
 			try {
-				return ValueProviders.of(DateFormat.getDateInstance().parse(charSequence.toString()));
+				return Suppliers.of(DateFormat.getDateInstance().parse(charSequence.toString()));
 			} catch (ParseException e1) {
 				try {
-					return ValueProviders.of(DateFormat.getTimeInstance().parse(charSequence.toString()));
+					return Suppliers.of(DateFormat.getTimeInstance().parse(charSequence.toString()));
 				} catch (ParseException e2) {
 					throw new FixtureException("Failed to parse date: " + charSequence);
 				}

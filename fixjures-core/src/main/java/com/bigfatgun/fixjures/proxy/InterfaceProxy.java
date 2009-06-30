@@ -22,8 +22,8 @@ import javax.annotation.Nullable;
 
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
-import com.bigfatgun.fixjures.ValueProvider;
 import com.google.common.base.Function;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -75,9 +75,9 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 		}
 
 		if (method.getName().equals("hashCode")) {
-			return Iterables.transform(getStubs().values(), new Function<ValueProvider<?>, Object>() {
+			return Iterables.transform(getStubs().values(), new Function<Supplier<?>, Object>() {
 				@Override
-				public Object apply(@Nullable final ValueProvider<?> valueProvider) {
+				public Object apply(@Nullable final Supplier<?> valueProvider) {
 					return valueProvider.get();
 				}
 			}).hashCode();

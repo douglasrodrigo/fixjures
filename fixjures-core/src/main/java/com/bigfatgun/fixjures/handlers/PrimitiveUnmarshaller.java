@@ -1,6 +1,6 @@
 package com.bigfatgun.fixjures.handlers;
 
-public interface PrimitiveHandler<T> extends FixtureHandler<T> {
+public interface PrimitiveUnmarshaller<T> extends Unmarshaller<T> {
 
 	Class<? extends T> getPrimitiveType();
 }

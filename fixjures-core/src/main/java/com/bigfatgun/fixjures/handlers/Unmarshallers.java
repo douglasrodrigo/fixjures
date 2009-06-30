@@ -24,10 +24,10 @@ import java.util.List;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-public final class Handlers {
+public final class Unmarshallers {
 
-	public static FixtureHandler<Byte> byteHandler() {
-		return new NumberFixtureHandler<Byte>(Byte.class, Byte.TYPE) {
+	public static Unmarshaller<Byte> byteHandler() {
+		return new NumberUnmarshaller<Byte>(Byte.class, Byte.TYPE) {
 			@Override
 			protected Byte narrowNumericValue(final Number number) {
 				return number.byteValue();
@@ -35,8 +35,8 @@ public final class Handlers {
 		};
 	}
 
-	public static FixtureHandler<Short> shortHandler() {
-		return new NumberFixtureHandler<Short>(Short.class, Short.TYPE) {
+	public static Unmarshaller<Short> shortHandler() {
+		return new NumberUnmarshaller<Short>(Short.class, Short.TYPE) {
 			@Override
 			protected Short narrowNumericValue(final Number number) {
 				return number.shortValue();
@@ -44,8 +44,8 @@ public final class Handlers {
 		};
 	}
 
-	public static FixtureHandler<Integer> integerHandler() {
-		return new NumberFixtureHandler<Integer>(Integer.class, Integer.TYPE) {
+	public static Unmarshaller<Integer> integerHandler() {
+		return new NumberUnmarshaller<Integer>(Integer.class, Integer.TYPE) {
 			@Override
 			protected Integer narrowNumericValue(final Number number) {
 				return number.intValue();
@@ -53,8 +53,8 @@ public final class Handlers {
 		};
 	}
 
-	public static FixtureHandler<Long> longHandler() {
-		return new NumberFixtureHandler<Long>(Long.class, Long.TYPE) {
+	public static Unmarshaller<Long> longHandler() {
+		return new NumberUnmarshaller<Long>(Long.class, Long.TYPE) {
 			@Override
 			protected Long narrowNumericValue(final Number number) {
 				return number.longValue();
@@ -62,8 +62,8 @@ public final class Handlers {
 		};
 	}
 
-	public static FixtureHandler<Float> floatHandler() {
-		return new NumberFixtureHandler<Float>(Float.class, Float.TYPE) {
+	public static Unmarshaller<Float> floatHandler() {
+		return new NumberUnmarshaller<Float>(Float.class, Float.TYPE) {
 			@Override
 			protected Float narrowNumericValue(final Number number) {
 				return number.floatValue();
@@ -71,8 +71,8 @@ public final class Handlers {
 		};
 	}
 
-	public static FixtureHandler<Double> doubleHandler() {
-		return new NumberFixtureHandler<Double>(Double.class, Double.TYPE) {
+	public static Unmarshaller<Double> doubleHandler() {
+		return new NumberUnmarshaller<Double>(Double.class, Double.TYPE) {
 			@Override
 			protected Double narrowNumericValue(final Number number) {
 				return number.doubleValue();
@@ -80,30 +80,30 @@ public final class Handlers {
 		};
 	}
 
-	public static FixtureHandler<StringBuilder> stringBuilderHandler() {
-		return new StringBuilderFixtureHandler();
+	public static Unmarshaller<StringBuilder> stringBuilderHandler() {
+		return new StringBuilderUnmarshaller();
 	}
 
-	public static <InterimType, EndType> Iterable<FixtureHandler<? extends EndType>> createChain(
-			  final ChainedFixtureHandler<InterimType> chained,
-			  final ImmutableList<FixtureHandler<EndType>> handlers) {
+	public static <InterimType, EndType> Iterable<Unmarshaller<? extends EndType>> createChain(
+			  final ChainedUnmarshaller<InterimType> chained,
+			  final ImmutableList<Unmarshaller<EndType>> handlers) {
 
-		final List<FixtureHandler<? extends EndType>> fixtures = Lists.newLinkedList();
-		for (final FixtureHandler<EndType> handler : handlers) {
+		final List<Unmarshaller<? extends EndType>> fixtures = Lists.newLinkedList();
+		for (final Unmarshaller<EndType> handler : handlers) {
 			fixtures.add(chained.link(handler));
 		}
 		return Collections.unmodifiableList(fixtures);
 	}
 
-	public static FixtureHandler<BigInteger> bigIntegerHandler() {
-		return new BigIntegerFixtureHandler();
+	public static Unmarshaller<BigInteger> bigIntegerHandler() {
+		return new BigIntegerUnmarshaller();
 	}
 
-	public static FixtureHandler<BigDecimal> bigDecimalHandler() {
-		return new BigDecimalFixtureHandler();
+	public static Unmarshaller<BigDecimal> bigDecimalHandler() {
+		return new BigDecimalUnmarshaller();
 	}
 
-	public static FixtureHandler<Date> javaDateHandler() {
-		return new JavaDateHandler();
+	public static Unmarshaller<Date> javaDateHandler() {
+		return new DateUnmarshaller();
 	}
 }

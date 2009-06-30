@@ -15,20 +15,20 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import java.math.BigInteger;
+import java.math.BigDecimal;
 
-import com.bigfatgun.fixjures.ValueProvider;
-import com.bigfatgun.fixjures.ValueProviders;
 import com.bigfatgun.fixjures.FixtureType;
+import com.bigfatgun.fixjures.Suppliers;
+import com.google.common.base.Supplier;
 
-class BigIntegerFixtureHandler extends AbstractFixtureHandler<BigInteger> {
+class BigDecimalUnmarshaller extends AbstractUnmarshaller<BigDecimal> {
 
-	public BigIntegerFixtureHandler() {
-		super(Number.class, BigInteger.class);
+	public BigDecimalUnmarshaller() {
+		super(Number.class, BigDecimal.class);
 	}
 
 	@Override
-	public ValueProvider<? extends BigInteger> apply(final HandlerHelper helper, final FixtureType typeDef, final Object source) {
-		return ValueProviders.of(BigInteger.valueOf(castSourceValue(Number.class, source).longValue()));
+	public Supplier<BigDecimal> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
+		return Suppliers.of(BigDecimal.valueOf(castSourceValue(Number.class, source).doubleValue()));
 	}
 }

@@ -15,26 +15,26 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.bigfatgun.fixjures.ValueProvider;
 import com.bigfatgun.fixjures.FixtureType;
 import com.bigfatgun.fixjures.TypeWrapper;
+import com.google.common.base.Supplier;
 
 /**
  * Chained handler that can join two fixture handlers that have a return and source type
  * in common.
  */
-public abstract class ChainedFixtureHandler<T> extends AbstractFixtureHandler<T> {
+public abstract class ChainedUnmarshaller<T> extends AbstractUnmarshaller<T> {
 
-	public ChainedFixtureHandler(final Class<?> sourceType, final Class<T> interimType) {
+	public ChainedUnmarshaller(final Class<?> sourceType, final Class<T> interimType) {
 		super(sourceType, interimType);
 	}
 
-	public final <T1> FixtureHandler<T1> link(final FixtureHandler<T1> handler) {
+	public final <T1> Unmarshaller<T1> link(final Unmarshaller<T1> handler) {
 		final FixtureType interimTypeDef = TypeWrapper.wrap(getReturnType());
-		return new AbstractFixtureHandler<T1>(getSourceType(), handler.getReturnType()) {
+		return new AbstractUnmarshaller<T1>(getSourceType(), handler.getReturnType()) {
 			@Override
-			public ValueProvider<? extends T1> apply(final HandlerHelper helper, final FixtureType typeDef, final Object source) {
-				return handler.apply(helper, typeDef, ChainedFixtureHandler.this.apply(helper, interimTypeDef, source).get());
+			public Supplier<? extends T1> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
+				return handler.unmarshall(helper, ChainedUnmarshaller.this.unmarshall(helper, source, interimTypeDef).get(), typeDef);
 			}
 		};
 	}

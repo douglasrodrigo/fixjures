@@ -5,11 +5,11 @@ import org.junit.Test;
 
 public class NumberFixtureHandlerTest {
 
-	private NumberFixtureHandler handler;
+	private NumberUnmarshaller handler;
 
 	@Test
 	public void theTypeIsRight() {
-		handler = new NumberFixtureHandler<Number>(Number.class, Number.class) {
+		handler = new NumberUnmarshaller<Number>(Number.class, Number.class) {
 			@Override
 			protected Number narrowNumericValue(final Number number) {
 				return null;  //To change body of implemented methods use File | Settings | File Templates.

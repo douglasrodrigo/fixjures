@@ -15,16 +15,16 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.bigfatgun.fixjures.ValueProvider;
-import com.bigfatgun.fixjures.ValueProviders;
 import com.bigfatgun.fixjures.FixtureType;
+import com.bigfatgun.fixjures.Suppliers;
+import com.google.common.base.Supplier;
 
 /**
  * Simple object pass-through for when no conversion is necessary.
  *
  * @author Steve Reed
  */
-public final class NoConversionFixtureHandler<T> extends AbstractFixtureHandler<T> {
+public final class NoConversionUnmarshaller<T> extends AbstractUnmarshaller<T> {
 
 	/**
 	 * Static factory method for better type inference.
@@ -33,8 +33,8 @@ public final class NoConversionFixtureHandler<T> extends AbstractFixtureHandler<
 	 * @param <T> type
 	 * @return new handler of type
 	 */
-	public static <T> NoConversionFixtureHandler<T> newInstance(final Class<T> cls) {
-		return new NoConversionFixtureHandler<T>(cls);
+	public static <T> NoConversionUnmarshaller<T> newInstance(final Class<T> cls) {
+		return new NoConversionUnmarshaller<T>(cls);
 	}
 
 	/**
@@ -42,12 +42,12 @@ public final class NoConversionFixtureHandler<T> extends AbstractFixtureHandler<
 	 *
 	 * @param type type
 	 */
-	private NoConversionFixtureHandler(final Class<T> type) {
+	private NoConversionUnmarshaller(final Class<T> type) {
 		super(type, type);
 	}
 
 	@Override
-	public ValueProvider<? extends T> apply(final HandlerHelper helper, final FixtureType typeDef, final Object source) {
-		return ValueProviders.of(castSourceValue(getReturnType(), source));
+	public Supplier<? extends T> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
+		return Suppliers.of(castSourceValue(getReturnType(), source));
 	}
 }

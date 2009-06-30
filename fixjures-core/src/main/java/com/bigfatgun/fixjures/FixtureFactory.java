@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
-import com.bigfatgun.fixjures.handlers.FixtureHandler;
+import com.bigfatgun.fixjures.handlers.Unmarshaller;
 import com.bigfatgun.fixjures.json.JSONSource;
 import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
 import static com.bigfatgun.fixjures.FixtureException.convert;
@@ -114,7 +114,7 @@ public final class FixtureFactory implements IdentityResolver {
 	/**
 	 * Set of fixture handlers to use.
 	 */
-	private final Set<FixtureHandler<?>> handlers;
+	private final Set<Unmarshaller<?>> handlers;
 
 	/**
 	 * Compute map that stores a map of object name to object for every fixture object type.
@@ -151,7 +151,7 @@ public final class FixtureFactory implements IdentityResolver {
 								  }
 
 								  Fixjure.SourcedFixtureBuilder<?> fixtureBuilder = Fixjure.of(type).from(srcFactory.newInstance(type, name)).withOptions(ImmutableSet.copyOf(options));
-								  for (final FixtureHandler<?> handler : handlers) {
+								  for (final Unmarshaller<?> handler : handlers) {
 									  fixtureBuilder = fixtureBuilder.with(handler);
 								  }
 								  fixtureBuilder = fixtureBuilder.resolveIdsWith(FixtureFactory.this);
@@ -228,7 +228,7 @@ public final class FixtureFactory implements IdentityResolver {
 	 * @param handler handler to add, not null
 	 * @return this
 	 */
-	public FixtureFactory addFixtureHandler(final FixtureHandler<?> handler) {
+	public FixtureFactory addFixtureHandler(final Unmarshaller<?> handler) {
 		if (handler == null) {
 			throw new NullPointerException("handler");
 		}
@@ -242,7 +242,7 @@ public final class FixtureFactory implements IdentityResolver {
 	 * @param handler handler to remove, not null
 	 * @return this
 	 */
-	public FixtureFactory removeFixtureHandler(final FixtureHandler<?> handler) {
+	public FixtureFactory removeFixtureHandler(final Unmarshaller<?> handler) {
 		if (handler == null) {
 			throw new NullPointerException("handler");
 		}

@@ -15,13 +15,17 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureType;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.base.Supplier;
 
-public interface HandlerHelper {
+/**
+ * Handles conversion of source data to destination data.
+ */
+public interface Unmarshaller<T> {
 
-	ImmutableSet<Fixjure.Option> getOptions();
+	boolean canUnmarshallObjectToType(Object sourceObject, FixtureType typeDef);
 
-	FixtureHandler<?> findHandler(Object src, final FixtureType type);
+	Class<T> getReturnType();
+
+   Supplier<? extends T> unmarshall(UnmarshallingContext helper, Object source, FixtureType typeDef);
 }

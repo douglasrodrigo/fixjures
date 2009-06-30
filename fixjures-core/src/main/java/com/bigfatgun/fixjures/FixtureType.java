@@ -49,7 +49,8 @@ public final class FixtureType implements Type {
 	}
 
 	public FixtureType toSuper() {
-		return new FixtureType(type.getSuperclass(), ImmutableList.<Type>of());
+		final Class<?> superClass = type.getSuperclass();
+		return superClass == null ? null : new FixtureType(superClass, ImmutableList.<Type>of());
 	}
 
 	@Override

@@ -1,15 +1,13 @@
 package com.bigfatgun.fixjures.handlers;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 import com.bigfatgun.fixjures.TypeWrapper;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import org.junit.Test;
 
 public class StringBuilderFixtureHandlerTest {
 
-	private StringBuilderFixtureHandler handler = new StringBuilderFixtureHandler();
+	private StringBuilderUnmarshaller handler = new StringBuilderUnmarshaller();
 
 	@Test
 	public void theTypeIsRight() {
@@ -19,20 +17,6 @@ public class StringBuilderFixtureHandlerTest {
 
 	@Test
 	public void stringWorks() {
-		assertEquals(toString(), handler.apply(null, TypeWrapper.wrap(StringBuilder.class), toString()).get().toString());
-	}
-
-	@Test
-	public void canDeserialize() {
-		assertTrue(handler.canDeserialize("foo", StringBuilder.class));
-		assertTrue(handler.canDeserialize(new StringBuilder("foo"), StringBuilder.class));
-		assertTrue(handler.canDeserialize(null, StringBuilder.class));
-		assertFalse(handler.canDeserialize("foo", String.class));
-		assertFalse(handler.canDeserialize(null, String.class));
-		assertFalse(handler.canDeserialize("foo", CharSequence.class));
-		assertFalse(handler.canDeserialize(null, CharSequence.class));
-		assertFalse(handler.canDeserialize(new StringBuilder("foo"), String.class));
-		assertFalse(handler.canDeserialize(new StringBuilder("foo"), CharSequence.class));
-		assertFalse(handler.canDeserialize("foo", Byte.class));
+		assertEquals(toString(), handler.unmarshall(null, toString(), TypeWrapper.wrap(StringBuilder.class)).get().toString());
 	}
 }

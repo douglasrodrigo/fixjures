@@ -16,19 +16,19 @@
 package com.bigfatgun.fixjures.handlers;
 
 import com.bigfatgun.fixjures.FixtureType;
-import com.bigfatgun.fixjures.ValueProvider;
-import com.bigfatgun.fixjures.ValueProviders;
+import com.bigfatgun.fixjures.Suppliers;
+import com.google.common.base.Supplier;
 
 /**
  * Handles {@code Number}s.
  *
  * @author Steve Reed
  */
-abstract class NumberFixtureHandler<T extends Number> extends AbstractFixtureHandler<T> implements PrimitiveHandler<T> {
+abstract class NumberUnmarshaller<T extends Number> extends AbstractUnmarshaller<T> implements PrimitiveUnmarshaller<T> {
 
 	private final Class<T> primitiveType;
 
-	protected NumberFixtureHandler(final Class<T> returnType, final Class<T> primitiveType) {
+	protected NumberUnmarshaller(final Class<T> returnType, final Class<T> primitiveType) {
 		super(Number.class, returnType);
 		this.primitiveType = primitiveType;
 	}
@@ -48,14 +48,15 @@ abstract class NumberFixtureHandler<T extends Number> extends AbstractFixtureHan
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final boolean canDeserialize(final Object obj, final Class<?> desiredType) {
+	public final boolean canUnmarshallObjectToType(final Object obj, final FixtureType desiredTypeDef) {
+		final Class<?> desiredType = desiredTypeDef.getType();
 		return (obj == null || Number.class.isAssignableFrom(obj.getClass()))
 				  && (getReturnType().equals(desiredType) || getPrimitiveType().equals(desiredType));
 	}
 
 	@Override
-	public final ValueProvider<T> apply(final HandlerHelper helper, final FixtureType typeDef, final Object source) {
-		return ValueProviders.of(narrowNumericValue(castSourceValue(Number.class, source)));
+	public final Supplier<T> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
+		return Suppliers.of(narrowNumericValue(castSourceValue(Number.class, source)));
 	}
 
 	protected abstract T narrowNumericValue(final Number number);

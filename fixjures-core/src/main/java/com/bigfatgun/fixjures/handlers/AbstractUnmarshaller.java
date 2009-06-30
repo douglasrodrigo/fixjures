@@ -17,19 +17,19 @@ package com.bigfatgun.fixjures.handlers;
 
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureType;
-import com.bigfatgun.fixjures.ValueProvider;
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Supplier;
 
 /**
  * Fixture handler plugin which can intercept object deserialization and provide its
  * own behavior during fixture instantiation.
  */
-public abstract class AbstractFixtureHandler<T> implements FixtureHandler<T>  {
+public abstract class AbstractUnmarshaller<T> implements Unmarshaller<T> {
 
 	private final Class<?> sourceType;
 	private final Class<T> returnType;
 
-	protected AbstractFixtureHandler(final Class<?> sourceType, final Class<T> returnType) {
+	protected AbstractUnmarshaller(final Class<?> sourceType, final Class<T> returnType) {
 		this.sourceType = checkNotNull(sourceType);
 		this.returnType = checkNotNull(returnType);
 	}
@@ -60,12 +60,12 @@ public abstract class AbstractFixtureHandler<T> implements FixtureHandler<T>  {
 	 * @return true if object can be transformed by this handler
 	 */
 	@Override
-	public boolean canDeserialize(final Object obj, final Class<?> desiredType) {
-		return getReturnType().isAssignableFrom(desiredType)
+	public boolean canUnmarshallObjectToType(final Object obj, final FixtureType desiredType) {
+		return getReturnType().isAssignableFrom(desiredType.getType())
 				  && (obj == null || sourceType.isAssignableFrom(obj.getClass()));
 	}
 
-	protected final ValueProvider<?> help(final HandlerHelper helper, final Object source, final FixtureType type) {
-		return helper.findHandler(source, type).apply(helper, type, source);
+	protected final Supplier<?> help(final UnmarshallingContext unmarshallingContext, final Object source, final FixtureType type) {
+		return unmarshallingContext.unmarshall(source, type);
 	}
 }

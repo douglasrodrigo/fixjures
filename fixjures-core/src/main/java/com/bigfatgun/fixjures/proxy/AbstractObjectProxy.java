@@ -23,9 +23,9 @@ import java.util.Set;
 import com.bigfatgun.fixjures.Fixjure;
 import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.bigfatgun.fixjures.FixtureType;
-import com.bigfatgun.fixjures.ValueProvider;
 import com.bigfatgun.fixjures.TypeWrapper;
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -39,7 +39,7 @@ import com.google.common.collect.Sets;
 abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 
 	private final Class<T> clazz;
-	private final Map<String, ValueProvider<?>> stubs;
+	private final Map<String, Supplier<?>> stubs;
 	private final Set<Fixjure.Option> options;
 
 	protected AbstractObjectProxy(final Class<T> cls, final Set<Fixjure.Option> options) {
@@ -80,7 +80,7 @@ abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 	 *
 	 * @return an immutable map of getter name to value stub
 	 */
-	protected final ImmutableMap<String, ValueProvider<?>> getStubs() {
+	protected final ImmutableMap<String, Supplier<?>> getStubs() {
 		return ImmutableMap.copyOf(stubs);
 	}
 
@@ -90,7 +90,7 @@ abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 	 * @param methodName method name
 	 * @param valueStub  method return value stub
 	 */
-	public final void addValueStub(final String methodName, final ValueProvider<?> valueStub) {
+	public final void addValueStub(final String methodName, final Supplier<?> valueStub) {
 		stubs.put(methodName, valueStub);
 	}
 }

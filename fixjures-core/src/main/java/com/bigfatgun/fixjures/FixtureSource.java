@@ -23,15 +23,16 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.Set;
 import javax.annotation.Nullable;
 
-import com.bigfatgun.fixjures.handlers.AbstractFixtureHandler;
-import com.bigfatgun.fixjures.handlers.ChainedFixtureHandler;
-import com.bigfatgun.fixjures.handlers.FixtureHandler;
-import com.bigfatgun.fixjures.handlers.HandlerHelper;
-import com.bigfatgun.fixjures.handlers.Handlers;
-import com.bigfatgun.fixjures.handlers.NoConversionFixtureHandler;
-import com.bigfatgun.fixjures.handlers.PrimitiveHandler;
+import com.bigfatgun.fixjures.handlers.AbstractUnmarshaller;
+import com.bigfatgun.fixjures.handlers.ChainedUnmarshaller;
+import com.bigfatgun.fixjures.handlers.NoConversionUnmarshaller;
+import com.bigfatgun.fixjures.handlers.PrimitiveUnmarshaller;
+import com.bigfatgun.fixjures.handlers.Unmarshaller;
+import com.bigfatgun.fixjures.handlers.Unmarshallers;
+import com.bigfatgun.fixjures.handlers.UnmarshallingContext;
 import com.google.common.base.Preconditions;
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedListMultimap;
@@ -43,7 +44,7 @@ import com.google.common.collect.Sets;
  *
  * @author Steve Reed
  */
-public abstract class FixtureSource implements Closeable, HandlerHelper {
+public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 
 	private static final ImmutableSet<Class<?>> NUMERIC_TYPES = ImmutableSet.<Class<?>>of(
 			  Byte.class,
@@ -62,7 +63,7 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 
 	private static final ImmutableSet<Fixjure.Option> DEFAULT_OPTIONS = ImmutableSet.of();
 
-	private final Multimap<Class<?>, FixtureHandler<?>> typeHandlers;
+	private final Multimap<Class<?>, Unmarshaller<?>> typeHandlers;
 	private final ReadableByteChannel sourceChannel;
 	private final Set<Fixjure.Option> options;
 	@Nullable private String preferredCharset = null;
@@ -108,16 +109,16 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 				  && identityResolver.canHandleIdentity(type, rawIdentityValue);
 	}
 
-	private <T> ValueProvider<T> resolveIdentity(final Class<T> type, final Object rawIdentityValue) {
+	private <T> Supplier<T> resolveIdentity(final Class<T> type, final Object rawIdentityValue) {
 		if (canHandleIdentity(type, rawIdentityValue)) {
 			assert identityResolver != null : "Don't attempt to resolve an id if the resolver is null!";
-			return ValueProviders.ofIdentity(identityResolver, type, rawIdentityValue);
+			return Suppliers.ofIdentity(identityResolver, type, rawIdentityValue);
 		} else {
 			return null;
 		}
 	}
 
-	protected final ImmutableMultimap<Class<?>, FixtureHandler<?>> getTypeHandlers() {
+	protected final ImmutableMultimap<Class<?>, Unmarshaller<?>> getTypeHandlers() {
 		return ImmutableMultimap.copyOf(typeHandlers);
 	}
 
@@ -129,11 +130,11 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 		return preferredCharset;
 	}
 
-	protected final void installTypeHandler(final FixtureHandler<?> handler) {
+	protected final void installTypeHandler(final Unmarshaller<?> handler) {
 		typeHandlers.put(handler.getReturnType(), handler);
-		if (handler instanceof PrimitiveHandler) {
-			final PrimitiveHandler primitiveHandler = (PrimitiveHandler) handler;
-			typeHandlers.put(primitiveHandler.getPrimitiveType(), handler);
+		if (handler instanceof PrimitiveUnmarshaller) {
+			final PrimitiveUnmarshaller primitiveUnmarshaller = (PrimitiveUnmarshaller) handler;
+			typeHandlers.put(primitiveUnmarshaller.getPrimitiveType(), handler);
 		}
 	}
 
@@ -141,43 +142,48 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 		return options.contains(option);
 	}
 
+	@Override
+	public final Supplier<?> unmarshall(final Object rawValue, final FixtureType type) {
+		final Unmarshaller<?> unmarshaller = findUnmarshaller(rawValue, type);
+		return unmarshaller.unmarshall(this, rawValue, type);
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public final FixtureHandler<?> findHandler(final Object src, final FixtureType type) {
+	protected final Unmarshaller<?> findUnmarshaller(final Object src, final FixtureType type) {
 		final Class<?> cls = type.getType();
 
 		if (cls.isInstance(src)) {
-			return NoConversionFixtureHandler.newInstance(cls);
+			return NoConversionUnmarshaller.newInstance(cls);
 		}
 
 		for (Class<?> keyClass = cls; keyClass != null; keyClass = keyClass.getSuperclass()) {
-			for (final FixtureHandler<?> handler : getTypeHandlers().get(keyClass)) {
-				if (handler.canDeserialize(src, cls)) {
+			for (final Unmarshaller<?> handler : getTypeHandlers().get(keyClass)) {
+				if (handler.canUnmarshallObjectToType(src, type)) {
 					return handler;
 				}
 			}
 		}
 
-		for (final FixtureHandler<?> handler : getTypeHandlers().get(Object.class)) {
-			if (handler.canDeserialize(src, cls)) {
+		for (final Unmarshaller<?> handler : getTypeHandlers().get(Object.class)) {
+			if (handler.canUnmarshallObjectToType(src, type)) {
 				return handler;
 			}
 		}
 
 		if (cls.isArray()) {
-			for (final FixtureHandler<?> handler : getTypeHandlers().get(Object[].class)) {
-				if (handler.canDeserialize(src, cls)) {
+			for (final Unmarshaller<?> handler : getTypeHandlers().get(Object[].class)) {
+				if (handler.canUnmarshallObjectToType(src, type)) {
 					return handler;
 				}
 			}
 		}
 
 		//noinspection unchecked
-		return new AbstractFixtureHandler(Object.class, cls) {
+		return new AbstractUnmarshaller(Object.class, cls) {
 			@Override
-			public ValueProvider<?> apply(final HandlerHelper helper, final FixtureType typeDef, final Object source) {
+			public Supplier<?> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 				return resolveIdentity(cls, src);
 			}
 		};
@@ -188,31 +194,31 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 	 * @param value object value
 	 * @return proxied object
 	 */
-	protected final ValueProvider<?> findValue(final FixtureType type, final Object value) {
-		final FixtureHandler<?> handler = findHandler(value, type);
-		return handler.apply(this, type, value);
+	protected final Supplier<?> findValue(final FixtureType type, final Object value) {
+		final Unmarshaller<?> handler = findUnmarshaller(value, type);
+		return handler.unmarshall(this, value, type);
 	}
 
 	/**
 	 * Install default fixture handlers.
 	 */
 	private void installDefaultHandlers() {
-		installTypeHandler(NoConversionFixtureHandler.newInstance(String.class));
-		installTypeHandler(NoConversionFixtureHandler.newInstance(Boolean.class));
-		installTypeHandler(NoConversionFixtureHandler.newInstance(Boolean.TYPE));
+		installTypeHandler(NoConversionUnmarshaller.newInstance(String.class));
+		installTypeHandler(NoConversionUnmarshaller.newInstance(Boolean.class));
+		installTypeHandler(NoConversionUnmarshaller.newInstance(Boolean.TYPE));
 
 		for (final Class<?> t : NUMERIC_TYPES) {
-			installTypeHandler(NoConversionFixtureHandler.newInstance(t));
+			installTypeHandler(NoConversionUnmarshaller.newInstance(t));
 		}
 
-		final FixtureHandler<Byte> byteHandler = Handlers.byteHandler();
-		final FixtureHandler<Short> shortHandler = Handlers.shortHandler();
-		final FixtureHandler<Integer> intHandler = Handlers.integerHandler();
-		final FixtureHandler<Long> longHandler = Handlers.longHandler();
-		final FixtureHandler<Float> floatHandler = Handlers.floatHandler();
-		final FixtureHandler<Double> doubleHandler = Handlers.doubleHandler();
-		final FixtureHandler<BigInteger> bigintHandler = Handlers.bigIntegerHandler();
-		final FixtureHandler<BigDecimal> bigdecHandler = Handlers.bigDecimalHandler();
+		final Unmarshaller<Byte> byteHandler = Unmarshallers.byteHandler();
+		final Unmarshaller<Short> shortHandler = Unmarshallers.shortHandler();
+		final Unmarshaller<Integer> intHandler = Unmarshallers.integerHandler();
+		final Unmarshaller<Long> longHandler = Unmarshallers.longHandler();
+		final Unmarshaller<Float> floatHandler = Unmarshallers.floatHandler();
+		final Unmarshaller<Double> doubleHandler = Unmarshallers.doubleHandler();
+		final Unmarshaller<BigInteger> bigintHandler = Unmarshallers.bigIntegerHandler();
+		final Unmarshaller<BigDecimal> bigdecHandler = Unmarshallers.bigDecimalHandler();
 
 		installTypeHandler(byteHandler);
 		installTypeHandler(shortHandler);
@@ -222,10 +228,10 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 		installTypeHandler(doubleHandler);
 		installTypeHandler(bigintHandler);
 		installTypeHandler(bigdecHandler);
-		final ChainedFixtureHandler<Number> chainedHandler = new ChainedFixtureHandler<Number>(CharSequence.class, Number.class) {
+		final ChainedUnmarshaller<Number> chainedHandler = new ChainedUnmarshaller<Number>(CharSequence.class, Number.class) {
 			@Override
-			public ValueProvider<? extends Number> apply(final HandlerHelper helper, final FixtureType typeDef, final Object source) {
-				return ValueProviders.of(Double.parseDouble(castSourceValue(CharSequence.class, source).toString()));
+			public Supplier<? extends Number> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
+				return Suppliers.of(Double.parseDouble(castSourceValue(CharSequence.class, source).toString()));
 			}
 		};
 		installTypeHandler(chainedHandler.link(byteHandler));
@@ -237,7 +243,7 @@ public abstract class FixtureSource implements Closeable, HandlerHelper {
 		installTypeHandler(chainedHandler.link(bigintHandler));
 		installTypeHandler(chainedHandler.link(bigdecHandler));
 
-		installTypeHandler(Handlers.stringBuilderHandler());
-		installTypeHandler(Handlers.javaDateHandler());
+		installTypeHandler(Unmarshallers.stringBuilderHandler());
+		installTypeHandler(Unmarshallers.javaDateHandler());
 	}
 }

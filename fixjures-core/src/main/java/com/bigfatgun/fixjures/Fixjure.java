@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import com.bigfatgun.fixjures.handlers.FixtureHandler;
+import com.bigfatgun.fixjures.handlers.Unmarshaller;
 import com.google.common.collect.Multiset;
 
 /**
@@ -247,7 +247,7 @@ public class Fixjure {
 		 * @param handler handler to add
 		 * @return this
 		 */
-		public final SourcedFixtureBuilder<T> with(final FixtureHandler handler) {
+		public final SourcedFixtureBuilder<T> with(final Unmarshaller handler) {
 			this.fixtureSource.installTypeHandler(handler);
 			return this;
 		}
