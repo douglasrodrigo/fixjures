@@ -190,9 +190,7 @@ public class FixjureTest {
 			//noinspection UnusedAssignment
 			obj = fact.createFixture(type, name);
 			if (i != 0 && (i % 50000) == 0) {
-				System.out.println(obj);
 				final long dur = System.nanoTime() - start;
-				System.out.format("At %d, average of %gms/fixture.\n", i, ((dur / 1e6) / i));
 			}
 			if (clearCache) {
 				fact.expireCache();

@@ -2,13 +2,13 @@ package com.bigfatgun.fixjures.annotations;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
 import com.bigfatgun.fixjures.ByteUtil;
+import com.bigfatgun.fixjures.FixtureException;
 
 /**
  * An enumeration of source types.
@@ -23,10 +23,10 @@ public enum NativeSourceType implements SourceType {
 		 * <p>
 		 * {@inheritDoc}
 		 */
-		public ReadableByteChannel openStream(final ClassLoader clsLoader, final String resourceName) throws FileNotFoundException {
+		public ReadableByteChannel openStream(final ClassLoader clsLoader, final String resourceName) {
 			final InputStream stream = clsLoader.getResourceAsStream(resourceName);
 			if (stream == null) {
-				throw new FileNotFoundException(resourceName);
+				throw new FixtureException("Unable to locate resource named " + resourceName);
 			} else {
 				return Channels.newChannel(stream);
 			}
@@ -43,11 +43,14 @@ public enum NativeSourceType implements SourceType {
 		 * @param clsLoader ignored
 		 * @param filename file name
 		 * @return file bytes
-		 * @throws FileNotFoundException if the file is not found
 		 */
 		@Override
-		public ReadableByteChannel openStream(final ClassLoader clsLoader, final String filename) throws FileNotFoundException {
-			return new RandomAccessFile(filename, "r").getChannel();
+		public ReadableByteChannel openStream(final ClassLoader clsLoader, final String filename) {
+			try {
+				return new RandomAccessFile(filename, "r").getChannel();
+			} catch (FileNotFoundException e) {
+				throw FixtureException.convert(e);
+			}
 		}
 	},
 
@@ -71,5 +74,5 @@ public enum NativeSourceType implements SourceType {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public abstract ReadableByteChannel openStream(final ClassLoader clsLoader, final String value) throws IOException;
+	public abstract ReadableByteChannel openStream(final ClassLoader clsLoader, final String value);
 }

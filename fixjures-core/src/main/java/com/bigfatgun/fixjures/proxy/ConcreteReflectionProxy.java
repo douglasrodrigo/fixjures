@@ -34,17 +34,10 @@ import com.google.common.collect.ImmutableSet;
  */
 final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 
-	/**
-	 * Creates a new proxy of the given type.
-	 *
-	 * @param cls proxy object type
-	 * @throws NullPointerException if {@code cls} is null
-	 * @throws RuntimeException if {@code cls} is an interface
-	 */
 	ConcreteReflectionProxy(final Class<T> cls) {
 		super(cls, ImmutableSet.<Fixjure.Option>of());
 		if (cls.isInterface()) {
-			throw new RuntimeException(String.format("Class %s is an interface.", cls.getName()));
+			throw new IllegalStateException(String.format("Class %s is an interface.", cls.getName()));
 		}
 	}
 
@@ -61,7 +54,7 @@ final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 			final T object = ctor.newInstance();
 
 			for (final Map.Entry<String, ValueProvider<?>> entry : getStubs().entrySet()) {
-				setInstanceValue(object, entry.getKey(), convertNameToSetter(entry.getKey()), entry.getValue().get());
+				setInstanceValue(object, entry.getKey(), ProxyUtils.convertNameToSetter(entry.getKey()), entry.getValue().get());
 			}
 
 			return object;
@@ -85,15 +78,5 @@ final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 		final Method getter = getType().getMethod(getterName);
 		final Method setter = getType().getMethod(setterName, getter.getReturnType());
 		setter.invoke(object, value);
-	}
-
-	/**
-	 * Converts getter name to setter name by replacing the first "g" with an "s".
-	 *
-	 * @param getterName getter name
-	 * @return setter name
-	 */
-	private String convertNameToSetter(final String getterName) {
-		return new StringBuilder("s").append(getterName.substring(1)).toString();
 	}
 }
