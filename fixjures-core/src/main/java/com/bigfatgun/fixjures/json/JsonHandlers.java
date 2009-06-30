@@ -180,9 +180,14 @@ final class JsonHandlers {
 				final Iterator objIterator = obj.keys();
 				while (objIterator.hasNext()) {
 					final String key = objIterator.next().toString();
-					final FixtureType getterTypeDef = proxy.suggestType(ProxyUtils.getterName(key));
+					final String methodName = helper.getOptions().contains(Fixjure.Option.LITERAL_MAPPING) ? key : ProxyUtils.getterName(key);
+					final FixtureType getterTypeDef = proxy.suggestType(methodName);
 					if (getterTypeDef == null) {
-						continue;
+						if (helper.getOptions().contains(Fixjure.Option.SKIP_UNMAPPABLE)) {
+							continue;
+						} else {
+							throw new FixtureException("Could not find type of method: " + methodName);
+						}
 					}
 					try {
 						final Supplier<?> stub;
@@ -208,7 +213,7 @@ final class JsonHandlers {
 
 							throw new FixtureException(String.format("Key [%s] (with value [%s]) found in JSON but could not stub. Could be its name or value type (%s) doesn't match methods in %s", key, obj.get(key), getterTypeDef, proxy.getType()));
 						} else {
-							proxy.addValueStub(ProxyUtils.getterName(key), stub);
+							proxy.addValueStub(methodName, stub);
 						}
 					} catch (JSONException e) {
 						throw convert(e);

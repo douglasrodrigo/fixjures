@@ -43,7 +43,9 @@ public class Fixjure {
 		/** When enabled, objects referenced by id will be lazily-evaluated */
 		LAZY_REFERENCE_EVALUATION,
 		/** Return null from interface proxies when property is not mapped. */
-		NULL_ON_UNMAPPED
+		NULL_ON_UNMAPPED,
+		/** Map method names literally. */
+		LITERAL_MAPPING
 	}
 
 	private static final Logger LOGGER = Logger.getLogger("com.bigfatgun.fixjures");

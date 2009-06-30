@@ -261,4 +261,20 @@ public class FixjureTest {
 		assertSame(expected, t.getNext());
 		assertNull(t.getNext().getNext());
 	}
+
+	private static interface LiteralMethodNames {
+		String nonStandardGetter();
+		String getMeThatThing();
+	}
+
+	@Test
+	public void supportNonStandardGetterMethodsWithLiteralMappingOption() {
+		final LiteralMethodNames lmn = Fixjure
+				  .of(LiteralMethodNames.class)
+				  .from(JSONSource.newJsonString("{nonStandardGetter:foo,getMeThatThing:bar}"))
+				  .withOptions(Fixjure.Option.LITERAL_MAPPING)
+				  .create();
+		assertEquals("foo", lmn.nonStandardGetter());
+		assertEquals("bar", lmn.getMeThatThing());
+	}
 }

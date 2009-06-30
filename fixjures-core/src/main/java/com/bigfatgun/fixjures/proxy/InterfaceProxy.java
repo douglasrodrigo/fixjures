@@ -24,6 +24,7 @@ import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -37,13 +38,6 @@ import com.google.common.collect.Lists;
  */
 final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements InvocationHandler {
 
-	/**
-	 * Creates a new proxy of the given class.
-	 *
-	 * @param cls class to proxy, must be an interface
-	 * @throws NullPointerException if {@code cls} is null
-	 * @throws RuntimeException if {@code cls} is not an interface
-	 */
 	InterfaceProxy(final Class<T> cls, final ImmutableSet<Fixjure.Option> options) {
 		super(cls, options);
 		if (!cls.isInterface()) {
@@ -60,11 +54,6 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 		return getType().cast(Proxy.newProxyInstance(getType().getClassLoader(), new Class[] { getType() }, this));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * @throws RuntimeException if a method with arguments is invoked, that's not supported yet, or if a method that
-	 * 	hasn't been stubbed is invoked
-	 */
 	public Object invoke(final Object object, final Method method, final Object[] objects) throws Throwable {
 		if (objects != null && objects.length == 1 && method.getName().equals("equals")) {
 			return object == objects[0];
@@ -75,12 +64,12 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 		}
 
 		if (method.getName().equals("hashCode")) {
-			return Iterables.transform(getStubs().values(), new Function<Supplier<?>, Object>() {
+			return ImmutableList.copyOf(Iterables.transform(getStubs().values(), new Function<Supplier<?>, Object>() {
 				@Override
 				public Object apply(@Nullable final Supplier<?> valueProvider) {
 					return valueProvider.get();
 				}
-			}).hashCode();
+			})).hashCode();
 		} else if (method.getName().equals("toString")) {
 			return "Proxy of " + getType() + "; " + getStubs().values();
 		}

@@ -16,7 +16,6 @@
 package com.bigfatgun.fixjures.proxy;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,10 +49,6 @@ abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 
 	public final Class<T> getType() {
 		return clazz;
-	}
-
-	public void enableOptions(final Fixjure.Option[] options) {
-		this.options.addAll(Arrays.asList(options));
 	}
 
 	@Override
