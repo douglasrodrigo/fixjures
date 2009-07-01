@@ -4,7 +4,7 @@
 	<groupId>com.bigfatgun</groupId>
 	<artifactId>fixjures-project</artifactId>
 	<packaging>pom</packaging>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.1</version>
 	<name>fixjures-project</name>
 	<description>Data driven dummy object creation for Java.</description>
 	<url>http://fixjures.googlecode.com/</url>
@@ -21,26 +21,26 @@
 		<developer>
 			<id>stever</id>
 			<name>Steve Reed</name>
-			<url/>
-			<organization/>
-			<organizationUrl/>
+			<url />
+			<organization />
+			<organizationUrl />
 			<roles>
 				<role>developer</role>
 			</roles>
 		</developer>
 	</developers>
-	<contributors/>
+	<contributors />
 	<issueManagement>
 		<url>http://code.google.com/p/fixjures/issues/list</url>
 	</issueManagement>
-	<ciManagement/>
-	<mailingLists/>
+	<ciManagement />
+	<mailingLists />
 	<scm>
-		<connection>scm:svn:http://fixjures.googlecode.com/svn/trunk</connection>
-		<developerConnection>scm:svn:https://fixjures.googlecode.com/svn/trunk</developerConnection>
-		<url>http://code.google.com/p/fixjures/source/browse/</url>
+		<connection>scm:svn:http://fixjures.googlecode.com/svn/tags/fixjures-project-1.1</connection>
+		<developerConnection>scm:svn:https://fixjures.googlecode.com/svn/tags/fixjures-project-1.1</developerConnection>
+		<url>http://code.google.com/p/fixjures/source/browse/tags/fixjures-project-1.1</url>
 	</scm>
-	<prerequisites/>
+	<prerequisites />
 	<modules>
 		<module>fixjures-core</module>
 		<module>fixjures-junit</module>
