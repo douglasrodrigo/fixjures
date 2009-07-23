@@ -40,7 +40,6 @@ public class FixtureInjector {
 			fixtures = Maps.newLinkedHashMap(annotations);
 		}
 
-		@Override
 		public void invoke(final Object obj) throws FixtureException {
 			final Iterable<?> values = transformAnnotationsToValues(obj);
 			try {
@@ -53,7 +52,6 @@ public class FixtureInjector {
 
 		private Iterable<?> transformAnnotationsToValues(final Object obj) {
 			return Iterables.transform(fixtures.entrySet(), new Function<Map.Entry<Fixture, Class<?>>, Object>() {
-				@Override
 				public Object apply(@Nullable final Map.Entry<Fixture, Class<?>> entry) {
 					return newFactory(obj.getClass().getClassLoader(), entry.getKey()).createFixture(entry.getValue(), entry.getKey().value());
 				}
@@ -73,7 +71,6 @@ public class FixtureInjector {
 			t = method.getParameterTypes()[0];
 		}
 
-		@Override
 		public void invoke(final Object obj) {
 			try {
 				m.invoke(obj, newFactory(obj.getClass().getClassLoader(), a).createFixture(t, a.value()));
@@ -138,11 +135,9 @@ public class FixtureInjector {
 
 					private int i = 0;
 
-					@Override
 					public boolean apply(@Nullable final Annotation[] o) {
 						final int j = i++;
 						return Iterables.any(Arrays.asList(o), new Predicate<Annotation>() {
-							@Override
 							public boolean apply(@Nullable final Annotation annotation) {
 								if (annotation instanceof Fixture) {
 									annotations.put((Fixture) annotation, m.getParameterTypes()[j]);

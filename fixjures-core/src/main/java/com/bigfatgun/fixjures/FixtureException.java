@@ -15,8 +15,6 @@
  */
 package com.bigfatgun.fixjures;
 
-import java.util.Arrays;
-
 /**
  * A runtime exception used during fixture object creation to wrap any sort
  * of underlying failure.
@@ -64,6 +62,8 @@ public class FixtureException extends RuntimeException {
 
 	private void peelTopOfStackTrace() {
 		final StackTraceElement[] stackTraceElements = this.getStackTrace();
-		this.setStackTrace(Arrays.copyOfRange(stackTraceElements, 1, stackTraceElements.length));
+		final StackTraceElement[] trimmedElements = new StackTraceElement[stackTraceElements.length - 1];
+		System.arraycopy(stackTraceElements, 1, trimmedElements, 0, trimmedElements.length);
+		this.setStackTrace(trimmedElements);
 	}
 }

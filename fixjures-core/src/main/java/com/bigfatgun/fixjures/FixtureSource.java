@@ -142,7 +142,6 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 		return options.contains(option);
 	}
 
-	@Override
 	public final Supplier<?> unmarshall(final Object rawValue, final FixtureType type) {
 		final Unmarshaller<?> unmarshaller = findUnmarshaller(rawValue, type);
 		return unmarshaller.unmarshall(this, rawValue, type);
@@ -182,7 +181,6 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 
 		//noinspection unchecked
 		return new AbstractUnmarshaller(Object.class, cls) {
-			@Override
 			public Supplier<?> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 				return resolveIdentity(cls, src);
 			}
@@ -229,7 +227,6 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 		installTypeHandler(bigintHandler);
 		installTypeHandler(bigdecHandler);
 		final ChainedUnmarshaller<Number> chainedHandler = new ChainedUnmarshaller<Number>(CharSequence.class, Number.class) {
-			@Override
 			public Supplier<? extends Number> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 				return Suppliers.of(Double.parseDouble(castSourceValue(CharSequence.class, source).toString()));
 			}

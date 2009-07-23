@@ -54,7 +54,6 @@ abstract class NumberUnmarshaller<T extends Number> extends AbstractUnmarshaller
 				  && (getReturnType().equals(desiredType) || getPrimitiveType().equals(desiredType));
 	}
 
-	@Override
 	public final Supplier<T> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 		return Suppliers.of(narrowNumericValue(castSourceValue(Number.class, source)));
 	}

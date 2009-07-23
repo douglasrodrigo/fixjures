@@ -236,23 +236,19 @@ public class FixjureTest {
 	@Test
 	public void anonymousIdentityResolver() {
 		final Thing expected = new Thing() {
-			@Override
 			public Thing getNext() {
 				return null;
 			}
 		};
 		Thing t = Fixjure.of(Thing.class).from(JSONSource.newJsonString("{next:'_'}")).resolveIdsWith(new IdentityResolver() {
-			@Override
 			public boolean canHandleIdentity(final Class<?> requiredType, @Nullable final Object rawIdentityValue) {
 				return "_".equals(rawIdentityValue);
 			}
 
-			@Override
 			public String coerceIdentity(@Nullable final Object rawIdentityValue) {
 				return (String) rawIdentityValue;
 			}
 
-			@Override
 			public <T> T resolve(final Class<T> requiredType, final String id) {
 				return requiredType.cast(("_".equals(id)) ? expected : null);
 			}

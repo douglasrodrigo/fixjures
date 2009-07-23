@@ -27,7 +27,6 @@ class BigIntegerUnmarshaller extends AbstractUnmarshaller<BigInteger> {
 		super(Number.class, BigInteger.class);
 	}
 
-	@Override
 	public Supplier<? extends BigInteger> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 		return Suppliers.of(BigInteger.valueOf(castSourceValue(Number.class, source).longValue()));
 	}

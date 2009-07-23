@@ -73,6 +73,5 @@ public enum NativeSourceType implements SourceType {
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
 	public abstract ReadableByteChannel openStream(final ClassLoader clsLoader, final String value);
 }

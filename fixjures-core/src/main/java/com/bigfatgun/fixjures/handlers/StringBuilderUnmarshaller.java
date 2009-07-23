@@ -28,7 +28,6 @@ final class StringBuilderUnmarshaller extends AbstractUnmarshaller<StringBuilder
 		super(CharSequence.class, StringBuilder.class);
 	}
 
-	@Override
 	public Supplier<? extends StringBuilder> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 		return Suppliers.of(new StringBuilder(castSourceValue(CharSequence.class, source)));
 	}

@@ -32,7 +32,6 @@ public abstract class ChainedUnmarshaller<T> extends AbstractUnmarshaller<T> {
 	public final <T1> Unmarshaller<T1> link(final Unmarshaller<T1> handler) {
 		final FixtureType interimTypeDef = TypeWrapper.wrap(getReturnType());
 		return new AbstractUnmarshaller<T1>(getSourceType(), handler.getReturnType()) {
-			@Override
 			public Supplier<? extends T1> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 				return handler.unmarshall(helper, ChainedUnmarshaller.this.unmarshall(helper, source, interimTypeDef).get(), typeDef);
 			}

@@ -65,7 +65,6 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 
 		if (method.getName().equals("hashCode")) {
 			return ImmutableList.copyOf(Iterables.transform(getStubs().values(), new Function<Supplier<?>, Object>() {
-				@Override
 				public Object apply(@Nullable final Supplier<?> valueProvider) {
 					return valueProvider.get();
 				}

@@ -27,7 +27,6 @@ class BigDecimalUnmarshaller extends AbstractUnmarshaller<BigDecimal> {
 		super(Number.class, BigDecimal.class);
 	}
 
-	@Override
 	public Supplier<BigDecimal> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 		return Suppliers.of(BigDecimal.valueOf(castSourceValue(Number.class, source).doubleValue()));
 	}

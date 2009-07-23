@@ -134,7 +134,7 @@ public final class FixtureFactory implements IdentityResolver {
 		handlers = Sets.newHashSet();
 
 		objectCache = new MapMaker()
-				  .expiration(10, TimeUnit.MINUTES)
+				  .expiration(600L, TimeUnit.SECONDS)
 				  .softValues()
 				  .makeComputingMap(new Function<Class<?>, ConcurrentMap<String, Object>>() {
 			public ConcurrentMap<String, Object> apply(@Nullable final Class<?> type) {
@@ -142,7 +142,7 @@ public final class FixtureFactory implements IdentityResolver {
 					throw new NullPointerException("type");
 				}
 				return new MapMaker()
-						  .expiration(1, TimeUnit.MINUTES)
+						  .expiration(60L, TimeUnit.SECONDS)
 						  .softValues()
 						  .makeComputingMap(new Function<String, Object>() {
 							  public Object apply(@Nullable final String name) {
@@ -167,7 +167,6 @@ public final class FixtureFactory implements IdentityResolver {
 	 * <p>
 	 * {@inheritDoc}
 	 */
-	@Override
 	public boolean canHandleIdentity(final Class<?> requiredType, @Nullable final Object rawIdentityValue) {
 		return !requiredType.isAssignableFrom(CharSequence.class) && rawIdentityValue instanceof String;
 	}
@@ -177,7 +176,6 @@ public final class FixtureFactory implements IdentityResolver {
 	 * @param rawIdentityValue raw identity value
 	 * @return identity as string
 	 */
-	@Override
 	public String coerceIdentity(final Object rawIdentityValue) {
 		return (String) rawIdentityValue;
 	}
@@ -189,7 +187,6 @@ public final class FixtureFactory implements IdentityResolver {
 	 * @param id object name
 	 * @return object of type identified by id, null if not found
 	 */
-	@Override
 	public <T> T resolve(final Class<T> requiredType, final String id) {
 		return createFixture(requiredType, id);
 	}

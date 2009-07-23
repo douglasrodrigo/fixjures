@@ -36,7 +36,6 @@ import org.json.JSONObject;
 final class JsonHandlers {
 
 	private static class ValueExtractor implements Function<Supplier<?>, Object> {
-		@Override
 		public Object apply(@Nullable final Supplier<?> valueProvider) {
 			return valueProvider.get();
 		}
@@ -50,7 +49,6 @@ final class JsonHandlers {
 			super(JSONArray.class, returnType);
 		}
 
-		@Override
 		public final Supplier<? extends T> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 			try {
 				final JSONArray jsonArray = castSourceValue(JSONArray.class, source);
@@ -105,17 +103,14 @@ final class JsonHandlers {
 
 	public static Unmarshaller<Object> newArrayHandler() {
 		return new Unmarshaller<Object>() {
-			@Override
 			public boolean canUnmarshallObjectToType(final Object obj, final FixtureType desiredType) {
 				return desiredType.getType().isArray() && obj instanceof JSONArray;
 			}
 
-			@Override
 			public Class<Object> getReturnType() {
 				return Object.class;
 			}
 
-			@Override
 			public Supplier<Object> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 				try {
 					final JSONArray array = (JSONArray) source;
@@ -138,7 +133,6 @@ final class JsonHandlers {
 	public static Unmarshaller<Map> newMapHandler() {
 		return new AbstractUnmarshaller<Map>(JSONObject.class, Map.class) {
 
-			@Override
 			public Supplier<? extends Map> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 				try {
 					final JSONObject jsonObject = castSourceValue(JSONObject.class, source);
@@ -165,7 +159,6 @@ final class JsonHandlers {
 
 	public static Unmarshaller<?> newObjectProxyHandler() {
 		return new AbstractUnmarshaller<Object>(JSONObject.class, Object.class) {
-			@Override
 			public Supplier<Object> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 				final ObjectProxy<?> proxy = Proxies.newProxy(typeDef.getType(), helper.getOptions());
 				configureProxy(helper, proxy, castSourceValue(JSONObject.class, source));
@@ -193,7 +186,6 @@ final class JsonHandlers {
 						final Supplier<?> stub;
 						if (helper.getOptions().contains(Fixjure.Option.LAZY_REFERENCE_EVALUATION)) {
 							stub = new Supplier<Object>() {
-								@Override
 								public Object get() {
 									try {
 										return helper.unmarshall(obj.get(key), getterTypeDef).get();

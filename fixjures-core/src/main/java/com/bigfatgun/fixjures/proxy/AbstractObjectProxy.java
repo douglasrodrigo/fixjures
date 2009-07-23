@@ -51,7 +51,6 @@ abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 		return clazz;
 	}
 
-	@Override
 	public final FixtureType suggestType(final String key) {
 		final Method getter;
 		try {

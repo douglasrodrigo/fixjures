@@ -12,7 +12,6 @@ public class ObjectInputStreamSourceFactory extends AbstractSourceFactory {
 
 	public static ObjectInputStreamSourceFactory newFactoryFromSourceType(final ClassLoader fixtureClassLoader, final SourceType dataSourceType) {
 		return new ObjectInputStreamSourceFactory(new Strategies.SourceStrategy() {
-			@Override
 			public ReadableByteChannel findStream(final Class<?> type, final String name) throws IOException {
 				return dataSourceType.openStream(fixtureClassLoader, name);
 			}
@@ -23,7 +22,6 @@ public class ObjectInputStreamSourceFactory extends AbstractSourceFactory {
 		super(dataSourceStrategy);
 	}
 
-	@Override
 	public FixtureSource newInstance(final Class<?> fixtureType, final String fixtureId) {
 		return ObjectInputStreamSource.newObjectInputStream(loadFixtureDataSource(fixtureType, fixtureId));
 	}

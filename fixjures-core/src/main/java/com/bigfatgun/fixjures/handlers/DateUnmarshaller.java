@@ -35,7 +35,6 @@ class DateUnmarshaller extends AbstractUnmarshaller<Date> {
 		super(CharSequence.class, Date.class);
 	}
 
-	@Override
 	public Supplier<? extends Date> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 		final CharSequence charSequence = castSourceValue(CharSequence.class, source);
 		try {

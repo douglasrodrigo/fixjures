@@ -46,7 +46,6 @@ public abstract class AbstractUnmarshaller<T> implements Unmarshaller<T> {
 		return sourceType;
 	}
 
-	@Override
 	public final Class<T> getReturnType() {
 		return returnType;
 	}
@@ -59,7 +58,6 @@ public abstract class AbstractUnmarshaller<T> implements Unmarshaller<T> {
 	 * @param desiredType desired object type
 	 * @return true if object can be transformed by this handler
 	 */
-	@Override
 	public boolean canUnmarshallObjectToType(final Object obj, final FixtureType desiredType) {
 		return getReturnType().isAssignableFrom(desiredType.getType())
 				  && (obj == null || sourceType.isAssignableFrom(obj.getClass()));

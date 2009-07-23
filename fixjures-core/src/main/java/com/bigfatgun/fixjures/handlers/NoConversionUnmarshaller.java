@@ -46,7 +46,6 @@ public final class NoConversionUnmarshaller<T> extends AbstractUnmarshaller<T> {
 		super(type, type);
 	}
 
-	@Override
 	public Supplier<? extends T> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 		return Suppliers.of(castSourceValue(getReturnType(), source));
 	}

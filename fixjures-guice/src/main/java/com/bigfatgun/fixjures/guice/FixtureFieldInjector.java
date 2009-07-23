@@ -30,7 +30,6 @@ public class FixtureFieldInjector<T> implements MembersInjector<T> {
 				  .enableOption(Fixjure.Option.LAZY_REFERENCE_EVALUATION);
 	}
 
-	@Override
 	public void injectMembers(final T t) {
 		try {
 			f.set(t, factory.createFixture(f.getType(), fix.value()));

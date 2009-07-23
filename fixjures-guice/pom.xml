@@ -60,20 +60,10 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-					<showWarnings>true</showWarnings>
-					<showDeprecation>true</showDeprecation>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>com.atlassian.maven.plugins</groupId>
 				<artifactId>maven-clover2-plugin</artifactId>
 				<configuration>
-					<jdk>1.6</jdk>
+					<jdk>1.5</jdk>
 					<targetPercentage>80%</targetPercentage>
 					<license><![CDATA[mOQrvkLTXtsqqIjswXiRORsLRQVUGwcmOfHOSjFvlcnhCc
 					mi2KazKVf<c>qx6W9BrGUE9V2KEUhmY8SgZsHxk2MYKEYy
@@ -131,7 +121,7 @@
 <!--<linkXref>true</linkXref>-->
 					<sourceEncoding>utf-8</sourceEncoding>
 					<minimumTokens>100</minimumTokens>
-					<targetJdk>1.6</targetJdk>
+					<targetJdk>1.5</targetJdk>
 				</configuration>
 			</plugin>
 		</plugins>
