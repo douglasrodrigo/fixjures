@@ -4,7 +4,7 @@
 	<groupId>com.bigfatgun</groupId>
 	<artifactId>fixjures-project</artifactId>
 	<packaging>pom</packaging>
-	<version>1.2-SNAPSHOT</version>
+	<version>1.2</version>
 	<name>fixjures-project</name>
 	<description>Data driven dummy object creation for Java.</description>
 	<url>http://fixjures.googlecode.com/</url>
@@ -36,9 +36,9 @@
 	<ciManagement />
 	<mailingLists />
 	<scm>
-		<connection>scm:svn:http://fixjures.googlecode.com/svn/trunk</connection>
-		<developerConnection>scm:svn:https://fixjures.googlecode.com/svn/trunk</developerConnection>
-		<url>http://code.google.com/p/fixjures/source/browse/</url>
+		<connection>scm:svn:http://fixjures.googlecode.com/svn/tags/fixjures-1.2</connection>
+		<developerConnection>scm:svn:https://fixjures.googlecode.com/svn/tags/fixjures-1.2</developerConnection>
+		<url>http://code.google.com/p/fixjures/source/browse/tags/fixjures-1.2</url>
 	</scm>
 	<prerequisites />
 	<modules>

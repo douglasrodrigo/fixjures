@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.bigfatgun</groupId>
 		<artifactId>fixjures-project</artifactId>
-		<version>1.2-SNAPSHOT</version>
+		<version>1.2</version>
 	</parent>
 	<artifactId>fixjures-demo</artifactId>
 	<packaging>jar</packaging>
