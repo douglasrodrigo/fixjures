@@ -33,7 +33,7 @@ import com.google.common.collect.Multiset;
  *
  * @author Steve Reed
  */
-public class Fixjure {
+public final class Fixjure {
 	private Fixjure() {}
 
 	/** An enumeration of fixture options. */

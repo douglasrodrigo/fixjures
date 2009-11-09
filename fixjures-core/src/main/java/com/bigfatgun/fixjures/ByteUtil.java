@@ -1,7 +1,6 @@
 package com.bigfatgun.fixjures;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
@@ -11,7 +10,7 @@ import javax.annotation.Nullable;
 public final class ByteUtil {
 	private ByteUtil() {}
 
-	public static final String DEFAULT_CHARSET = "UTF-8";
+	public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
 	/**
 	 * Converts the given string into a UTF-8 encoded byte array.
@@ -23,12 +22,28 @@ public final class ByteUtil {
 		return getBytes(str, DEFAULT_CHARSET);
 	}
 
+	@Deprecated
 	public static byte[] getBytes(final String str, final String charset) {
-		try {
-			return str.getBytes(charset);
-		} catch (UnsupportedEncodingException e) {
-			throw FixtureException.convert("Could not encode string \"" + str + "\" in charset " + charset + ".", e);
-		}
+		return getBytes(str, Charset.forName(charset));
+	}
+
+	public static byte[] getBytes(final String str, final Charset charset) {
+		return str.getBytes(charset);
+	}
+
+	/**
+	 * Reads the entire contents of the given byte channel into a string builder. The channel is
+	 * still open after this method returns.
+	 *
+	 * @param channel channel to read, will NOT be closed before the method returns
+	 * @param charset decoding to use, null to use default
+	 * @return string contents of channel
+	 * @throws java.io.IOException if there are any IO errors while reading or closing the given channel
+	 * @deprecated use the signature that takes a Charset
+	 */
+	@Deprecated
+	public static String loadTextFromChannel(final ReadableByteChannel channel, @Nullable final String charset) throws IOException {
+		return loadTextFromChannel(channel, (charset == null) ? DEFAULT_CHARSET : Charset.forName(charset));
 	}
 
 	/**
@@ -40,11 +55,11 @@ public final class ByteUtil {
 	 * @return string contents of channel
 	 * @throws java.io.IOException if there are any IO errors while reading or closing the given channel
 	 */
-	public static String loadTextFromChannel(final ReadableByteChannel channel, @Nullable final String charset) throws IOException {
-		final String actualCharset = (charset == null) ? DEFAULT_CHARSET : charset;
+	public static String loadTextFromChannel(final ReadableByteChannel channel, @Nullable final Charset charset) throws IOException {
+		final Charset actualCharset = (charset == null) ? DEFAULT_CHARSET : charset;
 		try {
 			final ByteBuffer buf = ByteBuffer.allocate(Short.MAX_VALUE);
-			final CharsetDecoder decoder = Charset.forName(actualCharset).newDecoder();
+			final CharsetDecoder decoder = actualCharset.newDecoder();
 			final StringBuilder string = new StringBuilder();
 
 			while (channel.read(buf) != -1) {

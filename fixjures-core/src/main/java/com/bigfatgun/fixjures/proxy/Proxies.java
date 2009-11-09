@@ -30,6 +30,7 @@ public final class Proxies {
 	 * proxy.
 	 *
 	 * @param cls proxy object type
+	 * @param options proxy options
 	 * @param <T> proxy object type
 	 * @return object proxy
 	 */

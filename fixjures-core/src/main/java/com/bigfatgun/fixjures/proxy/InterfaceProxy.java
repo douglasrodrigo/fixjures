@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Simple interface getter proxy using {@code java.lang.reflect.Proxy}. This will only proxy methods that
@@ -38,11 +39,48 @@ import com.google.common.collect.Lists;
  */
 final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements InvocationHandler {
 
+	private static final class HashCodeSupplier implements Supplier<Integer> {
+
+		private final InterfaceProxy<?> proxy;
+
+		private HashCodeSupplier(final InterfaceProxy<?> proxy) {
+			this.proxy = proxy;
+		}
+
+		public Integer get() {
+			return ImmutableList.copyOf(Iterables.transform(proxy.getStubs().values(), new Function<Supplier<?>, Object>() {
+				public Object apply(@Nullable final Supplier<?> valueProvider) {
+					if (valueProvider == HashCodeSupplier.this || valueProvider instanceof ToStringSupplier) {
+						return 0;
+					} else {
+						return valueProvider.get();
+					}
+				}
+			})).hashCode();
+		}
+	}
+
+	private static final class ToStringSupplier implements Supplier<String> {
+
+		private final InterfaceProxy<?> proxy;
+
+		private ToStringSupplier(final InterfaceProxy<?> proxy) {
+			this.proxy = proxy;
+		}
+
+		public String get() {
+			return String.format("Proxy of %s; %s", proxy.getType(), proxy.getStubs().values());
+		}
+	}
+
 	InterfaceProxy(final Class<T> cls, final ImmutableSet<Fixjure.Option> options) {
 		super(cls, options);
 		if (!cls.isInterface()) {
 			throw new RuntimeException(String.format("Class %s is not an interface.", cls.getName()));
 		}
+
+		addValueStub("hashCode", new HashCodeSupplier(this));
+		addValueStub("toString", new ToStringSupplier(this));
 	}
 
 	/**
@@ -54,31 +92,24 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 		return getType().cast(Proxy.newProxyInstance(getType().getClassLoader(), new Class[] { getType() }, this));
 	}
 
-	public Object invoke(final Object object, final Method method, final Object[] objects) throws Throwable {
-		if (objects != null && objects.length == 1 && method.getName().equals("equals")) {
-			return object == objects[0];
+	public Object invoke(final Object object, final Method method, final Object[] parameters) throws Throwable {
+		if (parameters != null && parameters.length == 1 && method.getName().equals("equals")) {
+			return object == parameters[0];
 		}
 
-		if (objects != null) {
-			throw new RuntimeException("Proxied methods shall take no arguments. Call: " + callToString(method, objects));
+		if (parameters != null) {
+			// TODO : make option for this exception
+			throw new RuntimeException("Proxied methods shall take no arguments. Call: " + callToString(method, parameters));
 		}
 
-		if (method.getName().equals("hashCode")) {
-			return ImmutableList.copyOf(Iterables.transform(getStubs().values(), new Function<Supplier<?>, Object>() {
-				public Object apply(@Nullable final Supplier<?> valueProvider) {
-					return valueProvider.get();
-				}
-			})).hashCode();
-		} else if (method.getName().equals("toString")) {
-			return "Proxy of " + getType() + "; " + getStubs().values();
-		}
+		final ImmutableMap<String,Supplier<?>> stubs = getStubs();
 
-		if (getStubs().containsKey(method.getName())) {
-			return getStubs().get(method.getName()).get();
+		if (stubs.containsKey(method.getName())) {
+			return stubs.get(method.getName()).get();
 		} else if (isOptionEnabled(Fixjure.Option.NULL_ON_UNMAPPED)) {
 			return null;
 		} else {
-			throw new FixtureException("Method has not been stubbed. Call: " + callToString(method, objects));
+			throw new FixtureException("Method has not been stubbed. Call: " + callToString(method, parameters));
 		}
 	}
 
