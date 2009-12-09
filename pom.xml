@@ -72,7 +72,7 @@
 			<dependency>
 				<groupId>com.google.collections</groupId>
 				<artifactId>google-collections</artifactId>
-				<version>1.0-rc2</version>
+				<version>1.0-rc4</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.code.guice</groupId>
@@ -116,13 +116,13 @@
 		</repository>
 	</repositories>
 	<build>
-		<extensions>
+		<!-- <extensions>
 			<extension>
 				<groupId>org.jvnet.wagon-svn</groupId>
 				<artifactId>wagon-svn</artifactId>
 				<version>1.8</version>
 			</extension>
-		</extensions>
+		</extensions> -->
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -187,6 +187,7 @@
 			<plugin>
 				<groupId>com.atlassian.maven.plugins</groupId>
 				<artifactId>maven-clover2-plugin</artifactId>
+				<version>2.3.1</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
