@@ -21,26 +21,26 @@
 		<developer>
 			<id>stever</id>
 			<name>Steve Reed</name>
-			<url />
-			<organization />
-			<organizationUrl />
+			<url/>
+			<organization/>
+			<organizationUrl/>
 			<roles>
 				<role>developer</role>
 			</roles>
 		</developer>
 	</developers>
-	<contributors />
+	<contributors/>
 	<issueManagement>
 		<url>http://code.google.com/p/fixjures/issues/list</url>
 	</issueManagement>
-	<ciManagement />
-	<mailingLists />
+	<ciManagement/>
+	<mailingLists/>
 	<scm>
 		<connection>scm:svn:http://fixjures.googlecode.com/svn/trunk</connection>
 		<developerConnection>scm:svn:https://fixjures.googlecode.com/svn/trunk</developerConnection>
 		<url>http://code.google.com/p/fixjures/source/browse/</url>
 	</scm>
-	<prerequisites />
+	<prerequisites/>
 	<modules>
 		<module>fixjures-core</module>
 		<module>fixjures-junit</module>
@@ -116,7 +116,7 @@
 		</repository>
 	</repositories>
 	<build>
-		<!-- <extensions>
+<!-- <extensions>
 			<extension>
 				<groupId>org.jvnet.wagon-svn</groupId>
 				<artifactId>wagon-svn</artifactId>
