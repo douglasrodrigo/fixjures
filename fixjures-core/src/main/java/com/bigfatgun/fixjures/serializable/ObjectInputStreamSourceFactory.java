@@ -1,12 +1,12 @@
 package com.bigfatgun.fixjures.serializable;
 
-import java.nio.channels.ReadableByteChannel;
-import java.io.IOException;
-
 import com.bigfatgun.fixjures.AbstractSourceFactory;
 import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.Strategies;
 import com.bigfatgun.fixjures.annotations.SourceType;
+
+import java.io.IOException;
+import java.nio.channels.ReadableByteChannel;
 
 public class ObjectInputStreamSourceFactory extends AbstractSourceFactory {
 

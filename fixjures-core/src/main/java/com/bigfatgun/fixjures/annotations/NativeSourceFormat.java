@@ -5,17 +5,15 @@ import com.bigfatgun.fixjures.json.JsonSourceFactory;
 import com.bigfatgun.fixjures.serializable.ObjectInputStreamSourceFactory;
 
 /**
- * An enumeration of source formats supported by the core library. Every source format is smart enough to know
- * how to create a {@link com.bigfatgun.fixjures.SourceFactory} from a
- * {@link com.bigfatgun.fixjures.annotations.Fixture} annotation.
+ * An enumeration of source formats supported by the core library. Every source format is smart enough to know how to
+ * create a {@link com.bigfatgun.fixjures.SourceFactory} from a {@link com.bigfatgun.fixjures.annotations.Fixture}
+ * annotation.
  *
  * @author Steve Reed
  */
 public enum NativeSourceFormat implements SourceFormat {
 
-	/**
-	 * {@code java.io.Serializable}.
-	 */
+	/** {@code java.io.Serializable}. */
 	IoSerializable {
 		/**
 		 * Creates a new serializable source factory.
@@ -27,9 +25,7 @@ public enum NativeSourceFormat implements SourceFormat {
 			return ObjectInputStreamSourceFactory.newFactoryFromSourceType(fixtureClassLoader, sourceType);
 		}},
 
-	/**
-	 * JSON.
-	 */
+	/** JSON. */
 	Json {
 		/**
 		 * Creates a new json source factory.

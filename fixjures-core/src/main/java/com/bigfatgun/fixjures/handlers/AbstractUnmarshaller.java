@@ -21,8 +21,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.base.Supplier;
 
 /**
- * Fixture handler plugin which can intercept object deserialization and provide its
- * own behavior during fixture instantiation.
+ * Fixture handler plugin which can intercept object deserialization and provide its own behavior during fixture
+ * instantiation.
  */
 public abstract class AbstractUnmarshaller<T> implements Unmarshaller<T> {
 
@@ -51,8 +51,8 @@ public abstract class AbstractUnmarshaller<T> implements Unmarshaller<T> {
 	}
 
 	/**
-	 * Evaluates a source object and desired type, returning true if the object can be passed to
-	 * {@code apply(...)} and return a correct value.
+	 * Evaluates a source object and desired type, returning true if the object can be passed to {@code apply(...)} and
+	 * return a correct value.
 	 *
 	 * @param obj source object
 	 * @param desiredType desired object type
@@ -60,7 +60,7 @@ public abstract class AbstractUnmarshaller<T> implements Unmarshaller<T> {
 	 */
 	public boolean canUnmarshallObjectToType(final Object obj, final FixtureType desiredType) {
 		return getReturnType().isAssignableFrom(desiredType.getType())
-				  && (obj == null || sourceType.isAssignableFrom(obj.getClass()));
+				&& (obj == null || sourceType.isAssignableFrom(obj.getClass()));
 	}
 
 	protected final Supplier<?> help(final UnmarshallingContext unmarshallingContext, final Object source, final FixtureType type) {

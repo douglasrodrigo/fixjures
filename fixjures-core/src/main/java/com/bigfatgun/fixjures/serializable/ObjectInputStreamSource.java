@@ -15,28 +15,23 @@
  */
 package com.bigfatgun.fixjures.serializable;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.RandomAccessFile;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.FixtureStream;
 import com.bigfatgun.fixjures.FixtureType;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.*;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+
 /**
- * This fixture source implements {@link com.bigfatgun.fixjures.FixtureStream}, meaning
- * it can be used to provide multiple fixture objects in its lifetime.
- * <p>
- * It lazily creates an {@code ObjectInputStream} from the underlying
- * {@code ReadableByteChannel} during the first call to
- * {@link #createFixture(com.bigfatgun.fixjures.FixtureType)} and does not close it until
- * {@link #close()} is invoked.
+ * This fixture source implements {@link com.bigfatgun.fixjures.FixtureStream}, meaning it can be used to provide
+ * multiple fixture objects in its lifetime.
+ * <p/>
+ * It lazily creates an {@code ObjectInputStream} from the underlying {@code ReadableByteChannel} during the first call
+ * to {@link #createFixture(com.bigfatgun.fixjures.FixtureType)} and does not close it until {@link #close()} is
+ * invoked.
  */
 public class ObjectInputStreamSource extends FixtureSource implements FixtureStream {
 

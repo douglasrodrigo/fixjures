@@ -1,20 +1,20 @@
 package com.bigfatgun.fixjures;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import javax.annotation.Nullable;
-
-import com.bigfatgun.fixjures.annotations.Fixture;
 import static com.bigfatgun.fixjures.FixtureException.convert;
+import com.bigfatgun.fixjures.annotations.Fixture;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+
+import javax.annotation.Nullable;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Injects fixtures into objects annotated with the {@literal @Fixture} annotation.
@@ -82,16 +82,15 @@ public class FixtureInjector {
 	}
 
 	/**
-	 * Scans an object for methods annotated with {@code @Fixture} and attempts to create stubs
-	 * to passed into them.
+	 * Scans an object for methods annotated with {@code @Fixture} and attempts to create stubs to passed into them.
 	 *
 	 * @param obj object to scan
 	 */
 	public static void scan(final Object obj) {
 		final ImmutableSet<FixtureInjectionTarget> targets = ImmutableSet.<FixtureInjectionTarget>builder()
-				  .addAll(INSTANCE.findAnnotatedMethods(obj))
-				  .addAll(INSTANCE.findAnnotatedMethodParameters(obj))
-				  .build();
+				.addAll(INSTANCE.findAnnotatedMethods(obj))
+				.addAll(INSTANCE.findAnnotatedMethodParameters(obj))
+				.build();
 
 		for (final FixtureInjectionTarget target : targets) {
 			target.invoke(obj);
@@ -103,7 +102,7 @@ public class FixtureInjector {
 		assert clsLoader != null : "Classloader cannot be null.";
 
 		return FixtureFactory.newFactory(
-				  fixtureAnnotation.format().createSourceFactory(clsLoader, fixtureAnnotation.type())
+				fixtureAnnotation.format().createSourceFactory(clsLoader, fixtureAnnotation.type())
 		);
 	}
 
@@ -112,7 +111,7 @@ public class FixtureInjector {
 
 		final ImmutableSet.Builder<AnnotatedMethodTarget> builder = ImmutableSet.builder();
 		for (final Method m : obj.getClass().getMethods()) {
-         if (m.isAnnotationPresent(Fixture.class)) {
+			if (m.isAnnotationPresent(Fixture.class)) {
 				final Class<?>[] paramTypes = m.getParameterTypes();
 				if (paramTypes.length == 1) {
 					builder.add(new AnnotatedMethodTarget(m, m.getAnnotation(Fixture.class)));
@@ -120,7 +119,7 @@ public class FixtureInjector {
 					throw new FixtureException("Methods annotated with @Fixture must accept only one argument.");
 				}
 			}
-      }
+		}
 		return builder.build();
 	}
 

@@ -15,12 +15,12 @@
  */
 package com.bigfatgun.fixjures.proxy;
 
-import java.lang.reflect.InvocationTargetException;
-
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.Suppliers;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
+
+import java.lang.reflect.InvocationTargetException;
 
 public class ConcreteReflectionProxyTest {
 
@@ -30,6 +30,7 @@ public class ConcreteReflectionProxyTest {
 
 	public static class FooTwo {
 		boolean ctorInvoked;
+
 		public FooTwo() {
 			ctorInvoked = true;
 		}

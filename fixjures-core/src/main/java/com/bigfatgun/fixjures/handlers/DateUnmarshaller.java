@@ -15,14 +15,14 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.Date;
-
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureType;
 import com.bigfatgun.fixjures.Suppliers;
 import com.google.common.base.Supplier;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
 
 /**
  * Converts character sequences into {@code java.util.Date}s.

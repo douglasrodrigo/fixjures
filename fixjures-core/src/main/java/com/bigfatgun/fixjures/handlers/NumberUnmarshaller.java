@@ -44,14 +44,14 @@ abstract class NumberUnmarshaller<T extends Number> extends AbstractUnmarshaller
 
 	/**
 	 * Returns true if the desired type is the correct source type or primitive type.
-	 * <p>
+	 * <p/>
 	 * {@inheritDoc}
 	 */
 	@Override
 	public final boolean canUnmarshallObjectToType(final Object obj, final FixtureType desiredTypeDef) {
 		final Class<?> desiredType = desiredTypeDef.getType();
 		return (obj == null || Number.class.isAssignableFrom(obj.getClass()))
-				  && (getReturnType().equals(desiredType) || getPrimitiveType().equals(desiredType));
+				&& (getReturnType().equals(desiredType) || getPrimitiveType().equals(desiredType));
 	}
 
 	public final Supplier<T> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {

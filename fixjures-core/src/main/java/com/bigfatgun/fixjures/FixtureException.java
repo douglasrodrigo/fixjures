@@ -15,15 +15,12 @@
  */
 package com.bigfatgun.fixjures;
 
-/**
- * A runtime exception used during fixture object creation to wrap any sort
- * of underlying failure.
- */
+/** A runtime exception used during fixture object creation to wrap any sort of underlying failure. */
 public class FixtureException extends RuntimeException {
 
 	/**
-	 * Ensures that the given exception is returned as a FixtureException (if it passes an
-	 * instanceof check) or is wrapped by a new one.
+	 * Ensures that the given exception is returned as a FixtureException (if it passes an instanceof check) or is wrapped
+	 * by a new one.
 	 *
 	 * @param cause causing exception
 	 * @return fixture exception

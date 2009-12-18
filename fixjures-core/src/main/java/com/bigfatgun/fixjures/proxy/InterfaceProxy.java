@@ -15,26 +15,21 @@
  */
 package com.bigfatgun.fixjures.proxy;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import javax.annotation.Nullable;
-
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.*;
+
+import javax.annotation.Nullable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
 /**
- * Simple interface getter proxy using {@code java.lang.reflect.Proxy}. This will only proxy methods that
- * take no arguments.
+ * Simple interface getter proxy using {@code java.lang.reflect.Proxy}. This will only proxy methods that take no
+ * arguments.
  *
- * @param <T> proxy object type
  * @author Steve Reed
  */
 final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements InvocationHandler {
@@ -89,7 +84,7 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 	 * @return new proxy instance
 	 */
 	public T create() {
-		return getType().cast(Proxy.newProxyInstance(getType().getClassLoader(), new Class[] { getType() }, this));
+		return getType().cast(Proxy.newProxyInstance(getType().getClassLoader(), new Class[]{getType()}, this));
 	}
 
 	public Object invoke(final Object object, final Method method, final Object[] parameters) throws Throwable {
@@ -102,7 +97,7 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 			throw new RuntimeException("Proxied methods shall take no arguments. Call: " + callToString(method, parameters));
 		}
 
-		final ImmutableMap<String,Supplier<?>> stubs = getStubs();
+		final ImmutableMap<String, Supplier<?>> stubs = getStubs();
 
 		if (stubs.containsKey(method.getName())) {
 			return stubs.get(method.getName()).get();
@@ -121,6 +116,6 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 	 * @return stringified method call
 	 */
 	private String callToString(final Method method, final Object... objects) {
-		return String.format("%s.%s(%s)", getType().getName(), method.getName(), (objects == null ) ? "" : Lists.newArrayList(objects));
+		return String.format("%s.%s(%s)", getType().getName(), method.getName(), (objects == null) ? "" : Lists.newArrayList(objects));
 	}
 }

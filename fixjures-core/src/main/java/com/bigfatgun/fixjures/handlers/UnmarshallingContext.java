@@ -21,8 +21,8 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 
 /**
- * A context maintains fixture marshalling state, and provides
- * the currently enabled options as well as marshaller finder methods.
+ * A context maintains fixture marshalling state, and provides the currently enabled options as well as marshaller
+ * finder methods.
  */
 public interface UnmarshallingContext {
 

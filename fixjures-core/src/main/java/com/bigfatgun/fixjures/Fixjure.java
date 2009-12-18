@@ -15,6 +15,9 @@
  */
 package com.bigfatgun.fixjures;
 
+import com.bigfatgun.fixjures.handlers.Unmarshaller;
+import com.google.common.collect.Multiset;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -22,13 +25,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import com.bigfatgun.fixjures.handlers.Unmarshaller;
-import com.google.common.collect.Multiset;
-
 /**
- * Main fixjures entry point that provides builder-like semantics for setting up
- * and creating fixtures.
- * <p>
+ * Main fixjures entry point that provides builder-like semantics for setting up and creating fixtures.
+ * <p/>
  * Example: {@code MyClass my = Fixjure.of(MyClass.class).from(source).create();}
  *
  * @author Steve Reed
@@ -71,7 +70,7 @@ public final class Fixjure {
 	 * @return new fixture builder
 	 */
 	public static <K, V> FixtureBuilder<Map<K, V>> mapOf(final Class<K> keyCls, final Class<V> valCls) {
-		return new FixtureBuilder.FixtureMapBuilder<K,V>(keyCls, valCls);
+		return new FixtureBuilder.FixtureMapBuilder<K, V>(keyCls, valCls);
 	}
 
 	/**
@@ -107,11 +106,9 @@ public final class Fixjure {
 	}
 
 	/**
-    * Your basic fixture builder that provides the simplest implementation of
-	 * the {@code from} method, which passes the type info into a fixture source
-	 * in order to create a {@link com.bigfatgun.fixjures.Fixjure.SourcedFixtureBuilder}.
+	 * Your basic fixture builder that provides the simplest implementation of the {@code from} method, which passes the
+	 * type info into a fixture source in order to create a {@link com.bigfatgun.fixjures.Fixjure.SourcedFixtureBuilder}.
 	 *
-	 * @param <T> fixture object type
 	 * @author Steve Reed
 	 */
 	public static class FixtureBuilder<T> {
@@ -128,7 +125,7 @@ public final class Fixjure {
 			}
 		}
 
-		static final class FixtureMapBuilder<K,V> extends FixtureBuilder<Map<K,V>> {
+		static final class FixtureMapBuilder<K, V> extends FixtureBuilder<Map<K, V>> {
 			FixtureMapBuilder(final Class<K> keyCls, final Class<V> valCls) {
 				super(TypeWrapper.wrap(Map.class).of(keyCls, valCls));
 			}
@@ -151,8 +148,7 @@ public final class Fixjure {
 		}
 
 		/**
-		 * Uses the given {@code FixtureSource} to convert this builder into
-		 * a {@code SourcedFixtureBuilder}.
+		 * Uses the given {@code FixtureSource} to convert this builder into a {@code SourcedFixtureBuilder}.
 		 *
 		 * @param source fixture source, could be JSON or otherwise
 		 * @return sourced fixture builder
@@ -224,10 +220,9 @@ public final class Fixjure {
 	}
 
 	/**
-    * A "sourced" fixture builder, meaning it has at least the necessary state to begin
-	 * reading fixtures from some type of data.
+	 * A "sourced" fixture builder, meaning it has at least the necessary state to begin reading fixtures from some type of
+	 * data.
 	 *
-	 * @param <T> fixture object type
 	 * @author Steve Reed
 	 */
 	public static class SourcedFixtureBuilder<T> extends FixtureBuilder<T> {
@@ -255,9 +250,9 @@ public final class Fixjure {
 		}
 
 		/**
-		 * Strongly-typed fixture creation method which creates a new fixture object. This method forwards the call
-		 * to the underlying {@code FixtureSource} which have an explicit knowledge of the fixture source format, such as
-		 * the {@link com.bigfatgun.fixjures.json.JSONSource}.
+		 * Strongly-typed fixture creation method which creates a new fixture object. This method forwards the call to the
+		 * underlying {@code FixtureSource} which have an explicit knowledge of the fixture source format, such as the {@link
+		 * com.bigfatgun.fixjures.json.JSONSource}.
 		 *
 		 * @return new fixture object
 		 */
@@ -276,6 +271,7 @@ public final class Fixjure {
 
 		/**
 		 * Adds options.
+		 *
 		 * @param opts options
 		 * @return this
 		 */
@@ -288,6 +284,7 @@ public final class Fixjure {
 
 		/**
 		 * Adds options.
+		 *
 		 * @param opts options
 		 * @return this
 		 */
@@ -300,6 +297,7 @@ public final class Fixjure {
 
 		/**
 		 * Sets the identity resolver of the fixture source.
+		 *
 		 * @param identityResolver identity resolver, may be null to clear an existing resolver
 		 * @return fixture builder
 		 */

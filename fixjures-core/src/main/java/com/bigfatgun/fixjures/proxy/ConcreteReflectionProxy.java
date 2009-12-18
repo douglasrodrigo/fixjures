@@ -15,21 +15,19 @@
  */
 package com.bigfatgun.fixjures.proxy;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
+
 /**
- * "Proxies" concrete types by using reflection to instantiate the object
- * and invoke property setters.
+ * "Proxies" concrete types by using reflection to instantiate the object and invoke property setters.
  *
- * @param <T> proxy object type
  * @author Steve Reed
  */
 final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
@@ -42,9 +40,9 @@ final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 	}
 
 	/**
-	 * Invokes the object's no-arg constructor and invokes setters for all of the known stubs. Returns null if
-	 * there is any sort of error while invoking said constructor.
-	 * <p>
+	 * Invokes the object's no-arg constructor and invokes setters for all of the known stubs. Returns null if there is any
+	 * sort of error while invoking said constructor.
+	 * <p/>
 	 * {@inheritDoc}
 	 */
 	public T create() {

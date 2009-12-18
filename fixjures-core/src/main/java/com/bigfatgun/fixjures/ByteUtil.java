@@ -1,11 +1,11 @@
 package com.bigfatgun.fixjures;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import javax.annotation.Nullable;
 
 public final class ByteUtil {
 	private ByteUtil() {}
@@ -32,8 +32,8 @@ public final class ByteUtil {
 	}
 
 	/**
-	 * Reads the entire contents of the given byte channel into a string builder. The channel is
-	 * still open after this method returns.
+	 * Reads the entire contents of the given byte channel into a string builder. The channel is still open after this
+	 * method returns.
 	 *
 	 * @param channel channel to read, will NOT be closed before the method returns
 	 * @param charset decoding to use, null to use default
@@ -47,8 +47,8 @@ public final class ByteUtil {
 	}
 
 	/**
-	 * Reads the entire contents of the given byte channel into a string builder. The channel is
-	 * still open after this method returns.
+	 * Reads the entire contents of the given byte channel into a string builder. The channel is still open after this
+	 * method returns.
 	 *
 	 * @param channel channel to read, will NOT be closed before the method returns
 	 * @param charset decoding to use, null to use default

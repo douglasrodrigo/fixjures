@@ -15,18 +15,13 @@
  */
 package com.bigfatgun.fixjures;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
+import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.collect.ImmutableMap;
+
+import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Map;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * Factory methods for various fixture source strategies.
@@ -35,14 +30,11 @@ import com.google.common.collect.ImmutableMap;
  */
 public final class Strategies {
 
-	/**
-	 * A strategy for finding source data for a fixture of a given type and name.
-	 */
+	/** A strategy for finding source data for a fixture of a given type and name. */
 	public static interface SourceStrategy {
 
 		/**
-		 * Produces a byte channel from which fixture data can be read for an object
-		 * of the given type and name.
+		 * Produces a byte channel from which fixture data can be read for an object of the given type and name.
 		 *
 		 * @param type fixture object type
 		 * @param name object name or id
@@ -52,15 +44,11 @@ public final class Strategies {
 		ReadableByteChannel findStream(Class<?> type, String name) throws IOException;
 	}
 
-	/**
-	 * A strategy for producing resource names where fixture data is stored for objects
-	 * of a given type and name.
-	 */
+	/** A strategy for producing resource names where fixture data is stored for objects of a given type and name. */
 	public static interface ResourceNameStrategy {
 
 		/**
-		 * Produces a name of a resource from which fixture data can be read for an object
-		 * of the given type and name.
+		 * Produces a name of a resource from which fixture data can be read for an object of the given type and name.
 		 *
 		 * @param type fixture object type
 		 * @param name object name or id
@@ -72,16 +60,14 @@ public final class Strategies {
 
 	/**
 	 * The default name strategy for classpath sourced fixture factories.
-	 * <p>
-	 * This strategy makes the factory look for fixtures in the classpath in
-	 * "fixjures/<i>package.Class</i>/<i>name</i>.json".
+	 * <p/>
+	 * This strategy makes the factory look for fixtures in the classpath in "fixjures/<i>package.Class</i>/<i>name</i>.json".
 	 */
 	public static final ResourceNameStrategy DEFAULT_CLASSPATH_NAME_STRATEGY = newFormatStringStrategy("fixjures/%s/%s.json");
 
 	/**
-	 * Creates a new resource name strategy based on a format string that will be
-	 * passed to {@code String.format} with {@code type.getName()} and {@code name} as the format
-	 * arguments.
+	 * Creates a new resource name strategy based on a format string that will be passed to {@code String.format} with
+	 * {@code type.getName()} and {@code name} as the format arguments.
 	 *
 	 * @param formatStr format string, must be non-null
 	 * @return resource name
@@ -97,9 +83,9 @@ public final class Strategies {
 	}
 
 	/**
-	 * This source strategy does a simple lookup of type and name in a map that stores
-	 * fixture data in raw byte arrays. A defensive copy is made of the map argument, so only
-	 * the fixtures in the map at the time this method is invoked can be created.
+	 * This source strategy does a simple lookup of type and name in a map that stores fixture data in raw byte arrays. A
+	 * defensive copy is made of the map argument, so only the fixtures in the map at the time this method is invoked can
+	 * be created.
 	 *
 	 * @param mem map that holds fixture data in memory
 	 * @return new source strategy
@@ -125,8 +111,8 @@ public final class Strategies {
 	}
 
 	/**
-	 * Creates a new source strategy that looks for fixture source data in the classpath based on
-	 * {@link #DEFAULT_CLASSPATH_NAME_STRATEGY}.
+	 * Creates a new source strategy that looks for fixture source data in the classpath based on {@link
+	 * #DEFAULT_CLASSPATH_NAME_STRATEGY}.
 	 *
 	 * @return new source strategy
 	 */
@@ -168,8 +154,8 @@ public final class Strategies {
 	}
 
 	/**
-	 * Creates a new source strategy that looks for fixture source data in files based on
-	 * {@link #DEFAULT_CLASSPATH_NAME_STRATEGY}.
+	 * Creates a new source strategy that looks for fixture source data in files based on {@link
+	 * #DEFAULT_CLASSPATH_NAME_STRATEGY}.
 	 *
 	 * @return new source strategy
 	 */

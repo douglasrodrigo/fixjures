@@ -1,13 +1,13 @@
 package com.bigfatgun.fixjures;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.TypeVariable;
-
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.collect.ImmutableList;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 
 public final class TypeWrapper {
 	private TypeWrapper() {}

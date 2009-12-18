@@ -19,10 +19,7 @@ import com.bigfatgun.fixjures.FixtureType;
 import com.bigfatgun.fixjures.TypeWrapper;
 import com.google.common.base.Supplier;
 
-/**
- * Chained handler that can join two fixture handlers that have a return and source type
- * in common.
- */
+/** Chained handler that can join two fixture handlers that have a return and source type in common. */
 public abstract class ChainedUnmarshaller<T> extends AbstractUnmarshaller<T> {
 
 	public ChainedUnmarshaller(final Class<?> sourceType, final Class<T> interimType) {

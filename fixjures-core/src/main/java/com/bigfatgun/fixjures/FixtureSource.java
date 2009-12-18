@@ -15,29 +15,19 @@
  */
 package com.bigfatgun.fixjures;
 
+import com.bigfatgun.fixjures.handlers.*;
+import com.google.common.base.Preconditions;
+import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Supplier;
+import com.google.common.collect.*;
+
+import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Set;
-import javax.annotation.Nullable;
-
-import com.bigfatgun.fixjures.handlers.AbstractUnmarshaller;
-import com.bigfatgun.fixjures.handlers.ChainedUnmarshaller;
-import com.bigfatgun.fixjures.handlers.NoConversionUnmarshaller;
-import com.bigfatgun.fixjures.handlers.PrimitiveUnmarshaller;
-import com.bigfatgun.fixjures.handlers.Unmarshaller;
-import com.bigfatgun.fixjures.handlers.Unmarshallers;
-import com.bigfatgun.fixjures.handlers.UnmarshallingContext;
-import com.google.common.base.Preconditions;
-import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 /**
  * Abstract fixture source.
@@ -47,18 +37,18 @@ import com.google.common.collect.Sets;
 public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 
 	private static final ImmutableSet<Class<?>> NUMERIC_TYPES = ImmutableSet.<Class<?>>of(
-			  Byte.class,
-			  Byte.TYPE,
-			  Short.class,
-			  Short.TYPE,
-			  Integer.class,
-			  Integer.TYPE,
-			  Long.class,
-			  Long.TYPE,
-			  Float.class,
-			  Float.TYPE,
-			  Double.class,
-			  Double.TYPE
+			Byte.class,
+			Byte.TYPE,
+			Short.class,
+			Short.TYPE,
+			Integer.class,
+			Integer.TYPE,
+			Long.class,
+			Long.TYPE,
+			Float.class,
+			Float.TYPE,
+			Double.class,
+			Double.TYPE
 	);
 
 	private static final ImmutableSet<Fixjure.Option> DEFAULT_OPTIONS = ImmutableSet.of();
@@ -66,8 +56,10 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 	private final Multimap<Class<?>, Unmarshaller<?>> typeHandlers;
 	private final ReadableByteChannel sourceChannel;
 	private final Set<Fixjure.Option> options;
-	@Nullable private String preferredCharset = null;
-	@Nullable private IdentityResolver identityResolver = null;
+	@Nullable
+	private String preferredCharset = null;
+	@Nullable
+	private IdentityResolver identityResolver = null;
 
 	protected FixtureSource(final ReadableByteChannel source) {
 		sourceChannel = Preconditions.checkNotNull(source);
@@ -78,6 +70,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 
 	/**
 	 * Adds an option.
+	 *
 	 * @param opt option
 	 */
 	public final void addOption(final Fixjure.Option opt) {
@@ -105,8 +98,8 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 
 	private boolean canHandleIdentity(final Class<?> type, @Nullable final Object rawIdentityValue) {
 		return identityResolver != null
-				  && rawIdentityValue != null
-				  && identityResolver.canHandleIdentity(type, rawIdentityValue);
+				&& rawIdentityValue != null
+				&& identityResolver.canHandleIdentity(type, rawIdentityValue);
 	}
 
 	private <T> Supplier<T> resolveIdentity(final Class<T> type, final Object rawIdentityValue) {
@@ -147,9 +140,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 		return unmarshaller.unmarshall(this, rawValue, type);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	protected final Unmarshaller<?> findUnmarshaller(final Object src, final FixtureType type) {
 		final Class<?> cls = type.getType();
 
@@ -197,9 +188,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 		return handler.unmarshall(this, value, type);
 	}
 
-	/**
-	 * Install default fixture handlers.
-	 */
+	/** Install default fixture handlers. */
 	private void installDefaultHandlers() {
 		installTypeHandler(NoConversionUnmarshaller.newInstance(String.class));
 		installTypeHandler(NoConversionUnmarshaller.newInstance(Boolean.class));

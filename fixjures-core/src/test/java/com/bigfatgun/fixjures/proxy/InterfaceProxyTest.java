@@ -3,9 +3,7 @@ package com.bigfatgun.fixjures.proxy;
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.json.JSONSource;
 import com.google.common.collect.ImmutableSet;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class InterfaceProxyTest {
@@ -16,6 +14,7 @@ public class InterfaceProxyTest {
 
 	private static interface Foo2 {
 		String convertThing(Object obj1);
+
 		String getThing();
 	}
 

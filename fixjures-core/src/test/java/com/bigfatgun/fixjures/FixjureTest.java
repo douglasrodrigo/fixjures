@@ -1,37 +1,19 @@
 package com.bigfatgun.fixjures;
 
+import static com.bigfatgun.fixjures.Fixjure.Option.SKIP_UNMAPPABLE;
+import com.bigfatgun.fixjures.json.JSONSource;
+import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
+import com.google.common.collect.*;
+import static org.junit.Assert.*;
+import org.junit.Test;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.DateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.annotation.Nullable;
-
-import static com.bigfatgun.fixjures.Fixjure.Option.SKIP_UNMAPPABLE;
-import com.bigfatgun.fixjures.json.JSONSource;
-import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultiset;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Sets;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import org.junit.Test;
+import java.util.*;
 
 public class FixjureTest {
 
@@ -91,6 +73,7 @@ public class FixjureTest {
 
 	private static interface NyTimes {
 		NyTimesChannel getChannel();
+
 		String getVersion();
 	}
 
@@ -260,16 +243,17 @@ public class FixjureTest {
 
 	private static interface LiteralMethodNames {
 		String nonStandardGetter();
+
 		String getMeThatThing();
 	}
 
 	@Test
 	public void supportNonStandardGetterMethodsWithLiteralMappingOption() {
 		final LiteralMethodNames lmn = Fixjure
-				  .of(LiteralMethodNames.class)
-				  .from(JSONSource.newJsonString("{nonStandardGetter:foo,getMeThatThing:bar}"))
-				  .withOptions(Fixjure.Option.LITERAL_MAPPING)
-				  .create();
+				.of(LiteralMethodNames.class)
+				.from(JSONSource.newJsonString("{nonStandardGetter:foo,getMeThatThing:bar}"))
+				.withOptions(Fixjure.Option.LITERAL_MAPPING)
+				.create();
 		assertEquals("foo", lmn.nonStandardGetter());
 		assertEquals("bar", lmn.getMeThatThing());
 	}

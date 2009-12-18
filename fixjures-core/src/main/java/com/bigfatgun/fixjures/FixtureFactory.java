@@ -15,17 +15,10 @@
  */
 package com.bigfatgun.fixjures;
 
-import java.io.IOException;
-import java.util.EnumSet;
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
-
+import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.bigfatgun.fixjures.handlers.Unmarshaller;
 import com.bigfatgun.fixjures.json.JSONSource;
 import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
-import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.google.common.base.Function;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ComputationException;
@@ -33,12 +26,17 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
 
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+
 /**
- * FixjureFactory is a utility helpful when creating many fixtures for it can easily produce many
- * fixture sources based on a single configuration by utilizing monolithic
- * {@link com.bigfatgun.fixjures.SourceFactory}s, or by combinding
- * {@link com.bigfatgun.fixjures.Strategies.SourceStrategy}s and
- * {@link com.bigfatgun.fixjures.Strategies.ResourceNameStrategy}s.
+ * FixjureFactory is a utility helpful when creating many fixtures for it can easily produce many fixture sources based
+ * on a single configuration by utilizing monolithic {@link com.bigfatgun.fixjures.SourceFactory}s, or by combinding
+ * {@link com.bigfatgun.fixjures.Strategies.SourceStrategy}s and {@link com.bigfatgun.fixjures.Strategies.ResourceNameStrategy}s.
  *
  * @author Steve Reed
  */
@@ -56,8 +54,8 @@ public final class FixtureFactory implements IdentityResolver {
 	}
 
 	/**
-	 * Creates a new factory that will use {@link com.bigfatgun.fixjures.json.JSONSource}s backed by
-	 * data provided by the given {@link com.bigfatgun.fixjures.Strategies.SourceStrategy}.
+	 * Creates a new factory that will use {@link com.bigfatgun.fixjures.json.JSONSource}s backed by data provided by the
+	 * given {@link com.bigfatgun.fixjures.Strategies.SourceStrategy}.
 	 *
 	 * @param sourceStrategy strategy to use to find json source
 	 * @return new fixture factory
@@ -79,8 +77,8 @@ public final class FixtureFactory implements IdentityResolver {
 	}
 
 	/**
-	 * Creates a new factory that will use {@link com.bigfatgun.fixjures.serializable.ObjectInputStreamSource}s
-	 * backed by data provided by the given {@link com.bigfatgun.fixjures.Strategies.SourceStrategy}.
+	 * Creates a new factory that will use {@link com.bigfatgun.fixjures.serializable.ObjectInputStreamSource}s backed by
+	 * data provided by the given {@link com.bigfatgun.fixjures.Strategies.SourceStrategy}.
 	 *
 	 * @param sourceStrategy strategy to use to find source data
 	 * @return new fixture factory
@@ -101,24 +99,16 @@ public final class FixtureFactory implements IdentityResolver {
 		});
 	}
 
-	/**
-	 * Source factory.
-	 */
+	/** Source factory. */
 	private final SourceFactory srcFactory;
 
-	/**
-	 * Set of options to use when creating fixtures.
-	 */
+	/** Set of options to use when creating fixtures. */
 	private final Set<Fixjure.Option> options;
 
-	/**
-	 * Set of fixture handlers to use.
-	 */
+	/** Set of fixture handlers to use. */
 	private final Set<Unmarshaller<?>> handlers;
 
-	/**
-	 * Compute map that stores a map of object name to object for every fixture object type.
-	 */
+	/** Compute map that stores a map of object name to object for every fixture object type. */
 	private final ConcurrentMap<Class<?>, ConcurrentMap<String, Object>> objectCache;
 
 	/**
@@ -134,37 +124,37 @@ public final class FixtureFactory implements IdentityResolver {
 		handlers = Sets.newHashSet();
 
 		objectCache = new MapMaker()
-				  .expiration(600L, TimeUnit.SECONDS)
-				  .softValues()
-				  .makeComputingMap(new Function<Class<?>, ConcurrentMap<String, Object>>() {
-			public ConcurrentMap<String, Object> apply(@Nullable final Class<?> type) {
-				if (type == null) {
-					throw new NullPointerException("type");
-				}
-				return new MapMaker()
-						  .expiration(60L, TimeUnit.SECONDS)
-						  .softValues()
-						  .makeComputingMap(new Function<String, Object>() {
-							  public Object apply(@Nullable final String name) {
-								  if (name == null) {
-									  throw new NullPointerException("name");
-								  }
+				.expiration(600L, TimeUnit.SECONDS)
+				.softValues()
+				.makeComputingMap(new Function<Class<?>, ConcurrentMap<String, Object>>() {
+					public ConcurrentMap<String, Object> apply(@Nullable final Class<?> type) {
+						if (type == null) {
+							throw new NullPointerException("type");
+						}
+						return new MapMaker()
+								.expiration(60L, TimeUnit.SECONDS)
+								.softValues()
+								.makeComputingMap(new Function<String, Object>() {
+									public Object apply(@Nullable final String name) {
+										if (name == null) {
+											throw new NullPointerException("name");
+										}
 
-								  Fixjure.SourcedFixtureBuilder<?> fixtureBuilder = Fixjure.of(type).from(srcFactory.newInstance(type, name)).withOptions(ImmutableSet.copyOf(options));
-								  for (final Unmarshaller<?> handler : handlers) {
-									  fixtureBuilder = fixtureBuilder.with(handler);
-								  }
-								  fixtureBuilder = fixtureBuilder.resolveIdsWith(FixtureFactory.this);
-								  return fixtureBuilder.create();
-							  }
-						  });
-			}
-		});
+										Fixjure.SourcedFixtureBuilder<?> fixtureBuilder = Fixjure.of(type).from(srcFactory.newInstance(type, name)).withOptions(ImmutableSet.copyOf(options));
+										for (final Unmarshaller<?> handler : handlers) {
+											fixtureBuilder = fixtureBuilder.with(handler);
+										}
+										fixtureBuilder = fixtureBuilder.resolveIdsWith(FixtureFactory.this);
+										return fixtureBuilder.create();
+									}
+								});
+					}
+				});
 	}
 
 	/**
 	 * Returns true if the raw value is a string.
-	 * <p>
+	 * <p/>
 	 * {@inheritDoc}
 	 */
 	public boolean canHandleIdentity(final Class<?> requiredType, @Nullable final Object rawIdentityValue) {
@@ -173,6 +163,7 @@ public final class FixtureFactory implements IdentityResolver {
 
 	/**
 	 * Converts the raw identity value into a string.
+	 *
 	 * @param rawIdentityValue raw identity value
 	 * @return identity as string
 	 */
@@ -192,8 +183,8 @@ public final class FixtureFactory implements IdentityResolver {
 	}
 
 	/**
-	 * Enables the given option. By enabling this option it will be passed into every fixture builder created
-	 * by this factory.
+	 * Enables the given option. By enabling this option it will be passed into every fixture builder created by this
+	 * factory.
 	 *
 	 * @param option option to enable, not null
 	 * @return this
@@ -208,6 +199,7 @@ public final class FixtureFactory implements IdentityResolver {
 
 	/**
 	 * Disables the given option.
+	 *
 	 * @param option option to disable, not null
 	 * @return this
 	 */
@@ -248,8 +240,8 @@ public final class FixtureFactory implements IdentityResolver {
 	}
 
 	/**
-	 * Creates a fixture object of the given type. The name is used by underlying source factories or resource
-	 * name strategies to locate the fixture object source.
+	 * Creates a fixture object of the given type. The name is used by underlying source factories or resource name
+	 * strategies to locate the fixture object source.
 	 *
 	 * @param type fixture object type
 	 * @param <T> fixture object type
@@ -272,9 +264,7 @@ public final class FixtureFactory implements IdentityResolver {
 		}
 	}
 
-	/**
-	 * Clears the fixture object cache.
-	 */
+	/** Clears the fixture object cache. */
 	public void expireCache() {
 		objectCache.clear();
 	}

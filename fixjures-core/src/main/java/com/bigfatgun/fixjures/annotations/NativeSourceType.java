@@ -1,14 +1,14 @@
 package com.bigfatgun.fixjures.annotations;
 
+import com.bigfatgun.fixjures.ByteUtil;
+import com.bigfatgun.fixjures.FixtureException;
+
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-
-import com.bigfatgun.fixjures.ByteUtil;
-import com.bigfatgun.fixjures.FixtureException;
 
 /**
  * An enumeration of source types.
@@ -33,9 +33,7 @@ public enum NativeSourceType implements SourceType {
 		}
 	},
 
-	/**
-	 * File.
-	 */
+	/** File. */
 	File {
 		/**
 		 * Opens a stream of a file with the given name.
@@ -54,9 +52,7 @@ public enum NativeSourceType implements SourceType {
 		}
 	},
 
-	/**
-	 * String literal.
-	 */
+	/** String literal. */
 	Literal {
 		/**
 		 * Returns the string literal as a byte stream.
@@ -70,8 +66,6 @@ public enum NativeSourceType implements SourceType {
 		}
 	};
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	public abstract ReadableByteChannel openStream(final ClassLoader clsLoader, final String value);
 }

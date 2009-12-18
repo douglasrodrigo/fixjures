@@ -16,8 +16,8 @@
 package com.bigfatgun.fixjures;
 
 /**
- * This is a marker interface that denotes a {@link FixtureSource} that can read in
- * multiple objects from a stream. Nothing is done about it at this point.
+ * This is a marker interface that denotes a {@link FixtureSource} that can read in multiple objects from a stream.
+ * Nothing is done about it at this point.
  *
  * @author Steve Reed
  */

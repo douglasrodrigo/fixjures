@@ -2,10 +2,7 @@ package com.bigfatgun.fixjures;
 
 import javax.annotation.Nullable;
 
-/**
- * Interface marks an entity that is able to find and create/retrieve an object stub by type
- * and id.
- */
+/** Interface marks an entity that is able to find and create/retrieve an object stub by type and id. */
 public interface IdentityResolver {
 
 	/**
@@ -17,6 +14,7 @@ public interface IdentityResolver {
 
 	/**
 	 * Converts the raw identity value into a string.
+	 *
 	 * @param rawIdentityValue raw identity value
 	 * @return identty as string
 	 */

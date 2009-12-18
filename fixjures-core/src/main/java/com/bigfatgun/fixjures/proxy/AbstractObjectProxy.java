@@ -15,10 +15,6 @@
  */
 package com.bigfatgun.fixjures.proxy;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Set;
-
 import com.bigfatgun.fixjures.Fixjure;
 import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.bigfatgun.fixjures.FixtureType;
@@ -29,11 +25,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Base proxy class that holds on to stubs and the object type.
  *
  * @author Steve Reed
- * @param <T> proxy object type
  */
 abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 
@@ -82,7 +81,7 @@ abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 	 * Adds a value stub for a method with the given name.
 	 *
 	 * @param methodName method name
-	 * @param valueStub  method return value stub
+	 * @param valueStub method return value stub
 	 */
 	public final void addValueStub(final String methodName, final Supplier<?> valueStub) {
 		stubs.put(methodName, valueStub);

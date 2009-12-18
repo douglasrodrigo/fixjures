@@ -15,11 +15,11 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import java.math.BigInteger;
-
 import com.bigfatgun.fixjures.FixtureType;
 import com.bigfatgun.fixjures.Suppliers;
 import com.google.common.base.Supplier;
+
+import java.math.BigInteger;
 
 class BigIntegerUnmarshaller extends AbstractUnmarshaller<BigInteger> {
 

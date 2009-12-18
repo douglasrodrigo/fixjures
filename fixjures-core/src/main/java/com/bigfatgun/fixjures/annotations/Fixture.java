@@ -11,23 +11,21 @@ import java.lang.annotation.Target;
  * @author Steve Reed
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
+@Target(value = {ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
 public @interface Fixture {
 
-	/**
-	 * @return fixture source
-	 */
+	/** @return fixture source */
 	String value();
 
 	/**
-	 * @return fixture source format, default is {@link com.bigfatgun.fixjures.annotations.NativeSourceFormat#Json}
-	 * if not specified
+	 * @return fixture source format, default is {@link com.bigfatgun.fixjures.annotations.NativeSourceFormat#Json} if not
+	 *         specified
 	 */
 	NativeSourceFormat format() default NativeSourceFormat.Json;
 
 	/**
-	 * @return fixture source type, default is {@link com.bigfatgun.fixjures.annotations.NativeSourceType#Literal}
-	 * if not specified
+	 * @return fixture source type, default is {@link com.bigfatgun.fixjures.annotations.NativeSourceType#Literal} if not
+	 *         specified
 	 */
 	NativeSourceType type() default NativeSourceType.Literal;
 }

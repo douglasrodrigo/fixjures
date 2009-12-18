@@ -1,15 +1,12 @@
 package com.bigfatgun.fixjures;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-
 import com.bigfatgun.fixjures.annotations.Fixture;
 import com.bigfatgun.fixjures.annotations.NativeSourceType;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import org.junit.Test;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 public class FixtureInjectorTest {
 
@@ -70,7 +67,7 @@ public class FixtureInjectorTest {
 		}
 
 		public void setFirstAndSecond(@Fixture(value = "first") final String s1,
-												@Fixture(value = "second") final String s2) {
+				@Fixture(value = "second") final String s2) {
 			first = s1;
 			second = s2;
 		}

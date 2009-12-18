@@ -19,16 +19,16 @@ import com.bigfatgun.fixjures.FixtureType;
 import com.google.common.base.Supplier;
 
 /**
- * This interface is implemented by any class that can produce a proxy object of some sort based on a
- * pre-configured map of property accessor name to value.
+ * This interface is implemented by any class that can produce a proxy object of some sort based on a pre-configured map
+ * of property accessor name to value.
  *
- * @param <T> proxy object type
  * @author Steve Reed
  */
 public interface ObjectProxy<T> {
 
 	/**
 	 * Returns the proxy object type
+	 *
 	 * @return the proxy object type
 	 */
 	Class<T> getType();
@@ -43,6 +43,7 @@ public interface ObjectProxy<T> {
 
 	/**
 	 * Creates a new proxy instance.
+	 *
 	 * @return a new proxy instance
 	 */
 	T create();

@@ -1,13 +1,5 @@
 package com.bigfatgun.fixjures.json;
 
-import java.lang.reflect.Array;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.annotation.Nullable;
-
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
 import static com.bigfatgun.fixjures.FixtureException.convert;
@@ -21,17 +13,14 @@ import com.bigfatgun.fixjures.proxy.Proxies;
 import com.bigfatgun.fixjures.proxy.ProxyUtils;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import javax.annotation.Nullable;
+import java.lang.reflect.Array;
+import java.util.*;
 
 final class JsonHandlers {
 

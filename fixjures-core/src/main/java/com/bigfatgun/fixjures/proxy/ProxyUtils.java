@@ -4,8 +4,7 @@ public final class ProxyUtils {
 	private ProxyUtils() {}
 
 	/**
-	 * Converts a property name into a getter name. For example, "firstName" will be transformed into
-	 * "getFirstName".
+	 * Converts a property name into a getter name. For example, "firstName" will be transformed into "getFirstName".
 	 *
 	 * @param propertyName property name
 	 * @return getter name

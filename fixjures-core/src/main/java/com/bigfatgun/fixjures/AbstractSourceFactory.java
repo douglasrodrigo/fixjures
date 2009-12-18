@@ -1,13 +1,13 @@
 package com.bigfatgun.fixjures;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 /**
- * Abstract base class for other source factories that can be easily implemented on top of
- * a {@link java.nio.channels.ReadableByteChannel}.
+ * Abstract base class for other source factories that can be easily implemented on top of a {@link
+ * java.nio.channels.ReadableByteChannel}.
  */
 public abstract class AbstractSourceFactory implements SourceFactory {
 
@@ -19,8 +19,8 @@ public abstract class AbstractSourceFactory implements SourceFactory {
 	}
 
 	/**
-	 * Uses the data source strategy to find fixture source data, and wraps any {@code IOException}s with
-	 * a {@link com.bigfatgun.fixjures.FixtureException}.
+	 * Uses the data source strategy to find fixture source data, and wraps any {@code IOException}s with a {@link
+	 * com.bigfatgun.fixjures.FixtureException}.
 	 *
 	 * @param fixtureObjectType fixture object type
 	 * @param fixtureId object id

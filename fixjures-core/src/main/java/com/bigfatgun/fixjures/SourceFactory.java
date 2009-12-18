@@ -23,8 +23,7 @@ package com.bigfatgun.fixjures;
 public interface SourceFactory {
 
 	/**
-	 * Creates a new instance of a fixture source, ready to create a fixture
-	 * of the given id.
+	 * Creates a new instance of a fixture source, ready to create a fixture of the given id.
 	 *
 	 * @param fixtureType fixture object type
 	 * @param fixtureId fixture object name or identifier

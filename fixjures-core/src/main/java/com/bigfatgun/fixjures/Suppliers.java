@@ -1,9 +1,9 @@
 package com.bigfatgun.fixjures;
 
-import javax.annotation.Nullable;
-
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.base.Supplier;
+
+import javax.annotation.Nullable;
 
 public final class Suppliers {
 	private Suppliers() {}

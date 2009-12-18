@@ -15,14 +15,14 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 public final class Unmarshallers {
 
@@ -85,8 +85,8 @@ public final class Unmarshallers {
 	}
 
 	public static <InterimType, EndType> Iterable<Unmarshaller<? extends EndType>> createChain(
-			  final ChainedUnmarshaller<InterimType> chained,
-			  final ImmutableList<Unmarshaller<EndType>> handlers) {
+			final ChainedUnmarshaller<InterimType> chained,
+			final ImmutableList<Unmarshaller<EndType>> handlers) {
 
 		final List<Unmarshaller<? extends EndType>> fixtures = Lists.newLinkedList();
 		for (final Unmarshaller<EndType> handler : handlers) {

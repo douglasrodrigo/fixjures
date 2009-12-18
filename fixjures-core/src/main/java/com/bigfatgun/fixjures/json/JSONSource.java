@@ -15,16 +15,6 @@
  */
 package com.bigfatgun.fixjures.json;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-
 import com.bigfatgun.fixjures.ByteUtil;
 import com.bigfatgun.fixjures.FixtureException;
 import static com.bigfatgun.fixjures.FixtureException.convert;
@@ -35,9 +25,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * Mocks objects based on JSON fixture data.
- */
+import java.io.*;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+
+/** Mocks objects based on JSON fixture data. */
 public final class JSONSource extends FixtureSource {
 
 	public static FixtureSource newJsonStream(final ReadableByteChannel channel) {

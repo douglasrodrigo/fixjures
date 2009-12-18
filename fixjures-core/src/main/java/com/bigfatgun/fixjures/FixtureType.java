@@ -1,15 +1,14 @@
 package com.bigfatgun.fixjures;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.collect.ImmutableList;
+
 import java.lang.reflect.Type;
 import java.util.Arrays;
 
-import com.google.common.collect.ImmutableList;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 /**
- * This {@code Type} generalizes the concept of an object class which may
- * have some type parameters, and provides some convenience methods for
- * drilling into those parameters.
+ * This {@code Type} generalizes the concept of an object class which may have some type parameters, and provides some
+ * convenience methods for drilling into those parameters.
  */
 public final class FixtureType implements Type {
 

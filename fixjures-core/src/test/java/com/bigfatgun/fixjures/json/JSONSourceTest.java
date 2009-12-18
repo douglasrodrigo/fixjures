@@ -1,23 +1,20 @@
 package com.bigfatgun.fixjures.json;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @SuppressWarnings({"unchecked"})
 public class JSONSourceTest {
@@ -52,13 +49,21 @@ public class JSONSourceTest {
 
 	public static interface Complex {
 		String getStr();
+
 		byte getByte();
+
 		Double getDouble();
+
 		List<Byte> getList();
+
 		Set<Byte> getSet();
+
 		Multiset<Short> getMultiset();
+
 		Map getMap();
+
 		Complex getParent();
+
 		String[] getArray();
 	}
 
@@ -148,10 +153,13 @@ public class JSONSourceTest {
 		}
 
 		private String foo;
+
 		private String getFoo() {
 			return foo;
 		}
+
 		private String bar;
+
 		public String getBar() {
 			return bar;
 		}
@@ -178,6 +186,7 @@ public class JSONSourceTest {
 
 	private static interface HasBools {
 		boolean getFirst();
+
 		Boolean getSecond();
 	}
 

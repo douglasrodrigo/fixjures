@@ -18,16 +18,13 @@ package com.bigfatgun.fixjures.proxy;
 import com.bigfatgun.fixjures.Fixjure;
 import com.google.common.collect.ImmutableSet;
 
-/**
- * Static proxy factory.
- */
+/** Static proxy factory. */
 public final class Proxies {
 
 	/**
-	 * Creates a proxy object based on the class. If the class is an interface, a
-	 * {@link com.bigfatgun.fixjures.proxy.InterfaceProxy} is returned, otherwise a
-	 * {@link com.bigfatgun.fixjures.proxy.ConcreteReflectionProxy} is assumed to be the appropriate
-	 * proxy.
+	 * Creates a proxy object based on the class. If the class is an interface, a {@link
+	 * com.bigfatgun.fixjures.proxy.InterfaceProxy} is returned, otherwise a {@link com.bigfatgun.fixjures.proxy.ConcreteReflectionProxy}
+	 * is assumed to be the appropriate proxy.
 	 *
 	 * @param cls proxy object type
 	 * @param options proxy options
@@ -65,9 +62,7 @@ public final class Proxies {
 		return new ConcreteReflectionProxy<T>(cls);
 	}
 
-	/**
-	 * Private util ctor.
-	 */
+	/** Private util ctor. */
 	private Proxies() {
 		assert false : "Cannot instantiate!";
 	}

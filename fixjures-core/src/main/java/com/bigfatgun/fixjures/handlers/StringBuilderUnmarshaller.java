@@ -19,9 +19,7 @@ import com.bigfatgun.fixjures.FixtureType;
 import com.bigfatgun.fixjures.Suppliers;
 import com.google.common.base.Supplier;
 
-/**
- * Converts a {@code CharSequence} to a {@code StringBuilder}.
- */
+/** Converts a {@code CharSequence} to a {@code StringBuilder}. */
 final class StringBuilderUnmarshaller extends AbstractUnmarshaller<StringBuilder> {
 
 	public StringBuilderUnmarshaller() {
