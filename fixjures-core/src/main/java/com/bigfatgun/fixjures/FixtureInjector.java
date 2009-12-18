@@ -1,6 +1,6 @@
 package com.bigfatgun.fixjures;
 
-import static com.bigfatgun.fixjures.FixtureException.convert;
+import static com.bigfatgun.fixjures.FixtureException.convertAndThrowAs;
 import com.bigfatgun.fixjures.annotations.Fixture;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -46,7 +46,7 @@ public class FixtureInjector {
 				m.invoke(obj, ImmutableList.copyOf(values).toArray());
 			} catch (Exception e) {
 				e.printStackTrace();
-				throw convert(e);
+				convertAndThrowAs(e);
 			}
 		}
 
@@ -76,7 +76,7 @@ public class FixtureInjector {
 				m.invoke(obj, newFactory(obj.getClass().getClassLoader(), a).createFixture(t, a.value()));
 			} catch (Exception e) {
 				e.printStackTrace();
-				throw convert(e);
+				convertAndThrowAs(e);
 			}
 		}
 	}

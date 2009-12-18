@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
 import java.util.Set;
 
 /**
@@ -57,7 +58,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 	private final ReadableByteChannel sourceChannel;
 	private final Set<Fixjure.Option> options;
 	@Nullable
-	private String preferredCharset = null;
+	private Charset preferredCharset = null;
 	@Nullable
 	private IdentityResolver identityResolver = null;
 
@@ -79,7 +80,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 	}
 
 	public final void withCharset(final String charset) {
-		this.preferredCharset = checkNotNull(charset);
+		this.preferredCharset = Charset.forName(charset);
 	}
 
 	public void close() throws IOException {
@@ -119,7 +120,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 		return sourceChannel;
 	}
 
-	protected final String getCharset() {
+	protected final Charset getCharset() {
 		return preferredCharset;
 	}
 
