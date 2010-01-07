@@ -142,6 +142,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 	}
 
 	/** {@inheritDoc} */
+	@SuppressWarnings({"unchecked"})
 	protected final Unmarshaller<?> findUnmarshaller(final Object src, final FixtureType type) {
 		final Class<?> cls = type.getType();
 
@@ -171,7 +172,6 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 			}
 		}
 
-		//noinspection unchecked
 		return new AbstractUnmarshaller(Object.class, cls) {
 			public Supplier<?> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 				return resolveIdentity(cls, src);

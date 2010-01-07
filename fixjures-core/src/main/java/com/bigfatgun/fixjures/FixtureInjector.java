@@ -75,7 +75,6 @@ public class FixtureInjector {
 			try {
 				m.invoke(obj, newFactory(obj.getClass().getClassLoader(), a).createFixture(t, a.value()));
 			} catch (Exception e) {
-				e.printStackTrace();
 				convertAndThrowAs(e);
 			}
 		}

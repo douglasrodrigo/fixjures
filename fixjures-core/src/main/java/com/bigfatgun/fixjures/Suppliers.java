@@ -8,19 +8,6 @@ import javax.annotation.Nullable;
 public final class Suppliers {
 	private Suppliers() {}
 
-	private static final class StaticSupplier<T> implements Supplier<T> {
-
-		private final T t;
-
-		public StaticSupplier(@Nullable T t) {
-			this.t = t;
-		}
-
-		public T get() {
-			return t;
-		}
-	}
-
 	private static final class IdentityResolvingSupplier<T> implements Supplier<T> {
 
 		private final IdentityResolver identityResolver;
@@ -42,7 +29,7 @@ public final class Suppliers {
 	}
 
 	public static <T> Supplier<T> of(@Nullable T value) {
-		return new StaticSupplier<T>(value);
+		return com.google.common.base.Suppliers.ofInstance(value);
 	}
 
 	public static <T> Supplier<T> ofIdentity(final IdentityResolver identityResolver, final Class<T> type, final Object rawIdentityValue) {

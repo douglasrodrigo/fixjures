@@ -16,6 +16,7 @@
 package com.bigfatgun.fixjures;
 
 import com.bigfatgun.fixjures.handlers.Unmarshaller;
+import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Multiset;
 
 import java.io.IOException;
@@ -190,28 +191,19 @@ public final class Fixjure {
 			super(builder, source);
 		}
 
-		public Iterable<? extends T> createAll() {
+		public Iterable<T> createAll() {
 			return new Iterable<T>() {
 				public Iterator<T> iterator() {
-					return new Iterator<T>() {
-						private Object next;
-
-						public boolean hasNext() {
-							try {
-								next = StreamedFixtureBuilder.this.getSource().createFixture(getType());
-							} catch (Exception e) {
-								next = null;
-							}
-							return next != null;
-						}
+					return new AbstractIterator<T>() {
 
 						@SuppressWarnings({"unchecked"})
-						public T next() {
-							return (T) next;
-						}
-
-						public void remove() {
-							throw new UnsupportedOperationException();
+						@Override
+						protected T computeNext() {
+							try {
+								return (T) StreamedFixtureBuilder.this.getSource().createFixture(getType());
+							} catch (Exception e) {
+								return endOfData();
+							}
 						}
 					};
 				}

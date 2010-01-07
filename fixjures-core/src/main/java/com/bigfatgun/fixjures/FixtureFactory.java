@@ -125,7 +125,6 @@ public final class FixtureFactory implements IdentityResolver {
 
 		objectCache = new MapMaker()
 				.expiration(600L, TimeUnit.SECONDS)
-				.softValues()
 				.makeComputingMap(new Function<Class<?>, ConcurrentMap<String, Object>>() {
 					public ConcurrentMap<String, Object> apply(@Nullable final Class<?> type) {
 						if (type == null) {

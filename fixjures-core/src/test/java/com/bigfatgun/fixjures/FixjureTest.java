@@ -15,6 +15,7 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.util.*;
 
+@SuppressWarnings({"unchecked"})
 public class FixjureTest {
 
 	@Test
