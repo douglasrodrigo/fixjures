@@ -18,7 +18,7 @@ package com.bigfatgun.fixjures;
 /** A runtime exception used during fixture object creation to wrap any sort of underlying failure. */
 public class FixtureException extends RuntimeException {
 
-	public static void convertAndThrowAs(final Throwable cause)
+	public static <T> T convertAndThrowAs(final Throwable cause)
 		throws FixtureException {
 
 		if (cause instanceof FixtureException) {

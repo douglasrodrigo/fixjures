@@ -2,7 +2,6 @@ package com.bigfatgun.fixjures.json;
 
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
-import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.bigfatgun.fixjures.FixtureType;
 import com.bigfatgun.fixjures.Suppliers;
 import com.bigfatgun.fixjures.handlers.AbstractUnmarshaller;
@@ -19,7 +18,12 @@ import org.json.simple.JSONObject;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static com.bigfatgun.fixjures.FixtureException.convert;
 
 final class JsonHandlers {
 
@@ -46,8 +50,7 @@ final class JsonHandlers {
 		private ImmutableList<Supplier<?>> objectsInArray(final UnmarshallingContext helper, final JSONArray array, final FixtureType collectionType) {
 			final List<Supplier<?>> source = Lists.newLinkedList();
 
-			for (int i = 0; i < array.size(); i++) {
-				final Object sourceValue = array.get(i);
+			for (final Object sourceValue : array) {
 				final Supplier<?> unmarshalled = helper.unmarshall(sourceValue, collectionType.collectionType());
 				source.add(unmarshalled);
 			}
@@ -118,8 +121,7 @@ final class JsonHandlers {
 				final FixtureType keyType = typeDef.keyType();
 				final FixtureType valueType = typeDef.valueType();
 				ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder();
-				for (final Iterator i = jsonObject.keySet().iterator(); i.hasNext();) {
-					final Object lookupKey = i.next();
+				for (final Object lookupKey : jsonObject.keySet()) {
 					final Supplier<?> keyProvider = help(helper, lookupKey, keyType);
 					final Supplier<?> valueProvider = help(helper, jsonObject.get(String.valueOf(lookupKey)), valueType);
 					final Object key = keyProvider.get();
@@ -146,9 +148,8 @@ final class JsonHandlers {
 			}
 
 			private <T> void configureProxy(final UnmarshallingContext helper, final ObjectProxy<T> proxy, final JSONObject obj) {
-				final Iterator objIterator = obj.keySet().iterator();
-				while (objIterator.hasNext()) {
-					final String key = objIterator.next().toString();
+				for (Object o : obj.keySet()) {
+					final String key = o.toString();
 					final String methodName = helper.getOptions().contains(Fixjure.Option.LITERAL_MAPPING) ? key : ProxyUtils.getterName(key);
 					final FixtureType getterTypeDef = proxy.suggestType(methodName);
 					if (getterTypeDef == null) {
@@ -158,7 +159,7 @@ final class JsonHandlers {
 							throw new FixtureException("Could not find type of method: " + methodName);
 						}
 					}
-					
+
 					final Supplier<?> stub;
 					if (helper.getOptions().contains(Fixjure.Option.LAZY_REFERENCE_EVALUATION)) {
 						stub = new Supplier<Object>() {

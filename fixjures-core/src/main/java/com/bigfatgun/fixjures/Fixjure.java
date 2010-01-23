@@ -261,16 +261,8 @@ public final class Fixjure {
 			}
 		}
 
-		/**
-		 * Adds options.
-		 *
-		 * @param opts options
-		 * @return this
-		 */
-		public final SourcedFixtureBuilder<T> withOptions(final Option... opts) {
-			for (final Option opt : opts) {
-				this.fixtureSource.addOption(opt);
-			}
+		public final SourcedFixtureBuilder<T> withOptions(final Option opt, final Option... opts) {
+			this.fixtureSource.addOptions(opt, opts);
 			return this;
 		}
 

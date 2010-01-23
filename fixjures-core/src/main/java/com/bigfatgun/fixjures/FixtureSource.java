@@ -57,6 +57,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 	private final Multimap<Class<?>, Unmarshaller<?>> typeHandlers;
 	private final ReadableByteChannel sourceChannel;
 	private final Set<Fixjure.Option> options;
+
 	@Nullable
 	private Charset preferredCharset = null;
 	@Nullable
@@ -69,11 +70,13 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 		options = Sets.newEnumSet(DEFAULT_OPTIONS, Fixjure.Option.class);
 	}
 
-	/**
-	 * Adds an option.
-	 *
-	 * @param opt option
-	 */
+	public final void addOptions(final Fixjure.Option opt, final Fixjure.Option... others) {
+		addOption(opt);
+		for (final Fixjure.Option other : others) {
+			addOption(other);
+		}
+	}
+
 	public final void addOption(final Fixjure.Option opt) {
 		checkNotNull(opt);
 		options.add(opt);
@@ -98,12 +101,16 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 	}
 
 	private boolean canHandleIdentity(final Class<?> type, @Nullable final Object rawIdentityValue) {
+		assert type !=  null : "Type cannot be null!";
+
 		return identityResolver != null
 				&& rawIdentityValue != null
 				&& identityResolver.canHandleIdentity(type, rawIdentityValue);
 	}
 
 	private <T> Supplier<T> resolveIdentity(final Class<T> type, final Object rawIdentityValue) {
+		assert type != null : "Type cannot be null!";
+
 		if (canHandleIdentity(type, rawIdentityValue)) {
 			assert identityResolver != null : "Don't attempt to resolve an id if the resolver is null!";
 			return Suppliers.ofIdentity(identityResolver, type, rawIdentityValue);
@@ -132,10 +139,6 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 		}
 	}
 
-	protected final boolean isOptionEnabled(final Fixjure.Option option) {
-		return options.contains(option);
-	}
-
 	public final Supplier<?> unmarshall(final Object rawValue, final FixtureType type) {
 		final Unmarshaller<?> unmarshaller = findUnmarshaller(rawValue, type);
 		return unmarshaller.unmarshall(this, rawValue, type);
@@ -146,29 +149,15 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 	protected final Unmarshaller<?> findUnmarshaller(final Object src, final FixtureType type) {
 		final Class<?> cls = type.getType();
 
+		assert cls != null : "Type class cannot be null.";
+
 		if (type.getParams().isEmpty() && cls.isInstance(src)) {
 			return NoConversionUnmarshaller.newInstance(cls);
 		}
 
-		for (Class<?> keyClass = cls; keyClass != null; keyClass = keyClass.getSuperclass()) {
-			for (final Unmarshaller<?> handler : getTypeHandlers().get(keyClass)) {
-				if (handler.canUnmarshallObjectToType(src, type)) {
-					return handler;
-				}
-			}
-		}
-
-		for (final Unmarshaller<?> handler : getTypeHandlers().get(Object.class)) {
+		for (final Unmarshaller<?> handler : getUnmarshallerCandidates(cls)) {
 			if (handler.canUnmarshallObjectToType(src, type)) {
 				return handler;
-			}
-		}
-
-		if (cls.isArray()) {
-			for (final Unmarshaller<?> handler : getTypeHandlers().get(Object[].class)) {
-				if (handler.canUnmarshallObjectToType(src, type)) {
-					return handler;
-				}
 			}
 		}
 
@@ -177,6 +166,24 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 				return resolveIdentity(cls, src);
 			}
 		};
+	}
+
+	private Iterable<Unmarshaller<?>> getUnmarshallerCandidates(final Class<?> cls) {
+		assert cls != null : "Class cannot be null.";
+
+		final ImmutableList.Builder<Unmarshaller<?>> candidateBuilder = ImmutableList.builder();
+
+		for (Class<?> keyClass = cls; keyClass != null; keyClass = keyClass.getSuperclass()) {
+			candidateBuilder.addAll(getTypeHandlers().get(keyClass));
+		}
+
+		candidateBuilder.addAll(getTypeHandlers().get(Object.class));
+
+		if (cls.isArray()) {
+			candidateBuilder.addAll(getTypeHandlers().get(Object[].class));
+		}
+
+		return candidateBuilder.build();
 	}
 
 	/**

@@ -5,12 +5,15 @@ import com.bigfatgun.fixjures.json.JSONSource;
 import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
 import com.google.common.collect.*;
 import static org.junit.Assert.*;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.util.*;
@@ -78,7 +81,7 @@ public class FixjureTest {
 		String getVersion();
 	}
 
-	@Test
+	@Test @Ignore("You need to be online for this test, ignoring by default.")
 	public void urlFixture() {
 		try {
 			final String nytimesJsonUrl = "http://prototype.nytimes.com/svc/widgets/dataservice.html?uri=http://www.nytimes.com/services/xml/rss/nyt/World.xml";
@@ -90,6 +93,27 @@ public class FixjureTest {
 			e.printStackTrace();
 			fail("You need access to nytimes.com for this test to work.");
 		}
+	}
+
+	private interface GoogleCalendarFeed {
+		Map<String, String> getTitle();
+	}
+
+	private interface GoogleCalendar {
+		String getVersion();
+		String getEncoding();
+		GoogleCalendarFeed getFeed();
+	}
+
+	@Test @Ignore("You need to be online for this test, ignoring by default.")
+	public void googleUrlFixture() throws MalformedURLException {
+		// http://www.google.com/calendar/feeds/developer-calendar@google.com/public/full?alt=json
+		final String googleUrl = "http://www.google.com/calendar/feeds/developer-calendar@google.com/public/full?alt=json";
+		final FixtureSource src = JSONSource.newRemoteUrl(new URL(googleUrl));
+		GoogleCalendar google = Fixjure.of(GoogleCalendar.class).from(src).withOptions(SKIP_UNMAPPABLE).create();
+		System.out.println(google.getVersion());
+		System.out.println(google.getEncoding());
+		System.out.println(google.getFeed().getTitle().get("$t"));
 	}
 
 	@Test
