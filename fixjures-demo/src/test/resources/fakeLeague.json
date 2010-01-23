@@ -1,18 +1,18 @@
 {
-    name : "Fake League",
-    teams : [
+    "name" : "Fake League",
+    "teams" : [
         {
-            name : "Giants",
-            players : [ { number : 56 }, { number : 11 }, { number : 10 }, { number : 92 } ]
+            "name" : "Giants",
+            "players" : [ { "number" : 56 }, { "number" : 11 }, { "number" : 10 }, { "number" : 92 } ]
         }, {
-            name : "Mets",
-            players : [ { number : 11 } ]
+            "name" : "Mets",
+            "players" : [ { "number" : 11 } ]
         }, {
-            name : "Raiders",
-            players : [ { number : 1 }, { number : 2 } ]
+            "name" : "Raiders",
+            "players" : [ { "number" : 1 }, { "number" : 2 } ]
         }, {
-            name : "Sounders FC",
-            players : [ { number : 99 }, { number : 0 } ]
+            "name" : "Sounders FC",
+            "players" : [ { "number" : 99 }, { "number" : 0 } ]
         }
     ]
 }

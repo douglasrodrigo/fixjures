@@ -153,16 +153,16 @@ public class FixjureTest {
 	@Test
 	public void inMemoryStrategy() {
 		Map<Class<?>, Map<String, String>> mem = Maps.newHashMap();
-		mem.put(String.class, ImmutableMap.of("foo", "foo", "bar", "bar"));
+		mem.put(String.class, ImmutableMap.of("foo", "\"foo\"", "bar", "\"bar\""));
 		mem.put(Integer.class, ImmutableMap.of("one", "1", "two", "2"));
-		mem.put(Map.class, ImmutableMap.of("map", "{ one : 1, two : 2 }"));
-		mem.put(NyTimes.class, ImmutableMap.of("nyt", "{ version: '2.1' }"));
+		mem.put(Map.class, ImmutableMap.of("map", "{ \"one\" : 1, \"two\" : 2 }"));
+		mem.put(NyTimes.class, ImmutableMap.of("nyt", "{ \"version\": \"2.1\" }"));
 		FixtureFactory fact = FixtureFactory.newJsonFactory(Strategies.newInMemoryStrategy(mem));
-		assertEquals("foo", fact.createFixture(String.class, "\"foo\""));
-		assertEquals("bar", fact.createFixture(String.class, "\"bar\""));
+		assertEquals("foo", fact.createFixture(String.class, "foo"));
+		assertEquals("bar", fact.createFixture(String.class, "bar"));
 		assertEquals(1, fact.createFixture(Integer.class, "one").intValue());
 		assertEquals(2, fact.createFixture(Integer.class, "two").intValue());
-		assertEquals(ImmutableMap.of("one", 1, "two", 2), fact.createFixture(Map.class, "map"));
+		assertEquals(ImmutableMap.of("one", 1L, "two", 2L), fact.createFixture(Map.class, "map"));
 		assertEquals("2.1", fact.createFixture(NyTimes.class, "nyt").getVersion());
 	}
 

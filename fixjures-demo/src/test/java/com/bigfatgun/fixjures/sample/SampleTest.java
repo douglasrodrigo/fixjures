@@ -29,7 +29,7 @@ public class SampleTest {
 	@Fixture(type = Resource, value = "fakeLeague.json")
 	private League league;
 
-	@Fixture(type = Literal, value = "{ name : 'MFL' }")
+	@Fixture(type = Literal, value = "{ \"name\" : \"MFL\" }")
 	private League other;
 
 	@Test
@@ -71,8 +71,8 @@ public class SampleTest {
 
 	@Test
 	public void objectReferenceTest() {
-		final Map<String, String> leagues = ImmutableMap.of("nfl", "{ name: 'NFL' }");
-		final Map<String, String> teams = ImmutableMap.of("the team", "{ name: 'The Team', league: 'nfl' }");
+		final Map<String, String> leagues = ImmutableMap.of("nfl", "{ \"name\": \"NFL\" }");
+		final Map<String, String> teams = ImmutableMap.of("the team", "{ \"name\": \"The Team\", \"league\": \"nfl\" }");
 		final Map<Class<?>, Map<String, String>> json = ImmutableMap.of(
 				  League.class, leagues,
 				  Team.class, teams
@@ -87,7 +87,7 @@ public class SampleTest {
 
 	@Test
 	public void nullReferenceTest() {
-		final Map<String, String> teams = ImmutableMap.of("the team", "{ name: 'The Team' }");
+		final Map<String, String> teams = ImmutableMap.of("the team", "{ \"name\": \"The Team\" }");
 		final Map<Class<?>, Map<String, String>> json = ImmutableMap.<Class<?>, Map<String, String>>of(
 				  Team.class, teams
 				  );
@@ -100,7 +100,7 @@ public class SampleTest {
 
 	@Test(expected = FixtureException.class)
 	public void nullReferenceTestFailsByDefault() {
-		final Map<String, String> teams = ImmutableMap.of("the team", "{ name: 'The Team' }");
+		final Map<String, String> teams = ImmutableMap.of("the team", "{ \"name\": \"The Team\" }");
 		final Map<Class<?>, Map<String, String>> json = ImmutableMap.<Class<?>, Map<String, String>>of(
 				  Team.class, teams
 				  );

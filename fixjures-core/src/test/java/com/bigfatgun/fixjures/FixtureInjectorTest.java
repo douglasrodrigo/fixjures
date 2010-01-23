@@ -66,8 +66,8 @@ public class FixtureInjectorTest {
 			return first + second;
 		}
 
-		public void setFirstAndSecond(@Fixture(value = "first") final String s1,
-				@Fixture(value = "second") final String s2) {
+		public void setFirstAndSecond(@Fixture(value = "\"first\"") final String s1,
+				@Fixture(value = "\"second\"") final String s2) {
 			first = s1;
 			second = s2;
 		}
@@ -76,7 +76,7 @@ public class FixtureInjectorTest {
 			return foo;
 		}
 
-		@Fixture(value = "value of foo")
+		@Fixture(value = "\"value of foo\"")
 		public void setFoo(final String foo) {
 			this.foo = foo;
 		}

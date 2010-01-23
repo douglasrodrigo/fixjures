@@ -94,7 +94,7 @@ public class JSONSourceTest {
 		assertEquals("Some String!", complex.getStr());
 		assertEquals((byte) 4, complex.getByte());
 		assertEquals((Double) 1e14, complex.getDouble());
-		// failing because type params aren't getting sent throughF
+		// failing because type params aren't getting sent through
 		assertEquals(Lists.newArrayList((byte) 1, (byte) 2, (byte) 3, (byte) 4), complex.getList());
 		assertEquals(Sets.newHashSet((byte) 1, (byte) 2, (byte) 3, (byte) 4), complex.getSet());
 		assertEquals(ImmutableMultiset.of((short) 1, (short) 1, (short) 2, (short) 3, (short) 5, (short) 8), complex.getMultiset());
@@ -105,9 +105,9 @@ public class JSONSourceTest {
 		assertTrue(Arrays.equals(new String[]{"a", "b", "c"}, complex.getArray()));
 	}
 
-	@Test(expected = FixtureException.class)
-	public void unsupportedJSONValue() throws Exception {
-		Fixjure.of(Boolean.class).from(JSONSource.newJsonString(" true ")).create();
+	@Test
+	public void booleansAreSupported() throws Exception {
+		assertTrue(Fixjure.of(Boolean.class).from(JSONSource.newJsonString(" true ")).create());
 	}
 
 	public static interface WithNonGenericList {
@@ -116,7 +116,7 @@ public class JSONSourceTest {
 
 	@Test
 	public void nonGenericList() throws Exception {
-		assertEquals(Arrays.asList(1, 2), Fixjure.of(WithNonGenericList.class).from(JSONSource.newJsonString("{ \"foo\" : [ 1, 2 ] }")).create().getFoo());
+		assertEquals(Arrays.asList(1L, 2L), Fixjure.of(WithNonGenericList.class).from(JSONSource.newJsonString("{ \"foo\" : [ 1, 2 ] }")).create().getFoo());
 	}
 
 	@Test
@@ -206,19 +206,13 @@ public class JSONSourceTest {
 
 	@Test
 	public void decoratorOfStringWorks() {
-		Decorator<String> ds = Fixjure.of(Decorator.class).of(String.class).from(JSONSource.newJsonString("{ t: 'foo' }")).create();
+		Decorator<String> ds = Fixjure.of(Decorator.class).of(String.class).from(JSONSource.newJsonString("{ \"t\": \"foo\" }")).create();
 		assertEquals("foo", ds.getT());
 	}
 
 	@Test
-	public void decoratorOfIntegerWorks() {
-		Decorator<Integer> ds = Fixjure.of(Decorator.class).of(Integer.class).from(JSONSource.newJsonString("{ t: -1 }")).create();
-		assertEquals(-1, ds.getT().intValue());
-	}
-
-	@Test
 	public void mapOfIntToLong() {
-		Map<Integer, Long> m = Fixjure.mapOf(Integer.class, Long.class).from(JSONSource.newJsonString("{1:1,2:2,3:10000000000}")).create();
+		Map<Integer, Long> m = Fixjure.mapOf(Integer.class, Long.class).from(JSONSource.newJsonString("{\"1\":1,\"2\":2,\"3\":10000000000}")).create();
 		assertNotNull(m);
 		assertEquals(3, m.size());
 		assertEquals(1L, m.get(1).longValue());

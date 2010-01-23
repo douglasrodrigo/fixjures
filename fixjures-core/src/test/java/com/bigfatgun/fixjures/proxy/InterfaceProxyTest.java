@@ -47,7 +47,7 @@ public class InterfaceProxyTest {
 
 	@Test
 	public void proxiesHaveAHashCode() throws Exception {
-		Fixjure.of(Foo3.class).from(JSONSource.newJsonString("{ str : \"09182340\" }")).create().hashCode();
+		Fixjure.of(Foo3.class).from(JSONSource.newJsonString("{ \"str\" : \"09182340\" }")).create().hashCode();
 	}
 
 	@Test

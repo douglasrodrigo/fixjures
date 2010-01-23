@@ -6,8 +6,8 @@
 	"set" : [ 4, 3, 2, 1 ],
 	"multiset" : [ 1, 1, 2, 3, 5, 8 ],
 	"map" : {
-		1 : "one",
-		2 : "two"
+		"1" : "one",
+		"2" : "two"
 	},
 	"parent" : {
 		"str" : "I'm the parent!"
