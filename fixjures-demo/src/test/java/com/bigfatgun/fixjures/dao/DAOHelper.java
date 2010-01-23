@@ -1,15 +1,11 @@
 package com.bigfatgun.fixjures.dao;
 
 import com.bigfatgun.fixjures.*;
-import com.bigfatgun.fixjures.annotations.SourceType;
 import com.bigfatgun.fixjures.json.JSONSource;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -43,6 +39,7 @@ public abstract class DAOHelper<T> {
 	private final Class<T> cls;
 	private final FixtureFactory factory;
 	private final Set<String> identifiers;
+	private final Function<String, T> loadByIdFunction;
 
 	private DAOHelper(final Class<T> cls, final SourceFactory source) {
 		this.cls = cls;
@@ -51,17 +48,33 @@ public abstract class DAOHelper<T> {
 				.enableOption(Fixjure.Option.NULL_ON_UNMAPPED)
 				.enableOption(Fixjure.Option.SKIP_UNMAPPABLE);
 		this.identifiers = Sets.newHashSet();
+		this.loadByIdFunction = new Function<String, T>() {
+			@Override
+			public T apply(@Nullable String s) {
+				return DAOHelper.this.findById(s);
+			}
+		};
 	}
 
 	public T findById(final String id) {
 		return (identifiers.contains(id)) ? factory.createFixture(cls, id) : null;
 	}
 
-	public boolean addIdentifier(final String id) {
+	public T add(final T object, final String identifier) {
+		addIdentifier(identifier);
+		return factory.cache(cls, object, identifier);
+	}
+
+	public T remove(final String identifier) {
+		removeIdentifier(identifier);
+		return factory.uncache(cls, identifier);
+	}
+
+	private boolean addIdentifier(final String id) {
 		return identifiers.add(id);
 	}
 
-	public boolean removeIdentifier(final String id) {
+	private boolean removeIdentifier(final String id) {
 		return identifiers.remove(id);
 	}
 
@@ -71,29 +84,33 @@ public abstract class DAOHelper<T> {
 	}
 
 	public Iterable<T> findAll() {
-		return Iterables.transform(identifiers, new Function<String, T>() {
-			@Override
-			public T apply(@Nullable String id) {
-				return findById(id);
-			}
-		});
+		return Iterables.transform(identifiers, loadByIdFunction);
 	}
 	
+	@SuppressWarnings({"RedundantTypeArguments"})
 	public Iterable<T> findAllWhere(final Predicate<? super T> condition, final Predicate<? super T>... others) {
 		final Predicate<T> allOthers = Predicates.<T>and(others);
 		final Predicate<T> allConditions = Predicates.<T>and(condition, allOthers);
 		return Iterables.filter(findAll(), allConditions);
 	}
 
-	public List<T> findAllOrdered(final Comparator<? super T> comparator) {
-		List<T> list = Lists.newArrayList(findAll());
-		Collections.sort(list, comparator);
-		return list;
+	public int findIndexOfObjectInOrder(final T object, final Ordering<? super T> ordering) {
+		return ordering.binarySearch(ordering.sortedCopy(findAll()), object);
 	}
 
-	public List<T> findAllOrderedWhere(final Comparator<? super T> comparator, final Predicate<T> condition, final Predicate<T>... others) {
-		List<T> list = Lists.newArrayList(findAllWhere(condition, others));
-		Collections.sort(list, comparator);
-		return list;
+	public List<T> findAllOrderedAscending(final Ordering<? super T> ordering) {
+		return ordering.sortedCopy(findAll());
+	}
+
+	public List<T> findAllOrderedDescending(final Ordering<? super T> ordering) {
+		return ordering.reverse().sortedCopy(findAll());
+	}
+
+	public List<T> findAllOrderedAscendingWhere(final Ordering<? super T> ordering, final Predicate<T> condition, final Predicate<T>... others) {
+		return ordering.sortedCopy(findAllWhere(condition, others));
+	}
+
+	public List<T> findAllOrderedDescendingWhere(final Ordering<? super T> ordering, final Predicate<T> condition, final Predicate<T>... others) {
+		return ordering.reverse().sortedCopy(findAllWhere(condition, others));
 	}
 }

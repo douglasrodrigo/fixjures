@@ -267,4 +267,14 @@ public final class FixtureFactory implements IdentityResolver {
 	public void expireCache() {
 		objectCache.clear();
 	}
+
+	@SuppressWarnings({"unchecked"})
+	public <T> T uncache(final Class<T> cls, final String identifier) {
+		return (T) objectCache.get(cls).remove(identifier);
+	}
+
+	@SuppressWarnings({"unchecked"})
+	public <T> T cache(final Class<T> cls, final T object, final String identifier) {
+		return (T) objectCache.get(cls).put(identifier, object);
+	}
 }
