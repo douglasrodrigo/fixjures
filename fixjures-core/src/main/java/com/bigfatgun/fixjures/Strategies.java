@@ -90,7 +90,7 @@ public final class Strategies {
 	 * @param mem map that holds fixture data in memory
 	 * @return new source strategy
 	 */
-	public static SourceStrategy newInMemoryStrategy(final Map<Class<?>, Map<String, String>> mem) {
+	public static SourceStrategy newInMemoryStrategy(final Map<? extends Class<?>, Map<String, String>> mem) {
 		final ImmutableMap<Class<?>, Map<String, String>> copy = ImmutableMap.copyOf(mem);
 		return new SourceStrategy() {
 			public ReadableByteChannel findStream(final Class<?> type, final String name) throws IOException {
