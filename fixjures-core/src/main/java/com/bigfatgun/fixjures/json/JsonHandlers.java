@@ -14,9 +14,8 @@ import com.bigfatgun.fixjures.proxy.ProxyUtils;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.collect.*;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Array;
@@ -39,19 +38,15 @@ final class JsonHandlers {
 		}
 
 		public final Supplier<? extends T> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
-			try {
-				final JSONArray jsonArray = castSourceValue(JSONArray.class, source);
-				final ImmutableList<Supplier<?>> providers = objectsInArray(helper, jsonArray, typeDef);
-				return convertJsonArray(providers);
-			} catch (JSONException e) {
-				throw FixtureException.convert(e);
-			}
+			final JSONArray jsonArray = castSourceValue(JSONArray.class, source);
+			final ImmutableList<Supplier<?>> providers = objectsInArray(helper, jsonArray, typeDef);
+			return convertJsonArray(providers);
 		}
 
-		private ImmutableList<Supplier<?>> objectsInArray(final UnmarshallingContext helper, final JSONArray array, final FixtureType collectionType) throws JSONException {
+		private ImmutableList<Supplier<?>> objectsInArray(final UnmarshallingContext helper, final JSONArray array, final FixtureType collectionType) {
 			final List<Supplier<?>> source = Lists.newLinkedList();
 
-			for (int i = 0; i < array.length(); i++) {
+			for (int i = 0; i < array.size(); i++) {
 				final Object sourceValue = array.get(i);
 				final Supplier<?> unmarshalled = helper.unmarshall(sourceValue, collectionType.collectionType());
 				source.add(unmarshalled);
@@ -101,20 +96,16 @@ final class JsonHandlers {
 			}
 
 			public Supplier<Object> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
-				try {
-					final JSONArray array = (JSONArray) source;
-					final FixtureType definition = typeDef.collectionType();
-					final Class<?> collectionType = definition.getType();
-					final Object actualArray = Array.newInstance(collectionType, array.length());
-					for (int i = 0; i < array.length(); i++) {
-						final Supplier<?> arraySupplier = helper.unmarshall(array.get(i), definition);
-						final Object arrayValue = arraySupplier.get();
-						Array.set(actualArray, i, arrayValue);
-					}
-					return Suppliers.of(actualArray);
-				} catch (JSONException e) {
-					throw FixtureException.convert(e);
+				final JSONArray array = (JSONArray) source;
+				final FixtureType definition = typeDef.collectionType();
+				final Class<?> collectionType = definition.getType();
+				final Object actualArray = Array.newInstance(collectionType, array.size());
+				for (int i = 0; i < array.size(); i++) {
+					final Supplier<?> arraySupplier = helper.unmarshall(array.get(i), definition);
+					final Object arrayValue = arraySupplier.get();
+					Array.set(actualArray, i, arrayValue);
 				}
+				return Suppliers.of(actualArray);
 			}
 		};
 	}
@@ -123,25 +114,21 @@ final class JsonHandlers {
 		return new AbstractUnmarshaller<Map>(JSONObject.class, Map.class) {
 
 			public Supplier<? extends Map> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
-				try {
-					final JSONObject jsonObject = castSourceValue(JSONObject.class, source);
-					final FixtureType keyType = typeDef.keyType();
-					final FixtureType valueType = typeDef.valueType();
-					ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder();
-					for (final Iterator i = jsonObject.keys(); i.hasNext();) {
-						final Object lookupKey = i.next();
-						final Supplier<?> keyProvider = help(helper, lookupKey, keyType);
-						final Supplier<?> valueProvider = help(helper, jsonObject.get(String.valueOf(lookupKey)), valueType);
-						final Object key = keyProvider.get();
-						final Object keyValue = valueProvider.get();
-						if (key != null && keyValue != null) {
-							builder = builder.put(key, keyValue);
-						}
+				final JSONObject jsonObject = castSourceValue(JSONObject.class, source);
+				final FixtureType keyType = typeDef.keyType();
+				final FixtureType valueType = typeDef.valueType();
+				ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder();
+				for (final Iterator i = jsonObject.keySet().iterator(); i.hasNext();) {
+					final Object lookupKey = i.next();
+					final Supplier<?> keyProvider = help(helper, lookupKey, keyType);
+					final Supplier<?> valueProvider = help(helper, jsonObject.get(String.valueOf(lookupKey)), valueType);
+					final Object key = keyProvider.get();
+					final Object keyValue = valueProvider.get();
+					if (key != null && keyValue != null) {
+						builder = builder.put(key, keyValue);
 					}
-					return Suppliers.of(Maps.newHashMap(builder.build()));
-				} catch (JSONException e) {
-					throw FixtureException.convert(e);
 				}
+				return Suppliers.of(Maps.newHashMap(builder.build()));
 			}
 		};
 	}
@@ -159,7 +146,7 @@ final class JsonHandlers {
 			}
 
 			private <T> void configureProxy(final UnmarshallingContext helper, final ObjectProxy<T> proxy, final JSONObject obj) {
-				final Iterator objIterator = obj.keys();
+				final Iterator objIterator = obj.keySet().iterator();
 				while (objIterator.hasNext()) {
 					final String key = objIterator.next().toString();
 					final String methodName = helper.getOptions().contains(Fixjure.Option.LITERAL_MAPPING) ? key : ProxyUtils.getterName(key);
@@ -171,33 +158,26 @@ final class JsonHandlers {
 							throw new FixtureException("Could not find type of method: " + methodName);
 						}
 					}
-					try {
-						final Supplier<?> stub;
-						if (helper.getOptions().contains(Fixjure.Option.LAZY_REFERENCE_EVALUATION)) {
-							stub = new Supplier<Object>() {
-								public Object get() {
-									try {
-										return helper.unmarshall(obj.get(key), getterTypeDef).get();
-									} catch (JSONException e) {
-										throw convert(e);
-									}
-								}
-							};
-						} else {
-							stub = helper.unmarshall(obj.get(key), getterTypeDef);
-						}
-
-						if (stub == null) {
-							if (helper.getOptions().contains(Fixjure.Option.SKIP_UNMAPPABLE)) {
-								continue;
+					
+					final Supplier<?> stub;
+					if (helper.getOptions().contains(Fixjure.Option.LAZY_REFERENCE_EVALUATION)) {
+						stub = new Supplier<Object>() {
+							public Object get() {
+								return helper.unmarshall(obj.get(key), getterTypeDef).get();
 							}
+						};
+					} else {
+						stub = helper.unmarshall(obj.get(key), getterTypeDef);
+					}
 
-							throw new FixtureException(String.format("Key [%s] (with value [%s]) found in JSON but could not stub. Could be its name or value type (%s) doesn't match methods in %s", key, obj.get(key), getterTypeDef, proxy.getType()));
-						} else {
-							proxy.addValueStub(methodName, stub);
+					if (stub == null) {
+						if (helper.getOptions().contains(Fixjure.Option.SKIP_UNMAPPABLE)) {
+							continue;
 						}
-					} catch (JSONException e) {
-						throw convert(e);
+
+						throw new FixtureException(String.format("Key [%s] (with value [%s]) found in JSON but could not stub. Could be its name or value type (%s) doesn't match methods in %s", key, obj.get(key), getterTypeDef, proxy.getType()));
+					} else {
+						proxy.addValueStub(methodName, stub);
 					}
 				}
 			}

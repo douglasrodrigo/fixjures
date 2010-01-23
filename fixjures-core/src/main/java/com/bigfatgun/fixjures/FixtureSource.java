@@ -146,9 +146,9 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 	protected final Unmarshaller<?> findUnmarshaller(final Object src, final FixtureType type) {
 		final Class<?> cls = type.getType();
 
-		if (cls.isInstance(src)) {
-			return NoConversionUnmarshaller.newInstance(cls);
-		}
+//		if (cls.isInstance(src)) {
+//			return NoConversionUnmarshaller.newInstance(cls);
+//		}
 
 		for (Class<?> keyClass = cls; keyClass != null; keyClass = keyClass.getSuperclass()) {
 			for (final Unmarshaller<?> handler : getTypeHandlers().get(keyClass)) {

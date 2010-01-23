@@ -21,9 +21,10 @@ import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.FixtureType;
 import com.google.common.base.Supplier;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
 
 import java.io.*;
 import java.net.URL;
@@ -97,47 +98,11 @@ public final class JSONSource extends FixtureSource {
 	}
 
 	private Object parseJson(final String json) {
-		try {
-			return tryToParseJson(json);
-		} catch (JSONException e) {
-			throw FixtureException.convert(e);
-		}
-	}
-
-	private Object tryToParseJson(final String json) throws JSONException {
 		assert json != null : "JSON data cannot be null.";
-		if (looksLikeJsonNull(json)) {
-			return null;
-		} else if (looksLikeJsonMap(json)) {
-			return new JSONObject(json);
-		} else if (looksLikeJsonArray(json)) {
-			return new JSONArray(json);
-		} else {
-			return parseJsonToNumberOrString(json);
-		}
-	}
-
-	private boolean looksLikeJsonNull(final String json) {
-		return "null".equalsIgnoreCase(json);
-	}
-
-	private boolean looksLikeJsonMap(final String json) {
-		return json.startsWith("{");
-	}
-
-	private boolean looksLikeJsonArray(final String json) {
-		return json.startsWith("[");
-	}
-
-	private Object parseJsonToNumberOrString(final String string) {
 		try {
-			return Long.parseLong(string);
-		} catch (NumberFormatException longParseException) {
-			try {
-				return Double.parseDouble(string);
-			} catch (NumberFormatException doubleParseException) {
-				return string;
-			}
+			return JSONValue.parseWithException(json);
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
 		}
 	}
 

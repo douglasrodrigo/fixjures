@@ -28,7 +28,7 @@ public class FixjureTest {
 
 	@Test
 	public void plainFixture() {
-		final String string = Fixjure.of(String.class).from(JSONSource.newJsonString("foo")).create();
+		final String string = Fixjure.of(String.class).from(JSONSource.newJsonString("\"foo\"")).create();
 		assertEquals("foo", string);
 	}
 
@@ -37,7 +37,7 @@ public class FixjureTest {
 		List<Integer> expected = Lists.newArrayList(1, 2, 3, 4, 5);
 		List<Integer> actual1 = Fixjure.of(List.class).of(Integer.class).from(JSONSource.newJsonString("[ 1, 2, 3, 4, 5 ]")).create();
 		List<Integer> actual2 = Fixjure.listOf(Integer.class).from(JSONSource.newJsonString("[ 1, 2, 3, 4, 5 ]")).create();
-		assertEquals(expected, actual1);
+		assertEquals(expected, actual1); // JSONArray vs. ArrayList
 		assertEquals(expected, actual2);
 	}
 
@@ -62,8 +62,8 @@ public class FixjureTest {
 	@Test
 	public void mapFixture() {
 		Map<String, Integer> expected = ImmutableMap.of("one", 1, "two", 2, "three", 3);
-		Map<String, Integer> actual1 = Fixjure.of(Map.class).of(String.class, Integer.class).from(JSONSource.newJsonString("{ one : 1, two : 2, three : 3 }")).create();
-		Map<String, Integer> actual2 = Fixjure.mapOf(String.class, Integer.class).from(JSONSource.newJsonString("{ one : 1, two : 2, three : 3 }")).create();
+		Map<String, Integer> actual1 = Fixjure.of(Map.class).of(String.class, Integer.class).from(JSONSource.newJsonString("{ \"one\" : 1, \"two\" : 2, \"three\" : 3 }")).create();
+		Map<String, Integer> actual2 = Fixjure.mapOf(String.class, Integer.class).from(JSONSource.newJsonString("{ \"one\" : 1, \"two\" : 2, \"three\" : 3 }")).create();
 		assertEquals(expected, actual1);
 		assertEquals(expected, actual2);
 	}
@@ -158,8 +158,8 @@ public class FixjureTest {
 		mem.put(Map.class, ImmutableMap.of("map", "{ one : 1, two : 2 }"));
 		mem.put(NyTimes.class, ImmutableMap.of("nyt", "{ version: '2.1' }"));
 		FixtureFactory fact = FixtureFactory.newJsonFactory(Strategies.newInMemoryStrategy(mem));
-		assertEquals("foo", fact.createFixture(String.class, "foo"));
-		assertEquals("bar", fact.createFixture(String.class, "bar"));
+		assertEquals("foo", fact.createFixture(String.class, "\"foo\""));
+		assertEquals("bar", fact.createFixture(String.class, "\"bar\""));
 		assertEquals(1, fact.createFixture(Integer.class, "one").intValue());
 		assertEquals(2, fact.createFixture(Integer.class, "two").intValue());
 		assertEquals(ImmutableMap.of("one", 1, "two", 2), fact.createFixture(Map.class, "map"));
@@ -204,7 +204,7 @@ public class FixjureTest {
 	@Test
 	public void datetime() {
 		System.out.println(DateFormat.getDateTimeInstance().format(new Date()));
-		Date d = Fixjure.of(Date.class).from(JSONSource.newJsonString("Apr 11, 2009 9:29:20 PM")).create();
+		Date d = Fixjure.of(Date.class).from(JSONSource.newJsonString("\"Apr 11, 2009 9:29:20 PM\"")).create();
 		assertNotNull(d);
 		final Calendar cal = Calendar.getInstance();
 		cal.setTime(d);
@@ -224,7 +224,7 @@ public class FixjureTest {
 				return null;
 			}
 		};
-		Thing t = Fixjure.of(Thing.class).from(JSONSource.newJsonString("{next:'_'}")).resolveIdsWith(new IdentityResolver() {
+		Thing t = Fixjure.of(Thing.class).from(JSONSource.newJsonString("{\"next\":\"_\"}")).resolveIdsWith(new IdentityResolver() {
 			public boolean canHandleIdentity(final Class<?> requiredType, @Nullable final Object rawIdentityValue) {
 				return "_".equals(rawIdentityValue);
 			}
@@ -252,7 +252,7 @@ public class FixjureTest {
 	public void supportNonStandardGetterMethodsWithLiteralMappingOption() {
 		final LiteralMethodNames lmn = Fixjure
 				.of(LiteralMethodNames.class)
-				.from(JSONSource.newJsonString("{nonStandardGetter:foo,getMeThatThing:bar}"))
+				.from(JSONSource.newJsonString("{\"nonStandardGetter\":\"foo\",\"getMeThatThing\":\"bar\"}"))
 				.withOptions(Fixjure.Option.LITERAL_MAPPING)
 				.create();
 		assertEquals("foo", lmn.nonStandardGetter());

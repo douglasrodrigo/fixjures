@@ -13,8 +13,8 @@
 	<description>Data driven dummy object creation for Java.</description>
 	<dependencies>
 		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.google.collections</groupId>

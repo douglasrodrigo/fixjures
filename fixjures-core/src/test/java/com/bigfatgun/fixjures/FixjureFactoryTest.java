@@ -57,7 +57,7 @@ public class FixjureFactoryTest {
 
 	@Test
 	public void enableOption() {
-		final Map<String, String> foos = ImmutableMap.of("only", "{name:'Foo Bar', value:'Does Not Map'}");
+		final Map<String, String> foos = ImmutableMap.of("only", "{\"name\":\"Foo Bar\", \"values\":\"Does Not Map\"}");
 		final Map<Class<?>, Map<String, String>> mem = ImmutableMap.<Class<?>, Map<String, String>>of(Foo.class, foos);
 		final FixtureFactory fact = FixtureFactory.newJsonFactory(Strategies.newInMemoryStrategy(mem)).enableOption(Fixjure.Option.SKIP_UNMAPPABLE);
 		final Foo foo = fact.createFixture(Foo.class, "only");
@@ -80,10 +80,10 @@ public class FixjureFactoryTest {
 	@Test
 	public void identityResolution() {
 		final Map<String, String> foos = ImmutableMap.of(
-				"parent", "{name:'Foo Bar'}"
+				"parent", "{\"name\":\"Foo Bar\"}"
 		);
 		final Map<String, String> foochilds = ImmutableMap.of(
-				"child", "{name:'Foo Bar Jr.', parent:'parent'}"
+				"child", "{\"name\":\"Foo Bar Jr.\", \"parent\":\"parent\"}"
 		);
 		final Map<Class<?>, Map<String, String>> mem = ImmutableMap.<Class<?>, Map<String, String>>of(
 				Foo.class, foos,
