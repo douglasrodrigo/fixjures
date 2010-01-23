@@ -86,16 +86,27 @@ public abstract class DAOHelper<T> {
 	public Iterable<T> findAll() {
 		return Iterables.transform(identifiers, loadByIdFunction);
 	}
-	
+
 	@SuppressWarnings({"RedundantTypeArguments"})
-	public Iterable<T> findAllWhere(final Predicate<? super T> condition, final Predicate<? super T>... others) {
+	public Iterable<T> findAllWhereAll(final Predicate<? super T> condition, final Predicate<? super T>... others) {
 		final Predicate<T> allOthers = Predicates.<T>and(others);
 		final Predicate<T> allConditions = Predicates.<T>and(condition, allOthers);
-		return Iterables.filter(findAll(), allConditions);
+		return findAllMatching(allConditions);
+	}
+
+	@SuppressWarnings({"RedundantTypeArguments"})
+	public Iterable<T> findAllWhereAny(final Predicate<? super T> condition, final Predicate<? super T>... others) {
+		final Predicate<T> anyOthers = Predicates.<T>or(others);
+		final Predicate<T> anyConditions = Predicates.<T>or(condition, anyOthers);
+		return findAllMatching(anyConditions);
+	}
+
+	public Iterable<T> findAllMatching(final Predicate<? super T> condition) {
+		return Iterables.filter(findAll(), condition);
 	}
 
 	public int findIndexOfObjectInOrder(final T object, final Ordering<? super T> ordering) {
-		return ordering.binarySearch(ordering.sortedCopy(findAll()), object);
+		return ordering.binarySearch(findAllOrderedAscending(ordering), object);
 	}
 
 	public List<T> findAllOrderedAscending(final Ordering<? super T> ordering) {
@@ -103,14 +114,14 @@ public abstract class DAOHelper<T> {
 	}
 
 	public List<T> findAllOrderedDescending(final Ordering<? super T> ordering) {
-		return ordering.reverse().sortedCopy(findAll());
+		return findAllOrderedAscending(ordering.reverse());
 	}
 
 	public List<T> findAllOrderedAscendingWhere(final Ordering<? super T> ordering, final Predicate<T> condition, final Predicate<T>... others) {
-		return ordering.sortedCopy(findAllWhere(condition, others));
+		return ordering.sortedCopy(findAllWhereAll(condition, others));
 	}
 
 	public List<T> findAllOrderedDescendingWhere(final Ordering<? super T> ordering, final Predicate<T> condition, final Predicate<T>... others) {
-		return ordering.reverse().sortedCopy(findAllWhere(condition, others));
+		return findAllOrderedAscendingWhere(ordering.reverse(), condition, others);
 	}
 }

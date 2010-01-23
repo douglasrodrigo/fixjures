@@ -2,6 +2,7 @@ package com.bigfatgun.fixjures.dao;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.Ordering;
 import com.google.inject.internal.Lists;
 
@@ -11,36 +12,36 @@ import java.util.List;
 
 final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implements MyBusinessObjectDAO {
 
-	private final Predicate<MyBusinessObject> positiveAccountBalance;
-	private final Ordering<MyBusinessObject> ascendingId;
-	private final Ordering<MyBusinessObject> ascendingAccountBalance;
+	private static final Predicate<MyBusinessObject> POSITIVE_ACCOUNT_BALANCE;
+	private static final Ordering<MyBusinessObject> ASCENDING_ID;
+	private static final Ordering<MyBusinessObject> ASCENDING_ACCOUNT_BALANCE;
+	private static final Function<MyBusinessObject,String> ID_FUNCTION;
 
-	public MyBusinessObjectDAOImpl(final DAOHelper<MyBusinessObject> helper) {
-		super(helper, new Function<MyBusinessObject, String>() {
-			@Override
-			public String apply(@Nullable MyBusinessObject myBusinessObject) {
-				return myBusinessObject.getId();
-			}
-		});
+	static {
 		// set up predicates and comparators for use in implementations
-		positiveAccountBalance = new Predicate<MyBusinessObject>() {
-			@Override
-			public boolean apply(@Nullable MyBusinessObject myBusinessObject) {
-				return myBusinessObject.getAccountBalance() >= 0L;
-			}
-		};
-		ascendingId = Ordering.from(new Comparator<MyBusinessObject>() {
+		POSITIVE_ACCOUNT_BALANCE = DAOPredicates.methodValueIsGreaterThanOrEqualTo(MyBusinessObject.class, "getAccountBalance", Long.class, 0L);
+		ASCENDING_ID = Ordering.from(new Comparator<MyBusinessObject>() {
 			@Override
 			public int compare(MyBusinessObject o1, MyBusinessObject o2) {
 				return o1.getId().compareTo(o2.getId());
 			}
 		});
-		ascendingAccountBalance = Ordering.from(new Comparator<MyBusinessObject>() {
+		ASCENDING_ACCOUNT_BALANCE = Ordering.from(new Comparator<MyBusinessObject>() {
 			@Override
 			public int compare(MyBusinessObject o1, MyBusinessObject o2) {
 				return o1.getAccountBalance().compareTo(o2.getAccountBalance());
 			}
 		});
+		ID_FUNCTION = new Function<MyBusinessObject, String>() {
+			@Override
+			public String apply(@Nullable MyBusinessObject myBusinessObject) {
+				return myBusinessObject.getId();
+			}
+		};
+	}
+
+	public MyBusinessObjectDAOImpl(final DAOHelper<MyBusinessObject> helper) {
+		super(helper, ID_FUNCTION);
 	}
 
 	@Override
@@ -55,12 +56,7 @@ final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implem
 
 	@Override
 	public List<MyBusinessObject> findByAccountBalanceGreaterThan(final long minimumBalance) {
-		return Lists.newArrayList(getHelper().findAllWhere(new Predicate<MyBusinessObject>() {
-			@Override
-			public boolean apply(@Nullable MyBusinessObject myBusinessObject) {
-				return myBusinessObject.getAccountBalance() >= minimumBalance;
-			}
-		}));
+		return Lists.newArrayList(getHelper().findAllWhereAll(DAOPredicates.methodValueIsGreaterThanOrEqualTo(MyBusinessObject.class, "getAccountBalance", Long.class, minimumBalance)));
 	}
 
 	@Override
@@ -70,12 +66,12 @@ final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implem
 
 	@Override
 	public List<MyBusinessObject> findAllOrderedByAccountBalance() {
-		return getHelper().findAllOrderedAscending(ascendingAccountBalance);
+		return getHelper().findAllOrderedAscending(ASCENDING_ACCOUNT_BALANCE);
 	}
 
 	@Override
 	public List<MyBusinessObject> findByPositiveAccountBalanceOrderedByIdDescending() {
-		return getHelper().findAllOrderedDescendingWhere(ascendingId, positiveAccountBalance);
+		return getHelper().findAllOrderedDescendingWhere(ASCENDING_ID, POSITIVE_ACCOUNT_BALANCE);
 	}
 
 	@Override
@@ -98,14 +94,9 @@ final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implem
 
 	@Override
 	public List<MyBusinessObject> findChildren(final MyBusinessObject parent) {
-		return Lists.newArrayList(getHelper().findAllWhere(new Predicate<MyBusinessObject>() {
-			@Override
-			public boolean apply(@Nullable MyBusinessObject myBusinessObject) {
-				// It is safe to use .equals(Object) or == on the proxies,
-				// when loaded by ID they will be the same instance.
-				return parent == myBusinessObject.getParent();
-			}
-		}));
+		return Lists.newArrayList(getHelper().findAllWhereAll(
+				DAOPredicates.methodValueMatches(MyBusinessObject.class, "getParent", MyBusinessObject.class, parent)
+		));
 	}
 
 	MyBusinessObject createUnsavedDummy(final String id, final Long accountBalance) {
