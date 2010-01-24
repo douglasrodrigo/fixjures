@@ -4,12 +4,17 @@ import com.bigfatgun.fixjures.*;
 import com.bigfatgun.fixjures.json.JSONSource;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class DAOHelper<T> {
 
@@ -87,41 +92,19 @@ public abstract class DAOHelper<T> {
 		return Iterables.transform(identifiers, loadByIdFunction);
 	}
 
-	@SuppressWarnings({"RedundantTypeArguments"})
-	public Iterable<T> findAllWhereAll(final Predicate<? super T> condition, final Predicate<? super T>... others) {
-		final Predicate<T> allOthers = Predicates.<T>and(others);
-		final Predicate<T> allConditions = Predicates.<T>and(condition, allOthers);
-		return findAllMatching(allConditions);
-	}
-
-	@SuppressWarnings({"RedundantTypeArguments"})
-	public Iterable<T> findAllWhereAny(final Predicate<? super T> condition, final Predicate<? super T>... others) {
-		final Predicate<T> anyOthers = Predicates.<T>or(others);
-		final Predicate<T> anyConditions = Predicates.<T>or(condition, anyOthers);
-		return findAllMatching(anyConditions);
-	}
-
-	public Iterable<T> findAllMatching(final Predicate<? super T> condition) {
+	public Iterable<T> findAllWhere(final Predicate<? super T> condition) {
 		return Iterables.filter(findAll(), condition);
 	}
 
 	public int findIndexOfObjectInOrder(final T object, final Ordering<? super T> ordering) {
-		return ordering.binarySearch(findAllOrderedAscending(ordering), object);
+		return ordering.binarySearch(findAllOrdered(ordering), object);
 	}
 
-	public List<T> findAllOrderedAscending(final Ordering<? super T> ordering) {
+	public List<T> findAllOrdered(final Ordering<? super T> ordering) {
 		return ordering.sortedCopy(findAll());
 	}
 
-	public List<T> findAllOrderedDescending(final Ordering<? super T> ordering) {
-		return findAllOrderedAscending(ordering.reverse());
-	}
-
-	public List<T> findAllOrderedAscendingWhere(final Ordering<? super T> ordering, final Predicate<T> condition, final Predicate<T>... others) {
-		return ordering.sortedCopy(findAllWhereAll(condition, others));
-	}
-
-	public List<T> findAllOrderedDescendingWhere(final Ordering<? super T> ordering, final Predicate<T> condition, final Predicate<T>... others) {
-		return findAllOrderedAscendingWhere(ordering.reverse(), condition, others);
+	public List<T> findAllOrderedWhere(final Ordering<? super T> ordering, final Predicate<? super T> condition) {
+		return ordering.sortedCopy(findAllWhere(condition));
 	}
 }

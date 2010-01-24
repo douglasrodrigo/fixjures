@@ -1,43 +1,36 @@
 package com.bigfatgun.fixjures.dao;
 
+import com.bigfatgun.fixjures.extract.Extractor;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Ordering;
 import com.google.inject.internal.Lists;
 
-import javax.annotation.Nullable;
-import java.util.Comparator;
 import java.util.List;
 
 final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implements MyBusinessObjectDAO {
 
-	private static final Predicate<MyBusinessObject> POSITIVE_ACCOUNT_BALANCE;
-	private static final Ordering<MyBusinessObject> ASCENDING_ID;
-	private static final Ordering<MyBusinessObject> ASCENDING_ACCOUNT_BALANCE;
-	private static final Function<MyBusinessObject,String> ID_FUNCTION;
+	private static final Extractor<Long> EXTRACT_ACCOUNT_BALANCE;
+	private static final Extractor<MyBusinessObject> EXTRACT_PARENT;
+	private static final Predicate<Object> POSITIVE_ACCOUNT_BALANCE;
+	private static final Ordering<Object> ASCENDING_ID;
+	private static final Ordering<Object> ASCENDING_ACCOUNT_BALANCE;
+	private static final Function<Object,String> ID_FUNCTION;
 
 	static {
 		// set up predicates and comparators for use in implementations
-		POSITIVE_ACCOUNT_BALANCE = DAOPredicates.methodValueIsGreaterThanOrEqualTo(MyBusinessObject.class, "getAccountBalance", Long.class, 0L);
-		ASCENDING_ID = Ordering.from(new Comparator<MyBusinessObject>() {
-			@Override
-			public int compare(MyBusinessObject o1, MyBusinessObject o2) {
-				return o1.getId().compareTo(o2.getId());
-			}
-		});
-		ASCENDING_ACCOUNT_BALANCE = Ordering.from(new Comparator<MyBusinessObject>() {
-			@Override
-			public int compare(MyBusinessObject o1, MyBusinessObject o2) {
-				return o1.getAccountBalance().compareTo(o2.getAccountBalance());
-			}
-		});
-		ID_FUNCTION = new Function<MyBusinessObject, String>() {
-			@Override
-			public String apply(@Nullable MyBusinessObject myBusinessObject) {
-				return myBusinessObject.getId();
-			}
-		};
+		ID_FUNCTION = new Extractor<String>() {{ execute(MyBusinessObject.class).getId(); }};
+		
+		EXTRACT_ACCOUNT_BALANCE = new Extractor<Long>() {{ execute(MyBusinessObject.class).getAccountBalance(); }};
+
+		EXTRACT_PARENT = new Extractor<MyBusinessObject>() {{ execute(MyBusinessObject.class).getParent(); }};
+
+		POSITIVE_ACCOUNT_BALANCE = DAOPredicates.extractedValueIsGreaterThanOrEqualTo(EXTRACT_ACCOUNT_BALANCE, 0L);
+
+		ASCENDING_ID = Ordering.natural().onResultOf(ID_FUNCTION);
+
+		ASCENDING_ACCOUNT_BALANCE = Ordering.natural().onResultOf(EXTRACT_ACCOUNT_BALANCE);
 	}
 
 	public MyBusinessObjectDAOImpl(final DAOHelper<MyBusinessObject> helper) {
@@ -56,7 +49,9 @@ final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implem
 
 	@Override
 	public List<MyBusinessObject> findByAccountBalanceGreaterThan(final long minimumBalance) {
-		return Lists.newArrayList(getHelper().findAllWhereAll(DAOPredicates.methodValueIsGreaterThanOrEqualTo(MyBusinessObject.class, "getAccountBalance", Long.class, minimumBalance)));
+		return Lists.newArrayList(getHelper().findAllWhere(
+				DAOPredicates.extractedValueIsGreaterThanOrEqualTo(EXTRACT_ACCOUNT_BALANCE, minimumBalance)
+		));
 	}
 
 	@Override
@@ -66,12 +61,17 @@ final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implem
 
 	@Override
 	public List<MyBusinessObject> findAllOrderedByAccountBalance() {
-		return getHelper().findAllOrderedAscending(ASCENDING_ACCOUNT_BALANCE);
+		return getHelper().findAllOrdered(ASCENDING_ACCOUNT_BALANCE);
 	}
 
 	@Override
 	public List<MyBusinessObject> findByPositiveAccountBalanceOrderedByIdDescending() {
-		return getHelper().findAllOrderedDescendingWhere(ASCENDING_ID, POSITIVE_ACCOUNT_BALANCE);
+		return getHelper().findAllOrderedWhere(ASCENDING_ID.reverse(), POSITIVE_ACCOUNT_BALANCE);
+	}
+
+	@Override
+	public List<MyBusinessObject> findByNegativeAccountBalanceOrderedByIdDescending() {
+		return getHelper().findAllOrderedWhere(ASCENDING_ID.reverse(), Predicates.not(POSITIVE_ACCOUNT_BALANCE));
 	}
 
 	@Override
@@ -94,8 +94,8 @@ final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implem
 
 	@Override
 	public List<MyBusinessObject> findChildren(final MyBusinessObject parent) {
-		return Lists.newArrayList(getHelper().findAllWhereAll(
-				DAOPredicates.methodValueMatches(MyBusinessObject.class, "getParent", MyBusinessObject.class, parent)
+		return Lists.newArrayList(getHelper().findAllWhere(
+				DAOPredicates.extractedValueEquals(EXTRACT_PARENT, parent)
 		));
 	}
 

@@ -74,6 +74,22 @@ public class DAOHelperTest {
 				return o1.getId().compareTo(o2.getId());
 			}
 		}).reverse().isOrdered(filtered));
+
+		filtered = dao.findByNegativeAccountBalanceOrderedByIdDescending();
+		// assert that all objects have negative balance
+		assertTrue(Iterables.all(filtered, new Predicate<MyBusinessObject>() {
+			@Override
+			public boolean apply(@Nullable MyBusinessObject myBusinessObject) {
+				return myBusinessObject.getAccountBalance() < 0L;
+			}
+		}));
+		// assert that all objects are in order of descending id
+		assertTrue(Ordering.from(new Comparator<MyBusinessObject>() {
+			@Override
+			public int compare(MyBusinessObject o1, MyBusinessObject o2) {
+				return o1.getId().compareTo(o2.getId());
+			}
+		}).reverse().isOrdered(filtered));
 	}
 
 	@Test

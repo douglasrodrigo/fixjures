@@ -5,9 +5,9 @@ import com.google.common.base.Function;
 public abstract class AbstractDAO<T> {
 
 	private final DAOHelper<T> helper;
-	private final Function<T, String> idFunction;
+	private final Function<? super T, String> idFunction;
 
-	protected AbstractDAO(final DAOHelper<T> helper, final Function<T, String> idFunction) {
+	protected AbstractDAO(final DAOHelper<T> helper, final Function<? super T, String> idFunction) {
 		this.helper = helper;
 		this.idFunction = idFunction;
 	}

@@ -16,6 +16,7 @@ interface MyBusinessObjectDAO {
 
 	// filtering AND ordering?!@#$
 	List<MyBusinessObject> findByPositiveAccountBalanceOrderedByIdDescending();
+	List<MyBusinessObject> findByNegativeAccountBalanceOrderedByIdDescending();
 
 	// deletes and inserts can be simulated
 	void delete(MyBusinessObject obj);
