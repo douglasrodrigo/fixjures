@@ -30,14 +30,22 @@ public class ExtractorTest {
 	}
 
 	@Test
+	public void byteValueOfInteger() {
+		Extractor<Integer, Byte> intToByte = Extractor.ofByteValue();
+		for (int i = -500; i < 500; i++) {
+			assertEquals(new Byte((byte) i), intToByte.apply(i));
+		}
+	}
+
+	@Test
 	public void tryExtractorOnTheDummy() {
 		long value = System.currentTimeMillis();
 		Dummy dummy = createDummy(value);
-		Extractor<Long> x1 = new Extractor<Long>() {{
+		Extractor<Dummy, Long> x1 = new Extractor<Dummy, Long>() {{
 			execute(Dummy.class).getIt();
 		}};
 		assertEquals(value, x1.apply(dummy).longValue());
-		Extractor<Long> x2 = new Extractor<Long>() {{
+		Extractor<Dummy, Long> x2 = new Extractor<Dummy, Long>() {{
 			execute(Dummy.class).halveIt();
 		}};
 		assertEquals(value / 2, x2.apply(dummy).longValue());

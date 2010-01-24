@@ -1,5 +1,6 @@
 package com.bigfatgun.fixjures.dao;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -11,6 +12,7 @@ import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -136,5 +138,37 @@ public class DAOHelperTest {
 
 		dao.delete(updatedObject);
 		assertEquals(3, dao.findAll().size());
+	}
+
+	@Test
+	public void timeToCreateAndRetrieveAndSortOneHundredThousand() {
+		long n1 = System.nanoTime();
+		for (int i = 5; i < 100005; i++) {
+			dao.insert(daoImpl.createUnsavedDummy(String.valueOf(i), 100L * i));
+		}
+		long n2 = System.nanoTime();
+		System.out.format("Created objects in %d ms.%n", TimeUnit.NANOSECONDS.toMillis(n2 - n1));
+		List<MyBusinessObject> unsorted = dao.findAll();
+		long n4 = System.nanoTime();
+		System.out.format("Retrieved %d unsorted objects in %d ms.%n", unsorted.size(), TimeUnit.NANOSECONDS.toMillis(n4 - n2));
+		List<MyBusinessObject> sorted = daoImpl.findAllOrderByHashCodeForFun();
+		long n3 = System.nanoTime();
+		System.out.format("Retrieved %d sorted objects in %d ms.%n", sorted.size(), TimeUnit.NANOSECONDS.toMillis(n3 - n4));
+		List<MyBusinessObject> page5 = daoImpl.findPaged(100, 5);
+		long n5 = System.nanoTime();
+		System.out.format("Retrieved page 5 in %d ms.%n", TimeUnit.NANOSECONDS.toMillis(n5 - n4));		
+	}
+
+	@Test
+	public void orderByHash() {
+		for (int i = 5; i < 100; i++) {
+			dao.insert(daoImpl.createUnsavedDummy(String.valueOf(i), 100L * i));
+		}
+		System.out.println(Iterables.transform(daoImpl.findAllOrderByHashCodeForFun(), new Function<MyBusinessObject, Object>() {
+			@Override
+			public Object apply(@Nullable MyBusinessObject myBusinessObject) {
+				return String.format("%s (hash = %d)", myBusinessObject.getId(), myBusinessObject.hashCode());
+			}
+		}));
 	}
 }

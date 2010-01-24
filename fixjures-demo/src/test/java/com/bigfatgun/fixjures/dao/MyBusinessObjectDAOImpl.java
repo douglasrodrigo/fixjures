@@ -11,25 +11,26 @@ import java.util.List;
 
 final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implements MyBusinessObjectDAO {
 
-	private static final Extractor<Long> EXTRACT_ACCOUNT_BALANCE;
-	private static final Extractor<MyBusinessObject> EXTRACT_PARENT;
-	private static final Predicate<Object> POSITIVE_ACCOUNT_BALANCE;
-	private static final Ordering<Object> ASCENDING_ID;
-	private static final Ordering<Object> ASCENDING_ACCOUNT_BALANCE;
-	private static final Function<Object,String> ID_FUNCTION;
+	private static final Extractor<MyBusinessObject, Long> EXTRACT_ACCOUNT_BALANCE;
+	private static final Extractor<MyBusinessObject, MyBusinessObject> EXTRACT_PARENT;
+	private static final Predicate<MyBusinessObject> POSITIVE_ACCOUNT_BALANCE;
+	private static final Ordering<MyBusinessObject> ASCENDING_ID;
+	private static final Ordering<MyBusinessObject> ASCENDING_ACCOUNT_BALANCE;
+	private static final Ordering<Object> ASCENDING_HASH;
+	private static final Extractor<MyBusinessObject,String> ID_FUNCTION;
 
 	static {
 		// set up predicates and comparators for use in implementations
-		ID_FUNCTION = new Extractor<String>() {{ execute(MyBusinessObject.class).getId(); }};
+		ID_FUNCTION = new Extractor<MyBusinessObject, String>() {{ execute(MyBusinessObject.class).getId(); }};
 		
-		EXTRACT_ACCOUNT_BALANCE = new Extractor<Long>() {{ execute(MyBusinessObject.class).getAccountBalance(); }};
+		EXTRACT_ACCOUNT_BALANCE = new Extractor<MyBusinessObject, Long>() {{ execute(MyBusinessObject.class).getAccountBalance(); }};
 
-		EXTRACT_PARENT = new Extractor<MyBusinessObject>() {{ execute(MyBusinessObject.class).getParent(); }};
+		EXTRACT_PARENT = new Extractor<MyBusinessObject, MyBusinessObject>() {{ execute(MyBusinessObject.class).getParent(); }};
 
-		POSITIVE_ACCOUNT_BALANCE = DAOPredicates.extractedValueIsGreaterThanOrEqualTo(EXTRACT_ACCOUNT_BALANCE, 0L);
+		POSITIVE_ACCOUNT_BALANCE = DAOPredicates.valueIsGreaterThanOrEqualTo(EXTRACT_ACCOUNT_BALANCE, 0L);
 
 		ASCENDING_ID = Ordering.natural().onResultOf(ID_FUNCTION);
-
+		ASCENDING_HASH = Ordering.natural().onResultOf(Extractor.ofHashCode());
 		ASCENDING_ACCOUNT_BALANCE = Ordering.natural().onResultOf(EXTRACT_ACCOUNT_BALANCE);
 	}
 
@@ -50,7 +51,7 @@ final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implem
 	@Override
 	public List<MyBusinessObject> findByAccountBalanceGreaterThan(final long minimumBalance) {
 		return Lists.newArrayList(getHelper().findAllWhere(
-				DAOPredicates.extractedValueIsGreaterThanOrEqualTo(EXTRACT_ACCOUNT_BALANCE, minimumBalance)
+				DAOPredicates.valueIsGreaterThanOrEqualTo(EXTRACT_ACCOUNT_BALANCE, minimumBalance)
 		));
 	}
 
@@ -95,8 +96,17 @@ final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implem
 	@Override
 	public List<MyBusinessObject> findChildren(final MyBusinessObject parent) {
 		return Lists.newArrayList(getHelper().findAllWhere(
-				DAOPredicates.extractedValueEquals(EXTRACT_PARENT, parent)
+				DAOPredicates.valueEquals(EXTRACT_PARENT, parent)
 		));
+	}
+
+	List<MyBusinessObject> findAllOrderByHashCodeForFun() {
+		return getHelper().findAllOrdered(ASCENDING_HASH);
+	}
+
+	List<MyBusinessObject> findPaged(int pageSize, int pageNumber) {
+		// TODO : better paging in the helper instead of predicate, just slice the list
+		return getHelper().findAllOrderedWhere(ASCENDING_ACCOUNT_BALANCE, DAOPredicates.page(pageSize, pageNumber), false);
 	}
 
 	MyBusinessObject createUnsavedDummy(final String id, final Long accountBalance) {

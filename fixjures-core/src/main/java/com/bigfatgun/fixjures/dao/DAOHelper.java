@@ -4,10 +4,7 @@ import com.bigfatgun.fixjures.*;
 import com.bigfatgun.fixjures.json.JSONSource;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -105,6 +102,14 @@ public abstract class DAOHelper<T> {
 	}
 
 	public List<T> findAllOrderedWhere(final Ordering<? super T> ordering, final Predicate<? super T> condition) {
-		return ordering.sortedCopy(findAllWhere(condition));
+		return findAllOrderedWhere(ordering, condition, true);
+	}
+
+	public List<T> findAllOrderedWhere(final Ordering<? super T> ordering, final Predicate<? super T> condition, boolean filterBeforeSort) {
+		if (filterBeforeSort) {
+			return ordering.sortedCopy(findAllWhere(condition));
+		} else {
+			return Lists.newArrayList(Iterables.filter(findAllOrdered(ordering), condition));
+		}
 	}
 }
