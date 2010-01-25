@@ -1,17 +1,17 @@
 package com.bigfatgun.fixjures.dao;
 
+import com.bigfatgun.fixjures.Strategies;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
+import com.google.inject.internal.Lists;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -24,15 +24,25 @@ public class DAOHelperTest {
 	@Before
 	public void setup() {
 		/*
-		 * These two lines set up the DAOHelper. Could just as easily use an external source strategy
+		 * This next chunk sets up the DAOHelper. Could just as easily use an external source strategy
 		 * where each object has its own .json file in the classpath (for example).
 		 */
-		final Map<String, String> map = ImmutableMap.<String, String>builder()
-				.put("1", "{ \"id\" : \"1\", \"accountBalance\" : 100000, \"url\" : \"http://www.google.com/\" }")
-				.put("2", "{ \"id\" : \"2\", \"accountBalance\" : 50000, \"url\" : \"http://www.yahoo.com/\" }")
-				.put("3", "{ \"id\" : \"3\", \"accountBalance\" : -1, \"url\" : \"http://www.bigfatgun.com/\", \"parent\" : \"1\" }")
-				.build();
-		final DAOHelper<MyBusinessObject> helper = DAOHelper.forClassFromJSON(MyBusinessObject.class, map);
+//		final Map<String, String> map = ImmutableMap.<String, String>builder()
+//				.put("1", "{ \"id\" : \"1\", \"accountBalance\" : 100000, \"url\" : \"http://www.google.com/\" }")
+//				.put("2", "{ \"id\" : \"2\", \"accountBalance\" : 50000, \"url\" : \"http://www.yahoo.com/\" }")
+//				.put("3", "{ \"id\" : \"3\", \"accountBalance\" : -1, \"url\" : \"http://www.bigfatgun.com/\", \"parent\" : \"1\" }")
+//				.build();
+//		final DAOHelper<MyBusinessObject> helper = DAOHelper.forClassFromJSON(MyBusinessObject.class, map);
+		final Strategies.SourceStrategy strategy = Strategies.newClasspathStrategy(new Strategies.ResourceNameStrategy() {
+			@Override
+			public String getResourceName(Class<?> type, String name) {
+				return String.format("com/bigfatgun/fixjures/dao/%s.%s.json", type.getSimpleName(), name);
+			}
+		});
+		final DAOHelper<MyBusinessObject> helper = DAOHelper.forClassFromJSON(MyBusinessObject.class, strategy);
+
+		// TODO : this
+		helper.setIdentifiers(Lists.newArrayList("1", "2", "3"));
 
 		/*
 		 * A package-private implementation of the DAO that delegates to the DAOHelper for its calls. Uses
@@ -156,7 +166,7 @@ public class DAOHelperTest {
 		System.out.format("Retrieved %d sorted objects in %d ms.%n", sorted.size(), TimeUnit.NANOSECONDS.toMillis(n3 - n4));
 		List<MyBusinessObject> page5 = daoImpl.findPaged(100, 5);
 		long n5 = System.nanoTime();
-		System.out.format("Retrieved page 5 in %d ms.%n", TimeUnit.NANOSECONDS.toMillis(n5 - n4));		
+		System.out.format("Retrieved %d items in page 5 in %d ms.%n", page5.size(), TimeUnit.NANOSECONDS.toMillis(n5 - n4));		
 	}
 
 	@Test

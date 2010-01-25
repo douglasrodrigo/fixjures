@@ -105,7 +105,6 @@ final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implem
 	}
 
 	List<MyBusinessObject> findPaged(int pageSize, int pageNumber) {
-		// TODO : better paging in the helper instead of predicate, just slice the list
 		return getHelper().findAllOrderedWhere(ASCENDING_ACCOUNT_BALANCE, DAOPredicates.page(pageSize, pageNumber), false);
 	}
 

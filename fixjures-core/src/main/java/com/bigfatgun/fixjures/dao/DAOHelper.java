@@ -8,6 +8,8 @@ import com.google.common.collect.*;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -15,8 +17,40 @@ import java.util.Set;
 
 public abstract class DAOHelper<T> {
 
+	private static final class EmptyByteChannel implements ReadableByteChannel {
+		@Override
+		public int read(ByteBuffer dst) throws IOException {
+			return -1;
+		}
+
+		@Override
+		public boolean isOpen() {
+			return false;
+		}
+
+		@Override
+		public void close() throws IOException {
+			// ignore
+		}
+	}
+
+	public static <T> DAOHelper<T> forClass(final Class<T> cls) {
+		return forClass(cls, new SourceFactory() {
+			@Override
+			public FixtureSource newInstance(Class<?> fixtureType, String fixtureId) {
+				return new FixtureSource(new EmptyByteChannel()) {
+					@Override
+					protected Object createFixture(FixtureType type) {
+						return null;
+					}
+				};
+			}
+		});
+	}
+
 	public static <T> DAOHelper<T> forClass(final Class<T> cls, final SourceFactory factory) {
-		return new DAOHelper<T>(cls, factory) {};
+		return new DAOHelper<T>(cls, factory) {
+		};
 	}
 
 	public static <T> DAOHelper<T> forClassFromJSON(final Class<T> cls, final Map<String, String> objectMap) {
