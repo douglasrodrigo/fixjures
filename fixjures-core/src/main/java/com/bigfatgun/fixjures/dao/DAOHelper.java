@@ -34,6 +34,27 @@ public abstract class DAOHelper<T> {
 		}
 	}
 
+	private static class ImmutableIdentifierProvider implements IdentifierProvider {
+
+		private final ImmutableList<String> ids;
+
+		public ImmutableIdentifierProvider(Iterable<String> identifiers) {
+			ids = ImmutableList.copyOf(identifiers);
+		}
+
+		@Override
+		public Iterable<String> existingObjectIdentifiers() {
+			return ids;
+		}
+	}
+	
+	private static final class EmptyIdentifierProvider extends ImmutableIdentifierProvider {
+
+		public EmptyIdentifierProvider() {
+			super(ImmutableList.<String>of());
+		}
+	}
+
 	public static <T> DAOHelper<T> forClass(final Class<T> cls) {
 		return forClass(cls, new SourceFactory() {
 			@Override
@@ -45,21 +66,19 @@ public abstract class DAOHelper<T> {
 					}
 				};
 			}
-		});
+		}, new EmptyIdentifierProvider());
 	}
 
-	public static <T> DAOHelper<T> forClass(final Class<T> cls, final SourceFactory factory) {
-		return new DAOHelper<T>(cls, factory) {
+	public static <T> DAOHelper<T> forClass(final Class<T> cls, final SourceFactory factory, final IdentifierProvider idProvider) {
+		return new DAOHelper<T>(cls, factory, idProvider) {
 		};
 	}
 
 	public static <T> DAOHelper<T> forClassFromJSON(final Class<T> cls, final Map<String, String> objectMap) {
-		final DAOHelper<T> helper = forClassFromJSON(cls, Strategies.newInMemoryStrategy(ImmutableMap.of(cls, objectMap)));
-		helper.setIdentifiers(objectMap.keySet());
-		return helper;
+		return forClassFromJSON(cls, Strategies.newInMemoryStrategy(ImmutableMap.of(cls, objectMap)), new ImmutableIdentifierProvider(objectMap.keySet()));
 	}
 
-	public static <T> DAOHelper<T> forClassFromJSON(final Class<T> cls, final Strategies.SourceStrategy strategy) {
+	public static <T> DAOHelper<T> forClassFromJSON(final Class<T> cls, final Strategies.SourceStrategy strategy, final IdentifierProvider idProvider) {
 		return forClass(cls, new AbstractSourceFactory(strategy) {
 			@Override
 			public FixtureSource newInstance(Class<?> fixtureType, String fixtureId) {
@@ -69,7 +88,7 @@ public abstract class DAOHelper<T> {
 					return FixtureException.convertAndThrowAs(e);
 				}
 			}
-		});
+		}, idProvider);
 	}
 
 	private final Class<T> cls;
@@ -77,13 +96,13 @@ public abstract class DAOHelper<T> {
 	private final Set<String> identifiers;
 	private final Function<String, T> loadByIdFunction;
 
-	private DAOHelper(final Class<T> cls, final SourceFactory source) {
+	private DAOHelper(final Class<T> cls, final SourceFactory source, final IdentifierProvider idProvider) {
 		this.cls = cls;
 		this.factory = FixtureFactory.newFactory(source)
 				.enableOption(Fixjure.Option.LAZY_REFERENCE_EVALUATION)
 				.enableOption(Fixjure.Option.NULL_ON_UNMAPPED)
 				.enableOption(Fixjure.Option.SKIP_UNMAPPABLE);
-		this.identifiers = Sets.newHashSet();
+		this.identifiers = Sets.newHashSet(idProvider.existingObjectIdentifiers());
 		this.loadByIdFunction = new Function<String, T>() {
 			@Override
 			public T apply(@Nullable String s) {
@@ -114,7 +133,7 @@ public abstract class DAOHelper<T> {
 		return identifiers.remove(id);
 	}
 
-	public void setIdentifiers(Collection<String> newIdentifiers) {
+	private void setIdentifiers(Collection<String> newIdentifiers) {
 		identifiers.clear();
 		identifiers.addAll(newIdentifiers);
 	}

@@ -1,11 +1,12 @@
 package com.bigfatgun.fixjures.dao;
 
+import com.bigfatgun.fixjures.IdentifierProvider;
 import com.bigfatgun.fixjures.Strategies;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
-import com.google.inject.internal.Lists;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,10 +40,12 @@ public class DAOHelperTest {
 				return String.format("com/bigfatgun/fixjures/dao/%s.%s.json", type.getSimpleName(), name);
 			}
 		});
-		final DAOHelper<MyBusinessObject> helper = DAOHelper.forClassFromJSON(MyBusinessObject.class, strategy);
-
-		// TODO : this
-		helper.setIdentifiers(Lists.newArrayList("1", "2", "3"));
+		final DAOHelper<MyBusinessObject> helper = DAOHelper.forClassFromJSON(MyBusinessObject.class, strategy, new IdentifierProvider() {
+			@Override
+			public Iterable<String> existingObjectIdentifiers() {
+				return ImmutableList.of("1", "2", "3");
+			}
+		});
 
 		/*
 		 * A package-private implementation of the DAO that delegates to the DAOHelper for its calls. Uses
