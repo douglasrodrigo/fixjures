@@ -18,6 +18,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.bigfatgun</groupId>
+			<artifactId>fixjures-yaml</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.bigfatgun</groupId>
 			<artifactId>fixjures-junit</artifactId>
 			<scope>test</scope>
 		</dependency>

@@ -11,28 +11,28 @@ import java.util.List;
 
 final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implements MyBusinessObjectDAO {
 
-	private static final Extractor<MyBusinessObject, Long> EXTRACT_ACCOUNT_BALANCE;
-	private static final Extractor<MyBusinessObject, MyBusinessObject> EXTRACT_PARENT;
-	private static final Predicate<MyBusinessObject> POSITIVE_ACCOUNT_BALANCE;
-	private static final Ordering<MyBusinessObject> ASCENDING_ID;
-	private static final Ordering<MyBusinessObject> ASCENDING_ACCOUNT_BALANCE;
-	private static final Ordering<Object> ASCENDING_HASH;
-	private static final Extractor<MyBusinessObject,String> ID_FUNCTION;
+	// Value extractors, predicates (for filtering) and ordering is initialized here to make code
+	// below a bit more terse
+	private static final Extractor<MyBusinessObject, Long> EXTRACT_ACCOUNT_BALANCE =
+			new Extractor<MyBusinessObject, Long>() {{ execute(MyBusinessObject.class).getAccountBalance(); }};
 
-	static {
-		// set up predicates and comparators for use in implementations
-		ID_FUNCTION = new Extractor<MyBusinessObject, String>() {{ execute(MyBusinessObject.class).getId(); }};
-		
-		EXTRACT_ACCOUNT_BALANCE = new Extractor<MyBusinessObject, Long>() {{ execute(MyBusinessObject.class).getAccountBalance(); }};
+	private static final Extractor<MyBusinessObject, MyBusinessObject> EXTRACT_PARENT =
+			new Extractor<MyBusinessObject, MyBusinessObject>() {{ execute(MyBusinessObject.class).getParent(); }};
 
-		EXTRACT_PARENT = new Extractor<MyBusinessObject, MyBusinessObject>() {{ execute(MyBusinessObject.class).getParent(); }};
+	private static final Extractor<MyBusinessObject,String> ID_FUNCTION =
+			new Extractor<MyBusinessObject, String>() {{ execute(MyBusinessObject.class).getId(); }};
 
-		POSITIVE_ACCOUNT_BALANCE = DAOPredicates.valueIsGreaterThanOrEqualTo(EXTRACT_ACCOUNT_BALANCE, 0L);
+	private static final Predicate<MyBusinessObject> POSITIVE_ACCOUNT_BALANCE =
+			DAOPredicates.valueIsGreaterThanOrEqualTo(EXTRACT_ACCOUNT_BALANCE, 0L);
 
-		ASCENDING_ID = Ordering.natural().onResultOf(ID_FUNCTION);
-		ASCENDING_HASH = Ordering.natural().onResultOf(Extractor.ofHashCode());
-		ASCENDING_ACCOUNT_BALANCE = Ordering.natural().onResultOf(EXTRACT_ACCOUNT_BALANCE);
-	}
+	private static final Ordering<MyBusinessObject> ASCENDING_ID =
+			Ordering.natural().onResultOf(ID_FUNCTION);
+
+	private static final Ordering<MyBusinessObject> ASCENDING_ACCOUNT_BALANCE =
+			Ordering.natural().onResultOf(EXTRACT_ACCOUNT_BALANCE);
+
+	private static final Ordering<Object> ASCENDING_HASH =
+			Ordering.natural().onResultOf(Extractor.ofHashCode());
 
 	public MyBusinessObjectDAOImpl(final DAOHelper<MyBusinessObject> helper) {
 		super(helper, ID_FUNCTION);
@@ -99,6 +99,8 @@ final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implem
 				DAOPredicates.valueEquals(EXTRACT_PARENT, parent)
 		));
 	}
+
+	// package-private methods for fun or demo or test purposes
 
 	List<MyBusinessObject> findAllOrderByHashCodeForFun() {
 		return getHelper().findAllOrdered(ASCENDING_HASH);

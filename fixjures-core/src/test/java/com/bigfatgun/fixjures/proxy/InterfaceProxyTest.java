@@ -25,12 +25,12 @@ public class InterfaceProxyTest {
 
 	@Test(expected = RuntimeException.class)
 	public void doNotInvokeMethodWithArgs() {
-		new InterfaceProxy<Foo2>(Foo2.class, ImmutableSet.<Fixjure.Option>of()).create().convertThing(this);
+		new InterfaceProxy<Foo2>(Foo2.class, ImmutableSet.<Fixjure.Option>of()).get().convertThing(this);
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void doNotInvokeUnstubbedMethod() {
-		new InterfaceProxy<Foo2>(Foo2.class, ImmutableSet.<Fixjure.Option>of()).create().getThing();
+		new InterfaceProxy<Foo2>(Foo2.class, ImmutableSet.<Fixjure.Option>of()).get().getThing();
 	}
 
 	private static interface Foo3 {
@@ -39,8 +39,8 @@ public class InterfaceProxyTest {
 
 	@Test
 	public void proxiesUseIdentityForEquals() {
-		final Foo3 foo1 = new InterfaceProxy<Foo3>(Foo3.class, ImmutableSet.<Fixjure.Option>of()).create();
-		final Foo3 foo2 = new InterfaceProxy<Foo3>(Foo3.class, ImmutableSet.<Fixjure.Option>of()).create();
+		final Foo3 foo1 = new InterfaceProxy<Foo3>(Foo3.class, ImmutableSet.<Fixjure.Option>of()).get();
+		final Foo3 foo2 = new InterfaceProxy<Foo3>(Foo3.class, ImmutableSet.<Fixjure.Option>of()).get();
 		assertEquals(foo1, foo1);
 		assertFalse(foo1.equals(foo2));
 	}
@@ -52,6 +52,6 @@ public class InterfaceProxyTest {
 
 	@Test
 	public void proxiesHaveToStr() {
-		assertTrue(new InterfaceProxy<Foo3>(Foo3.class, ImmutableSet.<Fixjure.Option>of()).create().toString().startsWith("Proxy of " + Foo3.class));
+		assertTrue(new InterfaceProxy<Foo3>(Foo3.class, ImmutableSet.<Fixjure.Option>of()).get().toString().startsWith("Proxy of " + Foo3.class));
 	}
 }

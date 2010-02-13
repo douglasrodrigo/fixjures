@@ -212,7 +212,8 @@ public class JSONSourceTest {
 
 	@Test
 	public void mapOfIntToLong() {
-		Map<Integer, Long> m = Fixjure.mapOf(Integer.class, Long.class).from(JSONSource.newJsonString("{\"1\":1,\"2\":2,\"3\":10000000000}")).create();
+		Fixjure.SourcedFixtureBuilder<Map<Integer, Long>> fixtureBuilder = Fixjure.mapOf(Integer.class, Long.class).from(JSONSource.newJsonString("{\"1\":1,\"2\":2,\"3\":10000000000}"));
+		Map<Integer, Long> m = fixtureBuilder.create();
 		assertNotNull(m);
 		assertEquals(3, m.size());
 		assertEquals(1L, m.get(1).longValue());

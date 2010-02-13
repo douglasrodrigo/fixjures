@@ -4,14 +4,15 @@ import java.util.List;
 
 interface MyBusinessObjectDAO {
 
+	// some finder methods here
 	MyBusinessObject find(String id);
 	List<MyBusinessObject> findAll();
 
-	// filtering
+	// methods that require filtering
 	List<MyBusinessObject> findByAccountBalanceGreaterThan(long minimumBalance);
 	int countByAccountBalanceGreaterThan(long minimumBalance);
 
-	// ordering
+	// methods that require sort
 	List<MyBusinessObject> findAllOrderedByAccountBalance();
 
 	// filtering AND ordering?!@#$

@@ -19,6 +19,7 @@ import com.bigfatgun.fixjures.ByteUtil;
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.FixtureType;
+import com.bigfatgun.fixjures.proxy.ObjectProxyData;
 import com.google.common.base.Supplier;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
@@ -27,6 +28,7 @@ import java.io.*;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Map;
 
 import static com.bigfatgun.fixjures.FixtureException.convert;
 
@@ -72,22 +74,12 @@ public final class JSONSource extends FixtureSource {
 
 	private JSONSource(final ReadableByteChannel source) {
 		super(source);
-		installJsonHandlers();
-	}
-
-	private void installJsonHandlers() {
-		installTypeHandler(JsonHandlers.newMapHandler());
-		installTypeHandler(JsonHandlers.newArrayHandler());
-		installTypeHandler(JsonHandlers.newListHandler());
-		installTypeHandler(JsonHandlers.newSetHandler());
-		installTypeHandler(JsonHandlers.newMultisetHandler());
-		installTypeHandler(JsonHandlers.newObjectProxyHandler());
 	}
 
 	public Object createFixture(final FixtureType type) {
 		try {
 			final String sourceJson = loadSource();
-			final Object jsonValue = parseJson(sourceJson);
+			Object jsonValue = parseJson(sourceJson);
 			final Supplier<?> provider = findValue(type, jsonValue);
 			final Object value = provider.get();
 			return type.getType().cast(value);

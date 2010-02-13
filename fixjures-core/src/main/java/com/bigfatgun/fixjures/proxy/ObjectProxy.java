@@ -24,7 +24,7 @@ import com.google.common.base.Supplier;
  *
  * @author Steve Reed
  */
-public interface ObjectProxy<T> {
+public interface ObjectProxy<T> extends Supplier<T> {
 
 	/**
 	 * Returns the proxy object type
@@ -40,13 +40,6 @@ public interface ObjectProxy<T> {
 	 * @param stub value stub
 	 */
 	void addValueStub(String methodName, Supplier<?> stub);
-
-	/**
-	 * Creates a new proxy instance.
-	 *
-	 * @return a new proxy instance
-	 */
-	T create();
 
 	FixtureType suggestType(String key);
 }

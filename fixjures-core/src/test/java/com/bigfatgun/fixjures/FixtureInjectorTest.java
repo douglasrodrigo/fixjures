@@ -42,16 +42,6 @@ public class FixtureInjectorTest {
 		FixtureInjector.scan(new BadBean1());
 	}
 
-	@Test(expected = FixtureException.class)
-	public void badMarkup2() throws Exception {
-		FixtureInjector.scan(new BadBean2());
-	}
-
-	@Test(expected = FixtureException.class)
-	public void badMarkup3() throws Exception {
-		FixtureInjector.scan(new BadBean3());
-	}
-
 	public static final class MyBean {
 
 		private String foo;
@@ -113,34 +103,4 @@ public class FixtureInjectorTest {
 			foo = value;
 		}
 	}
-
-	private static class BadBean2 {
-
-		private String foo;
-
-		public String getFoo() {
-			return foo;
-		}
-
-		@Fixture(value = "1234")
-		public void setFoo(final String value) {
-			foo = value;
-		}
-	}
-
-	private static class BadBean3 {
-
-		private String foo;
-
-		public String getFoo() {
-			return foo;
-		}
-
-		@Fixture(value = "1234")
-		public BadBean3 setFoo(final String value) {
-			foo = value;
-			return this;
-		}
-	}
-
 }

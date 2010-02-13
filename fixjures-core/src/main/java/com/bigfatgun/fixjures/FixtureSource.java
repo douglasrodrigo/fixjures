@@ -16,6 +16,7 @@
 package com.bigfatgun.fixjures;
 
 import com.bigfatgun.fixjures.handlers.*;
+import com.bigfatgun.fixjures.proxy.ObjectProxyData;
 import com.google.common.base.Preconditions;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.base.Supplier;
@@ -28,6 +29,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -239,5 +241,28 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 
 		installTypeHandler(Unmarshallers.stringBuilderHandler());
 		installTypeHandler(Unmarshallers.javaDateHandler());
+
+		installTypeHandler(Unmarshallers.newArrayHandler());
+		installTypeHandler(Unmarshallers.newListHandler());
+		installTypeHandler(Unmarshallers.newMapHandler());
+		installTypeHandler(Unmarshallers.newMultisetHandler());
+		installTypeHandler(Unmarshallers.newSetHandler());
+		installTypeHandler(Unmarshallers.newObjectProxyHandler());
+
+		final ChainedUnmarshaller<ObjectProxyData> chainedMapHandler = new ChainedUnmarshaller<ObjectProxyData>(Map.class, ObjectProxyData.class) {
+			@Override
+			public Supplier<ObjectProxyData> unmarshall(UnmarshallingContext helper, Object source, FixtureType typeDef) {
+				return Suppliers.of(new ObjectProxyData(castSourceValue(Map.class, source)));
+			}
+		};
+
+		installTypeHandler(chainedMapHandler.link(Unmarshallers.newObjectProxyHandler()));
+
+		installTypeHandler(new AbstractUnmarshaller<String>(Object.class, String.class) {
+			@Override
+			public Supplier<String> unmarshall(UnmarshallingContext helper, Object source, FixtureType typeDef) {
+				return Suppliers.of(String.valueOf(source));
+			}
+		});
 	}
 }

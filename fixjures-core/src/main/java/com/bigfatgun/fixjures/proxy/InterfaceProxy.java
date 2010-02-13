@@ -19,7 +19,6 @@ import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.*;
 
 import javax.annotation.Nullable;
@@ -84,7 +83,8 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 	 *
 	 * @return new proxy instance
 	 */
-	public T create() {
+	@Override
+	public T get() {
 		return getType().cast(Proxy.newProxyInstance(getType().getClassLoader(), new Class[]{getType()}, this));
 	}
 

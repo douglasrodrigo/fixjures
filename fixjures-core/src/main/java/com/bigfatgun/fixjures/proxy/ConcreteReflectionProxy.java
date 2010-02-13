@@ -45,7 +45,8 @@ final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 	 * <p/>
 	 * {@inheritDoc}
 	 */
-	public T create() {
+	@Override
+	public T get() {
 		try {
 			final Constructor<T> ctor = getType().getDeclaredConstructor();
 			ctor.setAccessible(true);

@@ -2,6 +2,9 @@ package com.bigfatgun.fixjures;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import javax.annotation.Nullable;
 
@@ -34,5 +37,32 @@ public final class Suppliers {
 
 	public static <T> Supplier<T> ofIdentity(final IdentityResolver identityResolver, final Class<T> type, final Object rawIdentityValue) {
 		return new IdentityResolvingSupplier<T>(identityResolver, type, rawIdentityValue);
+	}
+
+	public static <T> Supplier<ImmutableList<T>> ofImmutableList(final ImmutableList.Builder<T> builder) {
+		return new Supplier<ImmutableList<T>>() {
+			@Override
+			public ImmutableList<T> get() {
+				return builder.build();
+			}
+		};
+	}
+
+	public static <T> Supplier<ImmutableSet<T>> ofImmutableSet(final ImmutableSet.Builder<T> builder) {
+		return new Supplier<ImmutableSet<T>>() {
+			@Override
+			public ImmutableSet<T> get() {
+				return builder.build();
+			}
+		};
+	}
+
+	public static <K, V> Supplier<ImmutableMap<K, V>> ofImmutableMap(final ImmutableMap.Builder<K, V> builder) {
+		return new Supplier<ImmutableMap<K, V>>() {
+			@Override
+			public ImmutableMap<K, V> get() {
+				return builder.build();
+			}
+		};
 	}
 }

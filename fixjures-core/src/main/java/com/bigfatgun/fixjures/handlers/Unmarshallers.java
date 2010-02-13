@@ -15,16 +15,58 @@
  */
 package com.bigfatgun.fixjures.handlers;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import com.bigfatgun.fixjures.Fixjure;
+import com.bigfatgun.fixjures.FixtureException;
+import com.bigfatgun.fixjures.FixtureType;
+import com.bigfatgun.fixjures.Suppliers;
+import com.bigfatgun.fixjures.proxy.ObjectProxy;
+import com.bigfatgun.fixjures.proxy.ObjectProxyData;
+import com.bigfatgun.fixjures.proxy.Proxies;
+import com.bigfatgun.fixjures.proxy.ProxyUtils;
+import com.google.common.base.Function;
+import com.google.common.base.Supplier;
+import com.google.common.collect.*;
 
+import javax.annotation.Nullable;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
+import static com.bigfatgun.fixjures.FixtureException.convert;
 
 public final class Unmarshallers {
+
+	private static class ValueExtractor implements Function<Supplier<?>, Object> {
+		public Object apply(@Nullable final Supplier<?> valueProvider) {
+			return valueProvider.get();
+		}
+	}
+
+	private static abstract class ListHandler<T> extends AbstractUnmarshaller<T> {
+		protected ListHandler(final Class<T> returnType) {
+			super(List.class, returnType);
+		}
+
+		public final Supplier<? extends T> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
+			final List list = castSourceValue(List.class, source);
+			final ImmutableList<Supplier<?>> providers = objectsInArray(helper, list, typeDef);
+			return convertList(providers);
+		}
+
+		private ImmutableList<Supplier<?>> objectsInArray(final UnmarshallingContext helper, final List array, final FixtureType collectionType) {
+			final List<Supplier<?>> source = Lists.newLinkedList();
+
+			for (final Object sourceValue : array) {
+				final Supplier<?> unmarshalled = helper.unmarshall(sourceValue, collectionType.collectionType());
+				source.add(unmarshalled);
+			}
+
+			return ImmutableList.copyOf(source);
+		}
+
+		protected abstract Supplier<? extends T> convertList(final ImmutableList<Supplier<?>> source);
+	}
 
 	public static Unmarshaller<Byte> byteHandler() {
 		return new NumberUnmarshaller<Byte>(Byte.class, Byte.TYPE) {
@@ -84,17 +126,6 @@ public final class Unmarshallers {
 		return new StringBuilderUnmarshaller();
 	}
 
-	public static <InterimType, EndType> Iterable<Unmarshaller<? extends EndType>> createChain(
-			final ChainedUnmarshaller<InterimType> chained,
-			final ImmutableList<Unmarshaller<EndType>> handlers) {
-
-		final List<Unmarshaller<? extends EndType>> fixtures = Lists.newLinkedList();
-		for (final Unmarshaller<EndType> handler : handlers) {
-			fixtures.add(chained.link(handler));
-		}
-		return Collections.unmodifiableList(fixtures);
-	}
-
 	public static Unmarshaller<BigInteger> bigIntegerHandler() {
 		return new BigIntegerUnmarshaller();
 	}
@@ -105,5 +136,137 @@ public final class Unmarshallers {
 
 	public static Unmarshaller<Date> javaDateHandler() {
 		return new DateUnmarshaller();
+	}
+
+	public static Unmarshaller<Set> newSetHandler() {
+		return new ListHandler<Set>(Set.class) {
+			@Override
+			protected Supplier<HashSet<Object>> convertList(final ImmutableList<Supplier<?>> source) {
+				return Suppliers.of(Sets.newHashSet(Iterables.transform(source, new ValueExtractor())));
+			}
+		};
+	}
+
+	public static Unmarshaller<List> newListHandler() {
+		return new ListHandler<List>(List.class) {
+			@Override
+			protected Supplier<? extends List> convertList(final ImmutableList<Supplier<?>> source) {
+				return Suppliers.of(Lists.newArrayList(Iterables.transform(source, new ValueExtractor())));
+			}
+		};
+	}
+
+	public static Unmarshaller<Multiset> newMultisetHandler() {
+		return new ListHandler<Multiset>(Multiset.class) {
+			@Override
+			protected Supplier<? extends Multiset> convertList(final ImmutableList<Supplier<?>> source) {
+				return Suppliers.of(HashMultiset.create(Iterables.transform(source, new ValueExtractor())));
+			}
+		};
+	}
+
+	public static Unmarshaller<Object> newArrayHandler() {
+		return new Unmarshaller<Object>() {
+			public boolean canUnmarshallObjectToType(final Object obj, final FixtureType desiredType) {
+				return desiredType.getType().isArray() && obj instanceof List;
+			}
+
+			public Class<Object> getReturnType() {
+				return Object.class;
+			}
+
+			public Supplier<Object> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
+				final List array = (List) source;
+				final FixtureType definition = typeDef.collectionType();
+				final Class<?> collectionType = definition.getType();
+				final Object actualArray = Array.newInstance(collectionType, array.size());
+				for (int i = 0; i < array.size(); i++) {
+					final Supplier<?> arraySupplier = helper.unmarshall(array.get(i), definition);
+					final Object arrayValue = arraySupplier.get();
+					Array.set(actualArray, i, arrayValue);
+				}
+				return Suppliers.of(actualArray);
+			}
+		};
+	}
+
+	public static Unmarshaller<Map> newMapHandler() {
+		return new AbstractUnmarshaller<Map>(Map.class, Map.class) {
+
+			public Supplier<ImmutableMap<Object, Object>> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
+				final Map sourceObject = castSourceValue(Map.class, source);
+				final FixtureType keyType = typeDef.keyType();
+				final FixtureType valueType = typeDef.valueType();
+				ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder();
+				for (final Object lookupKey : sourceObject.keySet()) {
+					final Supplier<?> keyProvider = help(helper, lookupKey, keyType);
+					final Supplier<?> valueProvider = help(helper, sourceObject.get(String.valueOf(lookupKey)), valueType);
+					final Object key = keyProvider.get();
+					final Object keyValue = valueProvider.get();
+					if (key != null && keyValue != null) {
+						builder = builder.put(key, keyValue);
+					}
+				}
+				return Suppliers.ofImmutableMap(builder);
+			}
+		};
+	}
+
+	public static Unmarshaller<?> newObjectProxyHandler() {
+		return new AbstractUnmarshaller<Object>(ObjectProxyData.class, Object.class) {
+			public Supplier<?> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
+				final ObjectProxy<?> proxy = Proxies.newProxy(typeDef.getType(), helper.getOptions());
+				configureProxy(helper, proxy, castSourceValue(ObjectProxyData.class, source).get());
+				if (helper.getOptions().contains(Fixjure.Option.LAZY_REFERENCE_EVALUATION)) {
+					return proxy;
+				} else {
+					try {
+						return proxy;
+					} catch (Exception e) {
+						throw convert(e);
+					}
+				}
+			}
+
+			private <T> void configureProxy(final UnmarshallingContext helper, final ObjectProxy<T> proxy, final Map<?, ?> obj) {
+				for (Object o : obj.keySet()) {
+					final String key = o.toString();
+					final String methodName = helper.getOptions().contains(Fixjure.Option.LITERAL_MAPPING) ? key : ProxyUtils.getterName(key);
+					final FixtureType getterTypeDef = proxy.suggestType(methodName);
+					if (getterTypeDef == null) {
+						if (helper.getOptions().contains(Fixjure.Option.SKIP_UNMAPPABLE)) {
+							continue;
+						} else {
+							throw new FixtureException("Could not find type of method: " + methodName);
+						}
+					}
+
+					final Supplier<?> stub;
+					if (helper.getOptions().contains(Fixjure.Option.LAZY_REFERENCE_EVALUATION)) {
+						stub = new Supplier<Object>() {
+							public Object get() {
+								Supplier<?> supplier = helper.unmarshall(obj.get(key), getterTypeDef);
+								if (supplier == null) {
+									throw new FixtureException(String.format("Could not find unmarshaller for %s (%s)", obj.get(key), getterTypeDef));
+								}
+								return supplier.get();
+							}
+						};
+					} else {
+						stub = helper.unmarshall(obj.get(key), getterTypeDef);
+					}
+
+					if (stub == null) {
+						if (helper.getOptions().contains(Fixjure.Option.SKIP_UNMAPPABLE)) {
+							continue;
+						}
+
+						throw new FixtureException(String.format("Key [%s] (with value [%s]) found in source but could not stub. Could be its name or value type (%s) doesn't match methods in %s", key, obj.get(key), getterTypeDef, proxy.getType()));
+					} else {
+						proxy.addValueStub(methodName, stub);
+					}
+				}
+			}
+		};
 	}
 }
