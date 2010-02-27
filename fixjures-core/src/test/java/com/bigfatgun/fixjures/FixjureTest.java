@@ -1,11 +1,8 @@
 package com.bigfatgun.fixjures;
 
-import static com.bigfatgun.fixjures.Fixjure.Option.SKIP_UNMAPPABLE;
 import com.bigfatgun.fixjures.json.JSONSource;
 import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
 import com.google.common.collect.*;
-import static org.junit.Assert.*;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -18,7 +15,9 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.util.*;
 
-@SuppressWarnings({"unchecked"})
+import static com.bigfatgun.fixjures.Fixjure.Option.SKIP_UNMAPPABLE;
+import static org.junit.Assert.*;
+
 public class FixjureTest {
 
 	@Test
@@ -38,6 +37,7 @@ public class FixjureTest {
 	@Test
 	public void listFixture() {
 		List<Integer> expected = Lists.newArrayList(1, 2, 3, 4, 5);
+		@SuppressWarnings({"unchecked"})
 		List<Integer> actual1 = Fixjure.of(List.class).of(Integer.class).from(JSONSource.newJsonString("[ 1, 2, 3, 4, 5 ]")).create();
 		List<Integer> actual2 = Fixjure.listOf(Integer.class).from(JSONSource.newJsonString("[ 1, 2, 3, 4, 5 ]")).create();
 		assertEquals(expected, actual1); // JSONArray vs. ArrayList
@@ -47,6 +47,7 @@ public class FixjureTest {
 	@Test
 	public void setFixture() {
 		Set<Integer> expected = Sets.newHashSet(1, 2, 3, 4, 5);
+		@SuppressWarnings({"unchecked"})
 		Set<Integer> actual1 = Fixjure.of(Set.class).of(Integer.class).from(JSONSource.newJsonString("[ 1, 1, 2, 3, 4, 3, 5 ]")).create();
 		Set<Integer> actual2 = Fixjure.setOf(Integer.class).from(JSONSource.newJsonString("[ 5, 4, 3, 2, 1 ]")).create();
 		assertEquals(expected, actual1);
@@ -56,6 +57,7 @@ public class FixjureTest {
 	@Test
 	public void multisetFixture() {
 		Multiset<Integer> expected = ImmutableMultiset.of(1, 1, 2, 3, 5, 8, 13);
+		@SuppressWarnings({"unchecked"})
 		Multiset<Integer> actual1 = Fixjure.of(Multiset.class).of(Integer.class).from(JSONSource.newJsonString("[ 1, 1, 2, 3, 5, 8, 13 ]")).create();
 		Multiset<Integer> actual2 = Fixjure.multisetOf(Integer.class).from(JSONSource.newJsonString("[ 13, 8, 5, 3, 2, 1, 1 ]")).create();
 		assertEquals(expected, actual1);
@@ -65,6 +67,7 @@ public class FixjureTest {
 	@Test
 	public void mapFixture() {
 		Map<String, Integer> expected = ImmutableMap.of("one", 1, "two", 2, "three", 3);
+		@SuppressWarnings({"unchecked"})
 		Map<String, Integer> actual1 = Fixjure.of(Map.class).of(String.class, Integer.class).from(JSONSource.newJsonString("{ \"one\" : 1, \"two\" : 2, \"three\" : 3 }")).create();
 		Map<String, Integer> actual2 = Fixjure.mapOf(String.class, Integer.class).from(JSONSource.newJsonString("{ \"one\" : 1, \"two\" : 2, \"three\" : 3 }")).create();
 		assertEquals(expected, actual1);
@@ -188,41 +191,6 @@ public class FixjureTest {
 		assertEquals(2, fact.createFixture(Integer.class, "two").intValue());
 		assertEquals(ImmutableMap.of("one", 1L, "two", 2L), fact.createFixture(Map.class, "map"));
 		assertEquals("2.1", fact.createFixture(NyTimes.class, "nyt").getVersion());
-	}
-
-	private <T> double doPerf(final FixtureFactory fact, final Class<T> type, final String name, final int num, final boolean clearCache, final String desc) {
-		System.out.format("Creating %d of %s named %s [%s]...\n", num, type.getName(), name, desc);
-		final long start = System.nanoTime();
-		T obj;
-		for (int i = 0; i < num; i++) {
-			//noinspection UnusedAssignment
-			obj = fact.createFixture(type, name);
-			if (i != 0 && (i % 50000) == 0) {
-				final long dur = System.nanoTime() - start;
-			}
-			if (clearCache) {
-				fact.expireCache();
-			}
-		}
-		final long dur = System.nanoTime() - start;
-		System.out.format("At %d, average of %gms/fixture.\n", num, ((dur / 1e6) / num));
-		return ((dur / 1e6) / num);
-	}
-
-	@Test
-	public void perf() {
-		FixtureFactory fact = FixtureFactory.newJsonFactory(Strategies.newClasspathStrategy());
-		double cpwc = doPerf(fact, NyTimes.class, "one", 1000000, false, "classpath w/ cache");
-		double cpwoc = doPerf(fact, NyTimes.class, "one", 1000, true, "classpath w/o cache");
-		fact = FixtureFactory.newFactory(new SourceFactory() {
-			public FixtureSource newInstance(final Class<?> type, final String name) {
-				return JSONSource.newJsonResource(FixjureTest.class.getClassLoader(), String.format("fixjures/%s/%s.json", type.getName(), name));
-			}
-		});
-		double fwc = doPerf(fact, NyTimes.class, "one", 1000000, false, "file w/ cache");
-		double fwoc = doPerf(fact, NyTimes.class, "one", 1000, true, "file w/o cache");
-		// asserting that file-based without cache is faster than classpath-based without cache
-		assertTrue(Double.compare(cpwoc, fwoc) > 0);
 	}
 
 	@Test
