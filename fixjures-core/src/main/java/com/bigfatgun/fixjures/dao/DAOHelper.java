@@ -165,4 +165,8 @@ public abstract class DAOHelper<T> {
 			return Lists.newArrayList(Iterables.filter(findAllOrdered(ordering), condition));
 		}
 	}
+
+    public FixtureFactory getFactory() {
+        return factory;
+    }
 }
