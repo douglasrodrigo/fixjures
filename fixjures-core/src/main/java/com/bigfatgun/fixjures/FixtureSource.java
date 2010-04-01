@@ -17,9 +17,8 @@ package com.bigfatgun.fixjures;
 
 import com.bigfatgun.fixjures.handlers.*;
 import com.bigfatgun.fixjures.proxy.ObjectProxyData;
-import com.google.common.base.Preconditions;
+import com.google.common.base.*;
 import static com.google.common.base.Preconditions.checkNotNull;
-import com.google.common.base.Supplier;
 import com.google.common.collect.*;
 
 import javax.annotation.Nullable;
@@ -264,5 +263,14 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 				return Suppliers.of(String.valueOf(source));
 			}
 		});
+
+        installTypeHandler(new AbstractUnmarshaller<Enum>(String.class, Enum.class) {
+            @SuppressWarnings({"unchecked"})
+            @Override
+            public Supplier<Enum> unmarshall(UnmarshallingContext ctx, Object source, FixtureType typeDef) {
+                Class<? extends Enum> enumCls = (Class<? extends Enum>) typeDef.getType();
+                return Suppliers.of(Enum.valueOf(enumCls, String.valueOf(source)));
+            }
+        });
 	}
 }
