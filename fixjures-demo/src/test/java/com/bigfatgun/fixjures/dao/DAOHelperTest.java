@@ -2,6 +2,7 @@ package com.bigfatgun.fixjures.dao;
 
 import com.bigfatgun.fixjures.IdentifierProvider;
 import com.bigfatgun.fixjures.Strategies;
+import com.bigfatgun.fixjures.yaml.YamlSource;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -21,6 +22,7 @@ public class DAOHelperTest {
 
 	private MyBusinessObjectDAO dao;
 	private MyBusinessObjectDAOImpl daoImpl;
+	private MyBusinessObjectDAOImpl daoImpl2;
 
 	@Before
 	public void setup() {
@@ -52,6 +54,12 @@ public class DAOHelperTest {
 		 * Predicates and Functions from google-collections to do result filtering/sorting.
 		 */
 		dao = daoImpl = new MyBusinessObjectDAOImpl(helper);
+        daoImpl2 = new MyBusinessObjectDAOImpl(DAOHelper.forClassFromSingleSource(MyBusinessObject.class, YamlSource.newYamlResource("com/bigfatgun/fixjures/dao/mbo.yaml"), new Function<MyBusinessObject, String>() {
+            @Override
+            public String apply(@Nullable MyBusinessObject myBusinessObject) {
+                return myBusinessObject.getId();
+            }
+        }));
 	}
 
 	@Test
@@ -184,4 +192,16 @@ public class DAOHelperTest {
 			}
 		}));
 	}
+
+    @Test
+    public void singleFileBasedDAO() {
+        MyBusinessObject mbo1 = daoImpl2.find("1");
+        MyBusinessObject mbo2 = daoImpl2.find("2");
+        MyBusinessObject mbo3 = daoImpl2.find("3");
+        MyBusinessObject mbo4 = daoImpl2.find("4");
+        MyBusinessObject mbo5 = daoImpl2.find("5");
+        MyBusinessObject mbo6 = mbo5.getParent();
+        assertNotNull(mbo6);
+        assertEquals(106, mbo6.getAccountBalance().longValue());
+    }
 }
