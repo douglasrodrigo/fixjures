@@ -35,7 +35,7 @@ public final class Proxies {
 		if (cls.isInterface()) {
 			return newInterfaceProxy(cls, options);
 		} else {
-			return newJavaBeanProxy(cls);
+			return newJavaBeanProxy(cls, options);
 		}
 	}
 
@@ -58,8 +58,8 @@ public final class Proxies {
 	 * @param <T> proxy object type
 	 * @return new object proxy
 	 */
-	public static <T> ObjectProxy<T> newJavaBeanProxy(final Class<T> cls) {
-		return new ConcreteReflectionProxy<T>(cls);
+	public static <T> ObjectProxy<T> newJavaBeanProxy(final Class<T> cls, final ImmutableSet<Fixjure.Option> options) {
+		return new ConcreteReflectionProxy<T>(cls, options);
 	}
 
 	/** Private util ctor. */

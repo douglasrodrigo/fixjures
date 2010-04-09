@@ -32,8 +32,8 @@ import java.util.Map;
  */
 final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 
-	ConcreteReflectionProxy(final Class<T> cls) {
-		super(cls, ImmutableSet.<Fixjure.Option>of());
+	ConcreteReflectionProxy(final Class<T> cls, final ImmutableSet<Fixjure.Option> options) {
+		super(cls, options);
 		if (cls.isInterface()) {
 			throw new IllegalStateException(String.format("Class %s is an interface.", cls.getName()));
 		}
@@ -70,12 +70,17 @@ final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 	 * @param setterName name of setter method
 	 * @param value value to set
 	 * @throws IllegalAccessException if getter or setter cannot be accessed
-	 * @throws NoSuchMethodException if getter or setter do not exist
 	 * @throws java.lang.reflect.InvocationTargetException if setter cannot be invoked
 	 */
-	private void setInstanceValue(final T object, final String getterName, final String setterName, final Object value) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-		final Method getter = getType().getMethod(getterName);
-		final Method setter = getType().getMethod(setterName, getter.getReturnType());
-		setter.invoke(object, value);
-	}
+	private void setInstanceValue(final T object, final String getterName, final String setterName, final Object value) throws InvocationTargetException, IllegalAccessException {
+        try {
+            final Method getter = getType().getMethod(getterName);
+            final Method setter = getType().getMethod(setterName, getter.getReturnType());
+            setter.invoke(object, value);
+        } catch (NoSuchMethodException e) {
+            if (!this.isOptionEnabled(Fixjure.Option.SKIP_UNMAPPABLE)) {
+                throw FixtureException.convert(e);
+            }
+        }
+    }
 }

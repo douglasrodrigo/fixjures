@@ -15,9 +15,12 @@
  */
 package com.bigfatgun.fixjures.proxy;
 
+import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.Suppliers;
 import static org.junit.Assert.assertNotNull;
+
+import com.google.common.collect.ImmutableSet;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
@@ -38,14 +41,22 @@ public class ConcreteReflectionProxyTest {
 
 	@Test(expected = RuntimeException.class)
 	public void doNotPassInterface() {
-		new ConcreteReflectionProxy<Foo>(Foo.class);
+		new ConcreteReflectionProxy<Foo>(Foo.class, ImmutableSet.<Fixjure.Option>of());
 	}
 
 	@Test(expected = FixtureException.class)
 	public void bogusGetterName() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
-		final ConcreteReflectionProxy<FooTwo> proxy = new ConcreteReflectionProxy<FooTwo>(FooTwo.class);
+		final ConcreteReflectionProxy<FooTwo> proxy = new ConcreteReflectionProxy<FooTwo>(FooTwo.class, ImmutableSet.<Fixjure.Option>of());
 		proxy.addValueStub("bogus", Suppliers.of("dude"));
 		FooTwo two = proxy.get();
 		assertNotNull(two);
 	}
+
+    @Test
+    public void skipUnmappableSettingWorks() {
+		final ConcreteReflectionProxy<FooTwo> proxy = new ConcreteReflectionProxy<FooTwo>(FooTwo.class, ImmutableSet.of(Fixjure.Option.SKIP_UNMAPPABLE));
+		proxy.addValueStub("bogus", Suppliers.of("dude"));
+		FooTwo two = proxy.get();
+		assertNotNull(two);
+    }
 }
