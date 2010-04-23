@@ -16,8 +16,8 @@
 package com.bigfatgun.fixjures.handlers;
 
 import com.bigfatgun.fixjures.FixtureType;
-import com.bigfatgun.fixjures.Suppliers;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 import java.math.BigInteger;
 
@@ -28,6 +28,6 @@ class BigIntegerUnmarshaller extends AbstractUnmarshaller<BigInteger> {
 	}
 
 	public Supplier<? extends BigInteger> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
-		return Suppliers.of(BigInteger.valueOf(castSourceValue(Number.class, source).longValue()));
+		return Suppliers.ofInstance(BigInteger.valueOf(castSourceValue(Number.class, source).longValue()));
 	}
 }

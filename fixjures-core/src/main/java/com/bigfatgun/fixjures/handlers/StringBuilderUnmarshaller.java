@@ -16,8 +16,8 @@
 package com.bigfatgun.fixjures.handlers;
 
 import com.bigfatgun.fixjures.FixtureType;
-import com.bigfatgun.fixjures.Suppliers;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 /** Converts a {@code CharSequence} to a {@code StringBuilder}. */
 final class StringBuilderUnmarshaller extends AbstractUnmarshaller<StringBuilder> {
@@ -27,6 +27,6 @@ final class StringBuilderUnmarshaller extends AbstractUnmarshaller<StringBuilder
 	}
 
 	public Supplier<? extends StringBuilder> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
-		return Suppliers.of(new StringBuilder(castSourceValue(CharSequence.class, source)));
+		return Suppliers.ofInstance(new StringBuilder(castSourceValue(CharSequence.class, source)));
 	}
 }

@@ -17,9 +17,9 @@ package com.bigfatgun.fixjures.proxy;
 
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
-import com.bigfatgun.fixjures.Suppliers;
 import static org.junit.Assert.assertNotNull;
 
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import org.junit.Test;
 
@@ -47,7 +47,7 @@ public class ConcreteReflectionProxyTest {
 	@Test(expected = FixtureException.class)
 	public void bogusGetterName() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
 		final ConcreteReflectionProxy<FooTwo> proxy = new ConcreteReflectionProxy<FooTwo>(FooTwo.class, ImmutableSet.<Fixjure.Option>of());
-		proxy.addValueStub("bogus", Suppliers.of("dude"));
+		proxy.addValueStub("bogus", Suppliers.ofInstance("dude"));
 		FooTwo two = proxy.get();
 		assertNotNull(two);
 	}
@@ -55,7 +55,7 @@ public class ConcreteReflectionProxyTest {
     @Test
     public void skipUnmappableSettingWorks() {
 		final ConcreteReflectionProxy<FooTwo> proxy = new ConcreteReflectionProxy<FooTwo>(FooTwo.class, ImmutableSet.of(Fixjure.Option.SKIP_UNMAPPABLE));
-		proxy.addValueStub("bogus", Suppliers.of("dude"));
+		proxy.addValueStub("bogus", Suppliers.ofInstance("dude"));
 		FooTwo two = proxy.get();
 		assertNotNull(two);
     }

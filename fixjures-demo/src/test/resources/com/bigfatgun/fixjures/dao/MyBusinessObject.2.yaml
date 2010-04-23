@@ -1,2 +1,4 @@
 id: 2
 accountBalance: 99999
+someStrings: [ "String 1", "String 1", "String 2", "String 3" ]
+uniqueNumbers: [ 1, 2, 3, 4, 1 ]

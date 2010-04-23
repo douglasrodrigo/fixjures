@@ -15,23 +15,22 @@
  */
 package com.bigfatgun.fixjures;
 
-import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.bigfatgun.fixjures.handlers.Unmarshaller;
-import com.bigfatgun.fixjures.json.JSONSource;
 import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
 import com.google.common.base.Function;
-import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+
+import static com.bigfatgun.fixjures.FixtureException.convert;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * FixjureFactory is a utility helpful when creating many fixtures for it can easily produce many fixture sources based
@@ -51,29 +50,6 @@ public final class FixtureFactory implements IdentityResolver {
 	public static FixtureFactory newFactory(final SourceFactory sourceFactory) {
 		checkNotNull(sourceFactory);
 		return new FixtureFactory(sourceFactory);
-	}
-
-	/**
-	 * Creates a new factory that will use {@link com.bigfatgun.fixjures.json.JSONSource}s backed by data provided by the
-	 * given {@link com.bigfatgun.fixjures.Strategies.SourceStrategy}.
-	 *
-	 * @param sourceStrategy strategy to use to find json source
-	 * @return new fixture factory
-	 */
-	public static FixtureFactory newJsonFactory(final Strategies.SourceStrategy sourceStrategy) {
-		checkNotNull(sourceStrategy);
-		return new FixtureFactory(new SourceFactory() {
-			public FixtureSource newInstance(final Class<?> type, final String name) {
-				assert type != null : "Type cannot be null.";
-				assert name != null : "Name cannot be null.";
-
-				try {
-					return JSONSource.newJsonStream(sourceStrategy.findStream(type, name));
-				} catch (IOException e) {
-					throw convert(e);
-				}
-			}
-		});
 	}
 
 	/**
@@ -126,7 +102,7 @@ public final class FixtureFactory implements IdentityResolver {
 		objectCache = new MapMaker()
 				.expiration(600L, TimeUnit.SECONDS)
 				.makeComputingMap(new Function<Class<?>, ConcurrentMap<String, Object>>() {
-					public ConcurrentMap<String, Object> apply(@Nullable final Class<?> type) {
+					public ConcurrentMap<String, Object> apply(final Class<?> type) {
 						if (type == null) {
 							throw new NullPointerException("type");
 						}
@@ -134,7 +110,7 @@ public final class FixtureFactory implements IdentityResolver {
 								.expiration(60L, TimeUnit.SECONDS)
 								.softValues()
 								.makeComputingMap(new Function<String, Object>() {
-									public Object apply(@Nullable final String name) {
+									public Object apply(final String name) {
 										if (name == null) {
 											throw new NullPointerException("name");
 										}
@@ -156,7 +132,7 @@ public final class FixtureFactory implements IdentityResolver {
 	 * <p/>
 	 * {@inheritDoc}
 	 */
-	public boolean canHandleIdentity(final Class<?> requiredType, @Nullable final Object rawIdentityValue) {
+	public boolean canHandleIdentity(final Class<?> requiredType, final Object rawIdentityValue) {
 		return !requiredType.isAssignableFrom(CharSequence.class) && rawIdentityValue instanceof String;
 	}
 

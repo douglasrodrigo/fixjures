@@ -1,1 +1,1 @@
-{ "id" : "2", "accountBalance" : 50000, "url" : "http://www.yahoo.com/" }
+{ "id" : "2", "accountBalance" : 50000, "url" : "http://www.yahoo.com/", "someStrings" : [ "String 1", "String 1", "String 2", "String 3" ], "uniqueNumbers" : [ 1, 2, 3, 4, 5, 1 ] }

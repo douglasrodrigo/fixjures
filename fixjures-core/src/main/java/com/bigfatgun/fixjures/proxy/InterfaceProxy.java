@@ -21,7 +21,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.collect.*;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -44,7 +43,7 @@ final class InterfaceProxy<T> extends AbstractObjectProxy<T> implements Invocati
 
 		public Integer get() {
 			return ImmutableList.copyOf(Iterables.transform(proxy.getStubs().values(), new Function<Supplier<?>, Object>() {
-				public Object apply(@Nullable final Supplier<?> valueProvider) {
+				public Object apply(final Supplier<?> valueProvider) {
 					if (valueProvider == HashCodeSupplier.this || valueProvider instanceof ToStringSupplier) {
 						return 0;
 					} else {

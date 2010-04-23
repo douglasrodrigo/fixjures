@@ -18,16 +18,15 @@ package com.bigfatgun.fixjures.handlers;
 import com.bigfatgun.fixjures.Fixjure;
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureType;
-import com.bigfatgun.fixjures.Suppliers;
 import com.bigfatgun.fixjures.proxy.ObjectProxy;
 import com.bigfatgun.fixjures.proxy.ObjectProxyData;
 import com.bigfatgun.fixjures.proxy.Proxies;
 import com.bigfatgun.fixjures.proxy.ProxyUtils;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.*;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -38,7 +37,7 @@ import static com.bigfatgun.fixjures.FixtureException.convert;
 public final class Unmarshallers {
 
 	private static class ValueExtractor implements Function<Supplier<?>, Object> {
-		public Object apply(@Nullable final Supplier<?> valueProvider) {
+		public Object apply(final Supplier<?> valueProvider) {
 			return valueProvider.get();
 		}
 	}
@@ -142,7 +141,7 @@ public final class Unmarshallers {
 		return new ListHandler<Set>(Set.class) {
 			@Override
 			protected Supplier<HashSet<Object>> convertList(final ImmutableList<Supplier<?>> source) {
-				return Suppliers.of(Sets.newHashSet(Iterables.transform(source, new ValueExtractor())));
+				return Suppliers.ofInstance(Sets.newHashSet(Iterables.transform(source, new ValueExtractor())));
 			}
 		};
 	}
@@ -151,7 +150,16 @@ public final class Unmarshallers {
 		return new ListHandler<List>(List.class) {
 			@Override
 			protected Supplier<? extends List> convertList(final ImmutableList<Supplier<?>> source) {
-				return Suppliers.of(Lists.newArrayList(Iterables.transform(source, new ValueExtractor())));
+				return Suppliers.ofInstance(Lists.newArrayList(Iterables.transform(source, new ValueExtractor())));
+			}
+		};
+	}
+
+	public static Unmarshaller<Collection> newCollectionHandler() {
+		return new ListHandler<Collection>(Collection.class) {
+			@Override
+			protected Supplier<? extends Collection> convertList(final ImmutableList<Supplier<?>> source) {
+				return Suppliers.ofInstance(Lists.newArrayList(Iterables.transform(source, new ValueExtractor())));
 			}
 		};
 	}
@@ -160,7 +168,7 @@ public final class Unmarshallers {
 		return new ListHandler<Multiset>(Multiset.class) {
 			@Override
 			protected Supplier<? extends Multiset> convertList(final ImmutableList<Supplier<?>> source) {
-				return Suppliers.of(HashMultiset.create(Iterables.transform(source, new ValueExtractor())));
+				return Suppliers.ofInstance(HashMultiset.create(Iterables.transform(source, new ValueExtractor())));
 			}
 		};
 	}
@@ -185,7 +193,7 @@ public final class Unmarshallers {
 					final Object arrayValue = arraySupplier.get();
 					Array.set(actualArray, i, arrayValue);
 				}
-				return Suppliers.of(actualArray);
+				return Suppliers.ofInstance(actualArray);
 			}
 		};
 	}
@@ -207,7 +215,7 @@ public final class Unmarshallers {
 						builder = builder.put(key, keyValue);
 					}
 				}
-				return Suppliers.ofImmutableMap(builder);
+				return Suppliers.ofInstance(builder.build());
 			}
 		};
 	}

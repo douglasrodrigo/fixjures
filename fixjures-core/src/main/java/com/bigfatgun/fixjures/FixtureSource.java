@@ -17,11 +17,11 @@ package com.bigfatgun.fixjures;
 
 import com.bigfatgun.fixjures.handlers.*;
 import com.bigfatgun.fixjures.proxy.ObjectProxyData;
-import com.google.common.base.*;
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.*;
 
-import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -30,6 +30,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Abstract fixture source.
@@ -59,9 +61,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 	private final ReadableByteChannel sourceChannel;
 	private final Set<Fixjure.Option> options;
 
-	@Nullable
 	private Charset preferredCharset = null;
-	@Nullable
 	private IdentityResolver identityResolver = null;
 
 	protected FixtureSource(final ReadableByteChannel source) {
@@ -97,11 +97,11 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 
 	protected abstract Object createFixture(final FixtureType type);
 
-	void setIdentityResolver(@Nullable final IdentityResolver resolver) {
+    void setIdentityResolver(final IdentityResolver resolver) {
 		this.identityResolver = resolver;
 	}
 
-	private boolean canHandleIdentity(final Class<?> type, @Nullable final Object rawIdentityValue) {
+	private boolean canHandleIdentity(final Class<?> type, final Object rawIdentityValue) {
 		assert type !=  null : "Type cannot be null!";
 
 		return identityResolver != null
@@ -114,7 +114,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 
 		if (canHandleIdentity(type, rawIdentityValue)) {
 			assert identityResolver != null : "Don't attempt to resolve an id if the resolver is null!";
-			return Suppliers.ofIdentity(identityResolver, type, rawIdentityValue);
+			return Resolvers.ofIdentity(identityResolver, type, rawIdentityValue);
 		} else {
 			return null;
 		}
@@ -226,7 +226,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 		installTypeHandler(bigdecHandler);
 		final ChainedUnmarshaller<Number> chainedHandler = new ChainedUnmarshaller<Number>(CharSequence.class, Number.class) {
 			public Supplier<? extends Number> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
-				return Suppliers.of(Double.parseDouble(castSourceValue(CharSequence.class, source).toString()));
+				return Suppliers.ofInstance(Double.parseDouble(castSourceValue(CharSequence.class, source).toString()));
 			}
 		};
 		installTypeHandler(chainedHandler.link(byteHandler));
@@ -246,12 +246,13 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 		installTypeHandler(Unmarshallers.newMapHandler());
 		installTypeHandler(Unmarshallers.newMultisetHandler());
 		installTypeHandler(Unmarshallers.newSetHandler());
+		installTypeHandler(Unmarshallers.newCollectionHandler());
 		installTypeHandler(Unmarshallers.newObjectProxyHandler());
 
 		final ChainedUnmarshaller<ObjectProxyData> chainedMapHandler = new ChainedUnmarshaller<ObjectProxyData>(Map.class, ObjectProxyData.class) {
 			@Override
 			public Supplier<ObjectProxyData> unmarshall(UnmarshallingContext helper, Object source, FixtureType typeDef) {
-				return Suppliers.of(new ObjectProxyData(castSourceValue(Map.class, source)));
+				return Suppliers.ofInstance(new ObjectProxyData(castSourceValue(Map.class, source)));
 			}
 		};
 
@@ -260,7 +261,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 		installTypeHandler(new AbstractUnmarshaller<String>(Object.class, String.class) {
 			@Override
 			public Supplier<String> unmarshall(UnmarshallingContext helper, Object source, FixtureType typeDef) {
-				return Suppliers.of(String.valueOf(source));
+				return Suppliers.ofInstance(String.valueOf(source));
 			}
 		});
 
@@ -269,7 +270,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
             @Override
             public Supplier<Enum> unmarshall(UnmarshallingContext ctx, Object source, FixtureType typeDef) {
                 Class<? extends Enum> enumCls = (Class<? extends Enum>) typeDef.getType();
-                return Suppliers.of(Enum.valueOf(enumCls, String.valueOf(source)));
+                return Suppliers.ofInstance(Enum.valueOf(enumCls, String.valueOf(source)));
             }
         });
 	}

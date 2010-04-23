@@ -1,6 +1,5 @@
 package com.bigfatgun.fixjures;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
@@ -22,11 +21,6 @@ public final class ByteUtil {
 		return getBytes(str, DEFAULT_CHARSET);
 	}
 
-	@Deprecated
-	public static byte[] getBytes(final String str, final String charset) {
-		return getBytes(str, Charset.forName(charset));
-	}
-
 	public static byte[] getBytes(final String str, final Charset charset) {
 		return str.getBytes(charset);
 	}
@@ -39,23 +33,8 @@ public final class ByteUtil {
 	 * @param charset decoding to use, null to use default
 	 * @return string contents of channel
 	 * @throws java.io.IOException if there are any IO errors while reading or closing the given channel
-	 * @deprecated use the signature that takes a Charset
 	 */
-	@Deprecated
-	public static String loadTextFromChannel(final ReadableByteChannel channel, @Nullable final String charset) throws IOException {
-		return loadTextFromChannel(channel, (charset == null) ? DEFAULT_CHARSET : Charset.forName(charset));
-	}
-
-	/**
-	 * Reads the entire contents of the given byte channel into a string builder. The channel is still open after this
-	 * method returns.
-	 *
-	 * @param channel channel to read, will NOT be closed before the method returns
-	 * @param charset decoding to use, null to use default
-	 * @return string contents of channel
-	 * @throws java.io.IOException if there are any IO errors while reading or closing the given channel
-	 */
-	public static String loadTextFromChannel(final ReadableByteChannel channel, @Nullable final Charset charset) throws IOException {
+	public static String loadTextFromChannel(final ReadableByteChannel channel, final Charset charset) throws IOException {
 		final Charset actualCharset = (charset == null) ? DEFAULT_CHARSET : charset;
 		try {
 			final ByteBuffer buf = ByteBuffer.allocate(Short.MAX_VALUE);

@@ -1,29 +1,50 @@
 package com.bigfatgun.fixjures.dao;
 
-import com.bigfatgun.fixjures.extract.Extractor;
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
-import com.google.inject.internal.Lists;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implements MyBusinessObjectDAO {
 
 	// Value extractors, predicates (for filtering) and ordering is initialized here to make code
 	// below a bit more terse
-	private static final Extractor<MyBusinessObject, Long> EXTRACT_ACCOUNT_BALANCE =
-			new Extractor<MyBusinessObject, Long>() {{ execute(MyBusinessObject.class).getAccountBalance(); }};
+	private static final Function<MyBusinessObject, Long> EXTRACT_ACCOUNT_BALANCE = new Function<MyBusinessObject, Long>() {
+        @Override
+        public Long apply(MyBusinessObject myBusinessObject) {
+            return myBusinessObject.getAccountBalance();
+        }
+    };
 
-	private static final Extractor<MyBusinessObject, MyBusinessObject> EXTRACT_PARENT =
-			new Extractor<MyBusinessObject, MyBusinessObject>() {{ execute(MyBusinessObject.class).getParent(); }};
+	private static final Function<MyBusinessObject, MyBusinessObject> EXTRACT_PARENT = new Function<MyBusinessObject, MyBusinessObject>() {
+        @Override
+        public MyBusinessObject apply(MyBusinessObject myBusinessObject) {
+            return myBusinessObject.getParent();
+        }
+    };
 
-	private static final Extractor<MyBusinessObject,String> ID_FUNCTION =
-			new Extractor<MyBusinessObject, String>() {{ execute(MyBusinessObject.class).getId(); }};
+	private static final Function<MyBusinessObject,String> ID_FUNCTION = new Function<MyBusinessObject, String>() {
+        @Override
+        public String apply(MyBusinessObject myBusinessObject) {
+            return myBusinessObject.getId();
+        }
+    };
 
-	private static final Predicate<MyBusinessObject> POSITIVE_ACCOUNT_BALANCE =
-			DAOPredicates.valueIsGreaterThanOrEqualTo(EXTRACT_ACCOUNT_BALANCE, 0L);
+    private static final Predicate<Long> POSITIVE = new Predicate<Long>() {
+        @Override
+        public boolean apply(Long aLong) {
+            return aLong.compareTo(0L) > 0;
+        }
+    };
+
+    private static final Predicate<MyBusinessObject> POSITIVE_ACCOUNT_BALANCE =
+            Predicates.compose(POSITIVE, EXTRACT_ACCOUNT_BALANCE);
 
 	private static final Ordering<MyBusinessObject> ASCENDING_ID =
 			Ordering.natural().onResultOf(ID_FUNCTION);
@@ -32,7 +53,12 @@ final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implem
 			Ordering.natural().onResultOf(EXTRACT_ACCOUNT_BALANCE);
 
 	private static final Ordering<Object> ASCENDING_HASH =
-			Ordering.natural().onResultOf(Extractor.ofHashCode());
+			Ordering.natural().onResultOf(new Function<Object, Comparable>() {
+                @Override
+                public Comparable apply(Object o) {
+                    return o.hashCode();
+                }
+            });
 
 	public MyBusinessObjectDAOImpl(final DAOHelper<MyBusinessObject> helper) {
 		super(helper, ID_FUNCTION);
@@ -51,8 +77,13 @@ final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implem
 	@Override
 	public List<MyBusinessObject> findByAccountBalanceGreaterThan(final long minimumBalance) {
 		return Lists.newArrayList(getHelper().findAllWhere(
-				DAOPredicates.valueIsGreaterThanOrEqualTo(EXTRACT_ACCOUNT_BALANCE, minimumBalance)
-		));
+                new Predicate<MyBusinessObject>() {
+                    @Override
+                    public boolean apply(MyBusinessObject myBusinessObject) {
+                        return myBusinessObject.getAccountBalance().compareTo(minimumBalance) >= 0;
+                    }
+                })
+		);
 	}
 
 	@Override
@@ -95,10 +126,10 @@ final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implem
 
 	@Override
 	public List<MyBusinessObject> findChildren(final MyBusinessObject parent) {
-		return Lists.newArrayList(getHelper().findAllWhere(
-				DAOPredicates.valueEquals(EXTRACT_PARENT, parent)
-		));
-	}
+        return Lists.newArrayList(getHelper().findAllWhere(
+                Predicates.compose(Predicates.equalTo(parent), EXTRACT_PARENT))
+        );
+    }
 
 	// package-private methods for fun or demo or test purposes
 
@@ -128,6 +159,16 @@ final class MyBusinessObjectDAOImpl extends AbstractDAO<MyBusinessObject> implem
 			public MyBusinessObject getParent() {
 				return null;
 			}
-		};
+
+            @Override
+            public Collection<String> getSomeStrings() {
+                return null;
+            }
+
+            @Override
+            public Set<Integer> getUniqueNumbers() {
+                return null;
+            }
+        };
 	}
 }

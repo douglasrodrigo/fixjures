@@ -1,13 +1,11 @@
 package com.bigfatgun.fixjures.dao;
 
 import com.bigfatgun.fixjures.*;
-import com.bigfatgun.fixjures.json.JSONSource;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.*;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
@@ -115,12 +113,12 @@ public abstract class DAOHelper<T> {
             }
 
             @Override
-            public boolean canHandleIdentity(Class<?> requiredType, @Nullable Object rawIdentityValue) {
+            public boolean canHandleIdentity(Class<?> requiredType, Object rawIdentityValue) {
                 return requiredType == cls;
             }
 
             @Override
-            public String coerceIdentity(@Nullable Object rawIdentityValue) {
+            public String coerceIdentity(Object rawIdentityValue) {
                 return String.valueOf(rawIdentityValue);
             }
 
@@ -161,23 +159,6 @@ public abstract class DAOHelper<T> {
 
 	public static <T> DAOHelper<T> forClass(final Class<T> cls, final SourceFactory factory, final IdentifierProvider idProvider) {
 		return new FactoryBackedDAOHelper<T>(cls, factory, idProvider);
-	}
-
-	public static <T> DAOHelper<T> forClassFromJSON(final Class<T> cls, final Map<String, String> objectMap) {
-		return forClassFromJSON(cls, Strategies.newInMemoryStrategy(ImmutableMap.of(cls, objectMap)), new ImmutableIdentifierProvider(objectMap.keySet()));
-	}
-
-	public static <T> DAOHelper<T> forClassFromJSON(final Class<T> cls, final Strategies.SourceStrategy strategy, final IdentifierProvider idProvider) {
-		return forClass(cls, new AbstractSourceFactory(strategy) {
-			@Override
-			public FixtureSource newInstance(Class<?> fixtureType, String fixtureId) {
-				try {
-					return JSONSource.newJsonStream(strategy.findStream(fixtureType, fixtureId));
-				} catch (IOException e) {
-					return FixtureException.convertAndThrowAs(e);
-				}
-			}
-		}, idProvider);
 	}
 
     private final Class<T> cls;
@@ -244,7 +225,7 @@ public abstract class DAOHelper<T> {
             this.identifiers = Sets.newHashSet(idProvider.existingObjectIdentifiers());
             this.loadByIdFunction = new Function<String, T>() {
                 @Override
-                public T apply(@Nullable String s) {
+                public T apply(String s) {
                     return FactoryBackedDAOHelper.this.findById(s);
                 }
             };

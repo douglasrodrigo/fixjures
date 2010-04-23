@@ -1,7 +1,6 @@
 package com.bigfatgun.fixjures.proxy;
 
 import com.bigfatgun.fixjures.Fixjure;
-import com.bigfatgun.fixjures.json.JSONSource;
 import com.google.common.collect.ImmutableSet;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -43,11 +42,6 @@ public class InterfaceProxyTest {
 		final Foo3 foo2 = new InterfaceProxy<Foo3>(Foo3.class, ImmutableSet.<Fixjure.Option>of()).get();
 		assertEquals(foo1, foo1);
 		assertFalse(foo1.equals(foo2));
-	}
-
-	@Test
-	public void proxiesHaveAHashCode() throws Exception {
-		Fixjure.of(Foo3.class).from(JSONSource.newJsonString("{ \"str\" : \"09182340\" }")).create().hashCode();
 	}
 
 	@Test

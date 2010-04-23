@@ -17,8 +17,8 @@ package com.bigfatgun.fixjures.handlers;
 
 import com.bigfatgun.fixjures.FixtureException;
 import com.bigfatgun.fixjures.FixtureType;
-import com.bigfatgun.fixjures.Suppliers;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -38,13 +38,13 @@ class DateUnmarshaller extends AbstractUnmarshaller<Date> {
 	public Supplier<? extends Date> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
 		final CharSequence charSequence = castSourceValue(CharSequence.class, source);
 		try {
-			return Suppliers.of(DateFormat.getDateTimeInstance().parse(charSequence.toString()));
+			return Suppliers.ofInstance(DateFormat.getDateTimeInstance().parse(charSequence.toString()));
 		} catch (ParseException e) {
 			try {
-				return Suppliers.of(DateFormat.getDateInstance().parse(charSequence.toString()));
+				return Suppliers.ofInstance(DateFormat.getDateInstance().parse(charSequence.toString()));
 			} catch (ParseException e1) {
 				try {
-					return Suppliers.of(DateFormat.getTimeInstance().parse(charSequence.toString()));
+					return Suppliers.ofInstance(DateFormat.getTimeInstance().parse(charSequence.toString()));
 				} catch (ParseException e2) {
 					throw new FixtureException("Failed to parse date: " + charSequence);
 				}

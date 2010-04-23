@@ -16,8 +16,8 @@
 package com.bigfatgun.fixjures.handlers;
 
 import com.bigfatgun.fixjures.FixtureType;
-import com.bigfatgun.fixjures.Suppliers;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 import java.math.BigDecimal;
 
@@ -28,6 +28,6 @@ class BigDecimalUnmarshaller extends AbstractUnmarshaller<BigDecimal> {
 	}
 
 	public Supplier<BigDecimal> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
-		return Suppliers.of(BigDecimal.valueOf(castSourceValue(Number.class, source).doubleValue()));
+		return Suppliers.ofInstance(BigDecimal.valueOf(castSourceValue(Number.class, source).doubleValue()));
 	}
 }

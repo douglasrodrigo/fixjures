@@ -16,8 +16,8 @@
 package com.bigfatgun.fixjures.handlers;
 
 import com.bigfatgun.fixjures.FixtureType;
-import com.bigfatgun.fixjures.Suppliers;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 /**
  * Simple object pass-through for when no conversion is necessary.
@@ -47,6 +47,6 @@ public final class NoConversionUnmarshaller<T> extends AbstractUnmarshaller<T> {
 	}
 
 	public Supplier<? extends T> unmarshall(final UnmarshallingContext helper, final Object source, final FixtureType typeDef) {
-		return Suppliers.of(castSourceValue(getReturnType(), source));
+		return Suppliers.ofInstance(castSourceValue(getReturnType(), source));
 	}
 }

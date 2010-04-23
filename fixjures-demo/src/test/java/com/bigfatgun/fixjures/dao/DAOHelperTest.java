@@ -2,16 +2,14 @@ package com.bigfatgun.fixjures.dao;
 
 import com.bigfatgun.fixjures.IdentifierProvider;
 import com.bigfatgun.fixjures.Strategies;
+import com.bigfatgun.fixjures.json.JsonSourceFactory;
 import com.bigfatgun.fixjures.yaml.YamlSource;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Ordering;
+import com.google.common.collect.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -42,7 +40,7 @@ public class DAOHelperTest {
 				return String.format("com/bigfatgun/fixjures/dao/%s.%s.json", type.getSimpleName(), name);
 			}
 		});
-		final DAOHelper<MyBusinessObject> helper = DAOHelper.forClassFromJSON(MyBusinessObject.class, strategy, new IdentifierProvider() {
+        final DAOHelper<MyBusinessObject> helper = DAOHelper.forClass(MyBusinessObject.class, JsonSourceFactory.newFactoryFromSourceStrategy(strategy), new IdentifierProvider() {
 			@Override
 			public Iterable<String> existingObjectIdentifiers() {
 				return ImmutableList.of("1", "2", "3");
@@ -56,7 +54,7 @@ public class DAOHelperTest {
 		dao = daoImpl = new MyBusinessObjectDAOImpl(helper);
         daoImpl2 = new MyBusinessObjectDAOImpl(DAOHelper.forClassFromSingleSource(MyBusinessObject.class, YamlSource.newYamlResource("com/bigfatgun/fixjures/dao/mbo.yaml"), new Function<MyBusinessObject, String>() {
             @Override
-            public String apply(@Nullable MyBusinessObject myBusinessObject) {
+            public String apply(MyBusinessObject myBusinessObject) {
                 return myBusinessObject.getId();
             }
         }));
@@ -86,7 +84,7 @@ public class DAOHelperTest {
 		// assert that all objects have a 0 or greater balance
 		assertTrue(Iterables.all(filtered, new Predicate<MyBusinessObject>() {
 			@Override
-			public boolean apply(@Nullable MyBusinessObject myBusinessObject) {
+			public boolean apply(MyBusinessObject myBusinessObject) {
 				return myBusinessObject.getAccountBalance() >= 0L;
 			}
 		}));
@@ -102,7 +100,7 @@ public class DAOHelperTest {
 		// assert that all objects have negative balance
 		assertTrue(Iterables.all(filtered, new Predicate<MyBusinessObject>() {
 			@Override
-			public boolean apply(@Nullable MyBusinessObject myBusinessObject) {
+			public boolean apply(MyBusinessObject myBusinessObject) {
 				return myBusinessObject.getAccountBalance() < 0L;
 			}
 		}));
@@ -187,11 +185,18 @@ public class DAOHelperTest {
 		}
 		System.out.println(Iterables.transform(daoImpl.findAllOrderByHashCodeForFun(), new Function<MyBusinessObject, Object>() {
 			@Override
-			public Object apply(@Nullable MyBusinessObject myBusinessObject) {
+			public Object apply(MyBusinessObject myBusinessObject) {
 				return String.format("%s (hash = %d)", myBusinessObject.getId(), myBusinessObject.hashCode());
 			}
 		}));
 	}
+
+    @Test
+    public void getSomeStringsAndUniqueNumbers() {
+        MyBusinessObject o = dao.find("2");
+        assertEquals(Lists.newArrayList("String 1", "String 1", "String 2", "String 3"), o.getSomeStrings());
+        assertEquals(Sets.newHashSet(1, 2, 3, 4, 5), o.getUniqueNumbers());
+    }
 
     @Test
     public void singleFileBasedDAO() {

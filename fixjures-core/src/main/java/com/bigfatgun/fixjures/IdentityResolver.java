@@ -1,6 +1,5 @@
 package com.bigfatgun.fixjures;
 
-import javax.annotation.Nullable;
 
 /** Interface marks an entity that is able to find and create/retrieve an object stub by type and id. */
 public interface IdentityResolver {
@@ -10,7 +9,7 @@ public interface IdentityResolver {
 	 * @param rawIdentityValue object id in raw form
 	 * @return true if this provider can resolve the given identity value
 	 */
-	boolean canHandleIdentity(Class<?> requiredType, @Nullable Object rawIdentityValue);
+	boolean canHandleIdentity(Class<?> requiredType, Object rawIdentityValue);
 
 	/**
 	 * Converts the raw identity value into a string.
@@ -18,7 +17,7 @@ public interface IdentityResolver {
 	 * @param rawIdentityValue raw identity value
 	 * @return identty as string
 	 */
-	String coerceIdentity(@Nullable Object rawIdentityValue);
+	String coerceIdentity(Object rawIdentityValue);
 
 	/**
 	 * Resolves an object by type and id.
