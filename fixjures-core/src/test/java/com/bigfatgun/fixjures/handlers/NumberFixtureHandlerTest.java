@@ -16,6 +16,7 @@
 
 package com.bigfatgun.fixjures.handlers;
 
+import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import org.junit.Test;
 
@@ -33,4 +34,9 @@ public class NumberFixtureHandlerTest {
 		};
 		assertSame(Number.class, handler.getSourceType());
 	}
+
+    @Test
+    public void dateUnmarshallerTest() {
+        assertEquals(213951600000L, new DateUnmarshaller().unmarshall(null, "1976-10-12", null).get().getTime());
+    }
 }
