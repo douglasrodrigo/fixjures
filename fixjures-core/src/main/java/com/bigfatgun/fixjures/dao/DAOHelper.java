@@ -1,10 +1,40 @@
+/*
+ * Copyright (c) 2010 Steve Reed
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.bigfatgun.fixjures.dao;
 
-import com.bigfatgun.fixjures.*;
+import com.bigfatgun.fixjures.Fixjure;
+import com.bigfatgun.fixjures.FixtureFactory;
+import com.bigfatgun.fixjures.FixtureSource;
+import com.bigfatgun.fixjures.FixtureType;
+import com.bigfatgun.fixjures.IdentifierProvider;
+import com.bigfatgun.fixjures.IdentityResolver;
+import com.bigfatgun.fixjures.SourceFactory;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.*;
+import static com.google.common.base.Predicates.compose;
+import static com.google.common.base.Predicates.in;
+import static com.google.common.collect.Collections2.filter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
+import com.google.common.collect.Ordering;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -54,24 +84,6 @@ public abstract class DAOHelper<T> {
 		}
 	}
 
-	public static <T> DAOHelper<T> forClass(final Class<T> cls) {
-		return forClass(cls, new SourceFactory() {
-			@Override
-			public FixtureSource newInstance(Class<?> fixtureType, String fixtureId) {
-				return new FixtureSource(new EmptyByteChannel()) {
-					@Override
-					protected Object createFixture(FixtureType type) {
-						return null;
-					}
-				};
-			}
-		}, new EmptyIdentifierProvider());
-	}
-
-    public static <T> DAOHelper<T> forClassFromSingleSource(final Class<T> cls, FixtureSource source, Function<? super T, String> idFunction) {
-        return new ListBackedDAOHelper<T>(cls, source, idFunction);
-    }
-
     private static class ListBackedDAOHelper<T> extends DAOHelper<T> {
 
         private static class ListBasedIdentityResolver<T> implements IdentityResolver {
@@ -90,15 +102,15 @@ public abstract class DAOHelper<T> {
                         Fixjure.Option.SKIP_UNMAPPABLE
                 ).resolveIdsWith(this).create());
                 this.idFunction = idFunction;
-                this.allObjects = Maps.newHashMap();
+                this.allObjects = newHashMap();
                 for (T t : startingList) {
                     this.allObjects.put(idFunction.apply(t), t);
                 }
-                this.validIds = Sets.newHashSet(allObjects.keySet());
+                this.validIds = newHashSet(allObjects.keySet());
             }
 
             public List<T> getList() {
-                return Lists.newLinkedList(Collections2.filter(allObjects.values(), Predicates.compose(Predicates.in(validIds), idFunction)));
+                return Lists.newLinkedList(filter(allObjects.values(), compose(in(validIds), idFunction)));
             }
 
             public T add(T object, String identifier) {
@@ -157,6 +169,77 @@ public abstract class DAOHelper<T> {
         }
     }
 
+    private static class FactoryBackedDAOHelper<T> extends DAOHelper<T> {
+
+        private final Set<String> identifiers;
+        private final Function<String, T> loadByIdFunction;
+        private final FixtureFactory factory;
+
+        private FactoryBackedDAOHelper(final Class<T> cls, final SourceFactory source, final IdentifierProvider idProvider) {
+            super(cls, FixtureFactory.newFactory(source)
+                    .enableOption(Fixjure.Option.LAZY_REFERENCE_EVALUATION)
+                    .enableOption(Fixjure.Option.NULL_ON_UNMAPPED)
+                    .enableOption(Fixjure.Option.SKIP_UNMAPPABLE));
+            this.identifiers = newHashSet(idProvider.existingObjectIdentifiers());
+            this.loadByIdFunction = new Function<String, T>() {
+                @Override
+                public T apply(String s) {
+                    return FactoryBackedDAOHelper.this.findById(s);
+                }
+            };
+            this.factory = (FixtureFactory) getIdResolver();
+        }
+
+        public T findById(final String id) {
+            return (identifiers.contains(id)) ? super.findById(id) : null;
+        }
+
+        public T add(final T object, final String identifier) {
+            addIdentifier(identifier);
+            return factory.cache(getType(), object, identifier);
+        }
+
+        public T remove(final String identifier) {
+            removeIdentifier(identifier);
+            return factory.uncache(getType(), identifier);
+        }
+
+        private boolean addIdentifier(final String id) {
+            return identifiers.add(id);
+        }
+
+        private boolean removeIdentifier(final String id) {
+            return identifiers.remove(id);
+        }
+
+        private void setIdentifiers(Collection<String> newIdentifiers) {
+            identifiers.clear();
+            identifiers.addAll(newIdentifiers);
+        }
+
+        public Iterable<T> findAll() {
+            return Iterables.transform(identifiers, loadByIdFunction);
+        }
+    }
+
+	public static <T> DAOHelper<T> forClass(final Class<T> cls) {
+		return forClass(cls, new SourceFactory() {
+			@Override
+			public FixtureSource newInstance(Class<?> fixtureType, String fixtureId) {
+				return new FixtureSource(new EmptyByteChannel()) {
+					@Override
+					protected Object createFixture(FixtureType type) {
+						return null;
+					}
+				};
+			}
+		}, new EmptyIdentifierProvider());
+	}
+
+    public static <T> DAOHelper<T> forClassFromSingleSource(final Class<T> cls, FixtureSource source, Function<? super T, String> idFunction) {
+        return new ListBackedDAOHelper<T>(cls, source, idFunction);
+    }
+
 	public static <T> DAOHelper<T> forClass(final Class<T> cls, final SourceFactory factory, final IdentifierProvider idProvider) {
 		return new FactoryBackedDAOHelper<T>(cls, factory, idProvider);
 	}
@@ -207,60 +290,7 @@ public abstract class DAOHelper<T> {
         if (filterBeforeSort) {
             return ordering.sortedCopy(findAllWhere(condition));
         } else {
-            return Lists.newArrayList(Iterables.filter(findAllOrdered(ordering), condition));
-        }
-    }
-
-    private static class FactoryBackedDAOHelper<T> extends DAOHelper<T> {
-
-        private final Set<String> identifiers;
-        private final Function<String, T> loadByIdFunction;
-        private final FixtureFactory factory;
-
-        private FactoryBackedDAOHelper(final Class<T> cls, final SourceFactory source, final IdentifierProvider idProvider) {
-            super(cls, FixtureFactory.newFactory(source)
-                    .enableOption(Fixjure.Option.LAZY_REFERENCE_EVALUATION)
-                    .enableOption(Fixjure.Option.NULL_ON_UNMAPPED)
-                    .enableOption(Fixjure.Option.SKIP_UNMAPPABLE));
-            this.identifiers = Sets.newHashSet(idProvider.existingObjectIdentifiers());
-            this.loadByIdFunction = new Function<String, T>() {
-                @Override
-                public T apply(String s) {
-                    return FactoryBackedDAOHelper.this.findById(s);
-                }
-            };
-            this.factory = (FixtureFactory) getIdResolver();
-        }
-
-        public T findById(final String id) {
-            return (identifiers.contains(id)) ? super.findById(id) : null;
-        }
-
-        public T add(final T object, final String identifier) {
-            addIdentifier(identifier);
-            return factory.cache(getType(), object, identifier);
-        }
-
-        public T remove(final String identifier) {
-            removeIdentifier(identifier);
-            return factory.uncache(getType(), identifier);
-        }
-
-        private boolean addIdentifier(final String id) {
-            return identifiers.add(id);
-        }
-
-        private boolean removeIdentifier(final String id) {
-            return identifiers.remove(id);
-        }
-
-        private void setIdentifiers(Collection<String> newIdentifiers) {
-            identifiers.clear();
-            identifiers.addAll(newIdentifiers);
-        }
-
-        public Iterable<T> findAll() {
-            return Iterables.transform(identifiers, loadByIdFunction);
+            return newArrayList(Iterables.filter(findAllOrdered(ordering), condition));
         }
     }
 }

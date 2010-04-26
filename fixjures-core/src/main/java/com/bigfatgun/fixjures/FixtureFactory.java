@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2009 Steve Reed
+ * Copyright (c) 2010 Steve Reed
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.bigfatgun.fixjures;
 
+import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.bigfatgun.fixjures.handlers.Unmarshaller;
 import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
 import com.google.common.base.Function;
+import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
@@ -27,15 +30,12 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
-
-import static com.bigfatgun.fixjures.FixtureException.convert;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * FixjureFactory is a utility helpful when creating many fixtures for it can easily produce many fixture sources based
- * on a single configuration by utilizing monolithic {@link com.bigfatgun.fixjures.SourceFactory}s, or by combinding
- * {@link com.bigfatgun.fixjures.Strategies.SourceStrategy}s and {@link com.bigfatgun.fixjures.Strategies.ResourceNameStrategy}s.
+ * on a single configuration by utilizing monolithic {@link com.bigfatgun.fixjures.SourceFactory}s, or by combining
+ * {@link com.bigfatgun.fixjures.Strategies.SourceStrategy}s and
+ * {@link com.bigfatgun.fixjures.Strategies.ResourceNameStrategy}s.
  *
  * @author Steve Reed
  */
@@ -75,16 +75,9 @@ public final class FixtureFactory implements IdentityResolver {
 		});
 	}
 
-	/** Source factory. */
 	private final SourceFactory srcFactory;
-
-	/** Set of options to use when creating fixtures. */
 	private final Set<Fixjure.Option> options;
-
-	/** Set of fixture handlers to use. */
 	private final Set<Unmarshaller<?>> handlers;
-
-	/** Compute map that stores a map of object name to object for every fixture object type. */
 	private final ConcurrentMap<Class<?>, ConcurrentMap<String, Object>> objectCache;
 
 	/**
@@ -100,14 +93,12 @@ public final class FixtureFactory implements IdentityResolver {
 		handlers = Sets.newHashSet();
 
 		objectCache = new MapMaker()
-				.expiration(600L, TimeUnit.SECONDS)
 				.makeComputingMap(new Function<Class<?>, ConcurrentMap<String, Object>>() {
 					public ConcurrentMap<String, Object> apply(final Class<?> type) {
 						if (type == null) {
 							throw new NullPointerException("type");
 						}
 						return new MapMaker()
-								.expiration(60L, TimeUnit.SECONDS)
 								.softValues()
 								.makeComputingMap(new Function<String, Object>() {
 									public Object apply(final String name) {

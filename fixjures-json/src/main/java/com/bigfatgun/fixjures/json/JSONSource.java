@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2009 Steve Reed
+ * Copyright (c) 2010 Steve Reed
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,20 +17,22 @@ package com.bigfatgun.fixjures.json;
 
 import com.bigfatgun.fixjures.ByteUtil;
 import com.bigfatgun.fixjures.FixtureException;
+import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.FixtureType;
-import com.bigfatgun.fixjures.proxy.ObjectProxyData;
 import com.google.common.base.Supplier;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Map;
-
-import static com.bigfatgun.fixjures.FixtureException.convert;
 
 /** Mocks objects based on JSON fixture data. */
 public final class JSONSource extends FixtureSource {
@@ -98,6 +100,6 @@ public final class JSONSource extends FixtureSource {
 	}
 
 	private String loadSource() throws IOException {
-		return ByteUtil.loadTextFromChannel(getSource(), getCharset());
+		return ByteUtil.loadTextFromChannel(getSource(), getCharset()).toString();
 	}
 }

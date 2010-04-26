@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2009 Steve Reed
+ * Copyright (c) 2010 Steve Reed
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.bigfatgun.fixjures;
 
 import com.bigfatgun.fixjures.handlers.Unmarshaller;
@@ -27,7 +28,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * Main fixjures entry point that provides builder-like semantics for setting up and creating fixtures.
+ * Main fixjures entry point that provides a builder-like interface for setting up and creating fixtures.
  * <p/>
  * Example: {@code MyClass my = Fixjure.of(MyClass.class).from(source).create();}
  *
@@ -154,7 +155,6 @@ public final class Fixjure {
 		 * @param source fixture source, could be JSON or otherwise
 		 * @return sourced fixture builder
 		 */
-		@SuppressWarnings({"ClassReferencesSubclass"})
 		public final SourcedFixtureBuilder<T> from(final FixtureSource source) {
 			return new SourcedFixtureBuilder<T>(this, source);
 		}
@@ -165,7 +165,6 @@ public final class Fixjure {
 		 * @param stream stream to load from
 		 * @return new builder
 		 */
-		@SuppressWarnings({"ClassReferencesSubclass"})
 		public final StreamedFixtureBuilder<T> fromStream(final FixtureStream stream) {
 			return new StreamedFixtureBuilder<T>(this, stream.asSourceStream());
 		}
@@ -243,8 +242,7 @@ public final class Fixjure {
 
 		/**
 		 * Strongly-typed fixture creation method which creates a new fixture object. This method forwards the call to the
-		 * underlying {@code FixtureSource} which have an explicit knowledge of the fixture source format, such as the {@link
-		 * com.bigfatgun.fixjures.json.JSONSource}.
+		 * underlying {@code FixtureSource} which have an explicit knowledge of the fixture source format.
 		 *
 		 * @return new fixture object
 		 */
