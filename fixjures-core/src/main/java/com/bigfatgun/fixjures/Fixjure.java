@@ -17,6 +17,7 @@
 package com.bigfatgun.fixjures;
 
 import com.bigfatgun.fixjures.handlers.Unmarshaller;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Multiset;
 
@@ -26,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Main fixjures entry point that provides a builder-like interface for setting up and creating fixtures.
@@ -93,8 +96,13 @@ public final class Fixjure {
 	 * @return new un-sourced fixture builder
 	 */
 	public static <T> FixtureBuilder<T> of(final Class<T> cls) {
-		return new FixtureBuilder<T>(TypeWrapper.wrap(cls));
-	}
+        checkNotNull(cls);
+        if (cls.isLocalClass()) {
+            throw new IllegalArgumentException("Class cannot be local.");
+        }
+
+        return new FixtureBuilder<T>(TypeWrapper.wrap(cls));
+    }
 
 	/**
 	 * Creates a builder of a set of objects.

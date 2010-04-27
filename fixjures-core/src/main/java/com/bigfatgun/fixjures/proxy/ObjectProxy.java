@@ -42,5 +42,5 @@ public interface ObjectProxy<T> extends Supplier<T> {
 	 */
 	void addValueStub(String methodName, Supplier<?> stub);
 
-	FixtureType suggestType(String key);
+	FixtureType suggestType(String getterName);
 }

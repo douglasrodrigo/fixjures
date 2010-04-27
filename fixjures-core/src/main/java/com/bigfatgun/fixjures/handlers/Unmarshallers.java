@@ -38,12 +38,7 @@ import com.google.common.collect.Sets;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public final class Unmarshallers {
 
@@ -77,6 +72,31 @@ public final class Unmarshallers {
 
 		protected abstract Supplier<? extends T> convertList(final ImmutableList<Supplier<?>> source);
 	}
+
+    public static Unmarshaller<Boolean> boolHandler() {
+        return new PrimitiveUnmarshaller<Boolean>() {
+            @Override
+            public Class<? extends Boolean> getPrimitiveType() {
+                return Boolean.TYPE;
+            }
+
+            @Override
+            public boolean canUnmarshallObjectToType(Object sourceObject, FixtureType typeDef) {
+                return sourceObject instanceof Boolean 
+                        && (typeDef.isA(getReturnType()) || typeDef.isA(getPrimitiveType()));
+            }
+
+            @Override
+            public Class<Boolean> getReturnType() {
+                return Boolean.class;
+            }
+
+            @Override
+            public Supplier<? extends Boolean> unmarshall(UnmarshallingContext helper, Object source, FixtureType typeDef) {
+                return Suppliers.ofInstance((Boolean) source);
+            }
+        };
+    }
 
 	public static Unmarshaller<Byte> byteHandler() {
 		return new NumberUnmarshaller<Byte>(Byte.class, Byte.TYPE) {
@@ -250,14 +270,14 @@ public final class Unmarshallers {
 			private <T> void configureProxy(final UnmarshallingContext helper, final ObjectProxy<T> proxy, final Map<?, ?> obj) {
 				for (Object o : obj.keySet()) {
 					final String key = o.toString();
-					final String methodName = helper.getOptions().contains(Fixjure.Option.LITERAL_MAPPING) ? key : ProxyUtils.getterName(key);
+					final String methodName = helper.getOptions().contains(Fixjure.Option.LITERAL_MAPPING) ? key : ProxyUtils.getterName(proxy.getType(), key);
 					final FixtureType getterTypeDef = proxy.suggestType(methodName);
 					if (getterTypeDef == null) {
 						if (helper.getOptions().contains(Fixjure.Option.SKIP_UNMAPPABLE)) {
 							continue;
 						} else {
-							throw new FixtureException("Could not find type of method: " + methodName);
-						}
+                            throw new FixtureException("Could not find type of method: " + methodName);
+                        }
 					}
 
 					final Supplier<?> stub;
@@ -280,10 +300,16 @@ public final class Unmarshallers {
 							continue;
 						}
 
-						throw new FixtureException(String.format("Key [%s] (with value [%s]) found in source but could not stub. Could be its name or value type (%s) doesn't match methods in %s", key, obj.get(key), getterTypeDef, proxy.getType()));
+						throw new FixtureException(String.format("Key [%s] (with value [%s] (%s)) found in source but " +
+                                "could not stub. Could be its name or value type (%s) doesn't match methods in %s",
+                                key,
+                                obj.get(key),
+                                (obj.get(key) == null) ? "??" : obj.get(key).getClass().getSimpleName(),
+                                getterTypeDef,
+                                proxy.getType()));
 					} else {
-						proxy.addValueStub(methodName, stub);
-					}
+                        proxy.addValueStub(methodName, stub);
+                    }
 				}
 			}
 		};

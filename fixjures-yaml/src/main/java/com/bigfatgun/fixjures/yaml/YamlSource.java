@@ -21,14 +21,18 @@ import com.bigfatgun.fixjures.proxy.ObjectProxyData;
 import com.google.common.base.Supplier;
 import org.ho.yaml.Yaml;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import static com.bigfatgun.fixjures.FixtureException.convert;
 
 public class YamlSource extends FixtureSource {
+
+    private static final Charset UTF_8 = Charset.forName("UTF-8");
 
 	public static FixtureSource newYamlResource(String resourceName) {
 		return new YamlSource(YamlSource.class.getClassLoader().getResourceAsStream(resourceName));
@@ -37,6 +41,10 @@ public class YamlSource extends FixtureSource {
 	public static FixtureSource newYamlStream(ReadableByteChannel channel) {
 		return new YamlSource(Channels.newInputStream(channel));
 	}
+
+    public static FixtureSource newYamlString(String yaml) {
+        return new YamlSource(new ByteArrayInputStream(yaml.getBytes(UTF_8)));
+    }
 
 	private YamlSource(InputStream input) {
 		super(Channels.newChannel(input));

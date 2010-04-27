@@ -54,7 +54,11 @@ final class ConcreteReflectionProxy<T> extends AbstractObjectProxy<T> {
 			final T object = ctor.newInstance();
 
 			for (final Map.Entry<String, Supplier<?>> entry : getStubs().entrySet()) {
-				setInstanceValue(object, entry.getKey(), ProxyUtils.convertNameToSetter(entry.getKey()), entry.getValue().get());
+                String setter = ProxyUtils.convertNameToSetter(entry.getKey());
+                if (setter == null && !this.isOptionEnabled(Fixjure.Option.SKIP_UNMAPPABLE)) {
+                    throw new FixtureException("Cannot find setter for " + entry.getKey());
+                }
+                setInstanceValue(object, entry.getKey(), setter, entry.getValue().get());
 			}
 
 			return object;

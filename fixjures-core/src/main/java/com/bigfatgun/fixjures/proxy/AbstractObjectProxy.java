@@ -52,18 +52,22 @@ abstract class AbstractObjectProxy<T> implements ObjectProxy<T> {
 	}
 
 	public final FixtureType suggestType(final String key) {
-		final Method getter;
-		try {
-			getter = getType().getMethod(key);
-			return TypeWrapper.wrapMethodReturnType(getter);
-		} catch (NoSuchMethodException e) {
-			if (isOptionEnabled(Fixjure.Option.SKIP_UNMAPPABLE)) {
-				return null;
-			} else {
-				throw convert(e);
-			}
-		}
-	}
+        if (key == null) {
+            return null;
+        }
+        
+        final Method getter;
+        try {
+            getter = getType().getMethod(key);
+            return TypeWrapper.wrapMethodReturnType(getter);
+        } catch (NoSuchMethodException e) {
+            if (isOptionEnabled(Fixjure.Option.SKIP_UNMAPPABLE)) {
+                return null;
+            } else {
+                throw convert(e);
+            }
+        }
+    }
 
 	protected boolean isOptionEnabled(final Fixjure.Option option) {
 		return options.contains(option);

@@ -208,6 +208,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 			installTypeHandler(NoConversionUnmarshaller.newInstance(t));
 		}
 
+        final Unmarshaller<Boolean> boolHandler = Unmarshallers.boolHandler();
 		final Unmarshaller<Byte> byteHandler = Unmarshallers.byteHandler();
 		final Unmarshaller<Short> shortHandler = Unmarshallers.shortHandler();
 		final Unmarshaller<Integer> intHandler = Unmarshallers.integerHandler();
@@ -217,6 +218,7 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 		final Unmarshaller<BigInteger> bigintHandler = Unmarshallers.bigIntegerHandler();
 		final Unmarshaller<BigDecimal> bigdecHandler = Unmarshallers.bigDecimalHandler();
 
+        installTypeHandler(boolHandler);
 		installTypeHandler(byteHandler);
 		installTypeHandler(shortHandler);
 		installTypeHandler(intHandler);
