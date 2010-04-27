@@ -16,10 +16,16 @@
 
 package com.bigfatgun.fixjures;
 
+import com.google.common.base.Charsets;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ImmutableMap;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Map;
@@ -103,9 +109,8 @@ public final class Strategies {
 				} else if (!copy.get(type).containsKey(name)) {
 					throw new IOException("Data for " + type.getName() + " named " + name + " not found.");
 				} else {
-					final byte[] bytes = copy.get(type).get(name).getBytes();
-					final ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-					return Channels.newChannel(bais);
+					final byte[] bytes = copy.get(type).get(name).getBytes(Charsets.UTF_8);
+					return Channels.newChannel(new ByteArrayInputStream(bytes));
 				}
 			}
 		};
@@ -140,9 +145,7 @@ public final class Strategies {
 
 				final String resourceName = nameStrategy.getResourceName(type, name);
 
-				if (resourceName == null) {
-					throw new NullPointerException("resourceName");
-				}
+                checkNotNull(resourceName);
 
 				final InputStream stream = type.getClassLoader().getResourceAsStream(resourceName);
 				if (stream == null) {

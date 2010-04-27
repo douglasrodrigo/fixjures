@@ -21,6 +21,7 @@ import com.bigfatgun.fixjures.handlers.Unmarshaller;
 import com.bigfatgun.fixjures.serializable.ObjectInputStreamSource;
 import com.google.common.base.Function;
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ComputationException;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
@@ -95,26 +96,23 @@ public final class FixtureFactory implements IdentityResolver {
 		objectCache = new MapMaker()
 				.makeComputingMap(new Function<Class<?>, ConcurrentMap<String, Object>>() {
 					public ConcurrentMap<String, Object> apply(final Class<?> type) {
-						if (type == null) {
-							throw new NullPointerException("type");
-						}
-						return new MapMaker()
-								.softValues()
-								.makeComputingMap(new Function<String, Object>() {
-									public Object apply(final String name) {
-										if (name == null) {
-											throw new NullPointerException("name");
-										}
+                        checkNotNull(type);
 
-										Fixjure.SourcedFixtureBuilder<?> fixtureBuilder = Fixjure.of(type).from(srcFactory.newInstance(type, name)).withOptions(ImmutableSet.copyOf(options));
-										for (final Unmarshaller<?> handler : handlers) {
-											fixtureBuilder = fixtureBuilder.with(handler);
-										}
-										fixtureBuilder = fixtureBuilder.resolveIdsWith(FixtureFactory.this);
-										return fixtureBuilder.create();
-									}
-								});
-					}
+                        return new MapMaker()
+                                .softValues()
+                                .makeComputingMap(new Function<String, Object>() {
+                                    public Object apply(final String name) {
+                                        checkNotNull(name);
+
+                                        Fixjure.SourcedFixtureBuilder<?> fixtureBuilder = Fixjure.of(type).from(srcFactory.newInstance(type, name)).withOptions(ImmutableSet.copyOf(options));
+                                        for (final Unmarshaller<?> handler : handlers) {
+                                            fixtureBuilder = fixtureBuilder.with(handler);
+                                        }
+                                        fixtureBuilder = fixtureBuilder.resolveIdsWith(FixtureFactory.this);
+                                        return fixtureBuilder.create();
+                                    }
+                                });
+                    }
 				});
 	}
 
@@ -156,12 +154,10 @@ public final class FixtureFactory implements IdentityResolver {
 	 * @return this
 	 */
 	public FixtureFactory enableOption(final Fixjure.Option option) {
-		if (option == null) {
-			throw new NullPointerException("option");
-		}
-		options.add(option);
-		return this;
-	}
+        checkNotNull(option);
+        options.add(option);
+        return this;
+    }
 
 	/**
 	 * Disables the given option.
@@ -170,12 +166,10 @@ public final class FixtureFactory implements IdentityResolver {
 	 * @return this
 	 */
 	public FixtureFactory disableOption(final Fixjure.Option option) {
-		if (option == null) {
-			throw new NullPointerException("option");
-		}
-		options.remove(option);
-		return this;
-	}
+        checkNotNull(option);
+        options.remove(option);
+        return this;
+    }
 
 	/**
 	 * Adds a fixture handler that will be passed into every fixture builder created by this factory.
@@ -184,12 +178,10 @@ public final class FixtureFactory implements IdentityResolver {
 	 * @return this
 	 */
 	public FixtureFactory addFixtureHandler(final Unmarshaller<?> handler) {
-		if (handler == null) {
-			throw new NullPointerException("handler");
-		}
-		handlers.add(handler);
-		return this;
-	}
+        checkNotNull(handler);
+        handlers.add(handler);
+        return this;
+    }
 
 	/**
 	 * Removes a fixture handler.
@@ -198,12 +190,10 @@ public final class FixtureFactory implements IdentityResolver {
 	 * @return this
 	 */
 	public FixtureFactory removeFixtureHandler(final Unmarshaller<?> handler) {
-		if (handler == null) {
-			throw new NullPointerException("handler");
-		}
-		handlers.remove(handler);
-		return this;
-	}
+        checkNotNull(handler);
+        handlers.remove(handler);
+        return this;
+    }
 
 	/**
 	 * Creates a fixture object of the given type. The name is used by underlying source factories or resource name
@@ -214,21 +204,19 @@ public final class FixtureFactory implements IdentityResolver {
 	 * @param name fixture object name or id
 	 * @return new fixture object
 	 */
-	public <T> T createFixture(final Class<T> type, final String name) {
-		if (type == null) {
-			throw new NullPointerException("type");
-		} else if (name == null) {
-			throw new NullPointerException("name");
-		}
+	@SuppressWarnings({"ThrowableResultOfMethodCallIgnored"})
+    public <T> T createFixture(final Class<T> type, final String name) {
+        checkNotNull(type);
+        checkNotNull(name);
 
-		try {
-			final ConcurrentMap<String, Object> classMap = objectCache.get(type);
-			final Object obj = classMap.get(name);
-			return type.cast(obj);
-		} catch (ComputationException e) {
-			throw convert(e.getCause());
-		}
-	}
+        try {
+            final ConcurrentMap<String, Object> classMap = objectCache.get(type);
+            final Object obj = classMap.get(name);
+            return type.cast(obj);
+        } catch (ComputationException e) {
+            throw convert(Throwables.getRootCause(e));
+        }
+    }
 
 	/** Clears the fixture object cache. */
 	public void expireCache() {

@@ -18,9 +18,9 @@ package com.bigfatgun.fixjures;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ImmutableList;
+import static com.google.common.collect.ImmutableList.copyOf;
 
 import java.lang.reflect.Type;
-import java.util.Arrays;
 
 /**
  * This {@code Type} generalizes the concept of an object class which may have some type parameters, and provides some
@@ -33,7 +33,7 @@ public final class FixtureType implements Type {
 
 	FixtureType(final Class<?> type, final ImmutableList<? extends Type> params) {
 		this.type = checkNotNull(type);
-		this.params = ImmutableList.copyOf(checkNotNull(params));
+		this.params = copyOf(checkNotNull(params));
 	}
 
 	public Class<?> getType() { return type; }
@@ -41,7 +41,7 @@ public final class FixtureType implements Type {
 	public ImmutableList<? extends Type> getParams() { return params; }
 
 	public FixtureType keyType() {
-		return TypeWrapper.wrap(params.size() > 0 ? params.get(0) : Object.class);
+		return TypeWrapper.wrap(!params.isEmpty() ? params.get(0) : Object.class);
 	}
 
 	public FixtureType valueType() {
@@ -54,9 +54,7 @@ public final class FixtureType implements Type {
 
 	public FixtureType of(final Type... params) {
 		checkNotNull(params);
-		final ImmutableList.Builder<Type> parameterBuilder = ImmutableList.builder();
-		parameterBuilder.addAll(Arrays.asList(params));
-		return new FixtureType(type, parameterBuilder.build());
+        return new FixtureType(type, ImmutableList.copyOf(params));
 	}
 
 	public boolean isA(final Class<?> type) {
