@@ -15,12 +15,13 @@
  */
 package com.bigfatgun.fixjures.json;
 
-import com.bigfatgun.fixjures.ByteUtil;
 import com.bigfatgun.fixjures.FixtureException;
 import static com.bigfatgun.fixjures.FixtureException.convert;
 import com.bigfatgun.fixjures.FixtureSource;
 import com.bigfatgun.fixjures.FixtureType;
+import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
+import com.google.common.io.CharStreams;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 
@@ -29,6 +30,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -59,8 +61,8 @@ public final class JSONSource extends FixtureSource {
 	}
 
 	public static FixtureSource newJsonString(final String json) {
-		return new JSONSource(new ByteArrayInputStream(ByteUtil.getBytes(json)));
-	}
+        return new JSONSource(new ByteArrayInputStream(json.getBytes(Charsets.UTF_8)));
+    }
 
 	public static FixtureSource newRemoteUrl(final URL url) {
 		try {
@@ -100,6 +102,6 @@ public final class JSONSource extends FixtureSource {
 	}
 
 	private String loadSource() throws IOException {
-		return ByteUtil.loadTextFromChannel(getSource(), getCharset()).toString();
-	}
+        return CharStreams.toString(new InputStreamReader(Channels.newInputStream(getSource()), getCharset()));
+    }
 }

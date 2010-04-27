@@ -1,7 +1,7 @@
 package com.bigfatgun.fixjures.annotations;
 
-import com.bigfatgun.fixjures.ByteUtil;
 import com.bigfatgun.fixjures.FixtureException;
+import com.google.common.base.Charsets;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
@@ -62,8 +62,8 @@ public enum NativeSourceType implements SourceType {
 		 */
 		@Override
 		public ReadableByteChannel openStream(final ClassLoader clsLoader, final String literal) {
-			return Channels.newChannel(new ByteArrayInputStream(ByteUtil.getBytes(literal)));
-		}
+            return Channels.newChannel(new ByteArrayInputStream(literal.getBytes(Charsets.UTF_8)));
+        }
 	};
 
 	/** {@inheritDoc} */

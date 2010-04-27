@@ -16,20 +16,20 @@
 
 package com.bigfatgun.fixjures;
 
+import com.google.common.base.Throwables;
+
 /** A runtime exception used during fixture object creation to wrap any sort of underlying failure. */
 public class FixtureException extends RuntimeException {
 
 	public static <T> T convertAndThrowAs(final Throwable cause)
 		throws FixtureException {
 
-		if (cause instanceof FixtureException) {
-			throw (FixtureException) cause;
-		} else {
-			final FixtureException converted = new FixtureException(cause);
-			converted.peelTopOfStackTrace();
-			throw converted;
-		}
-	}
+        Throwables.propagateIfInstanceOf(cause, FixtureException.class);
+
+        final FixtureException converted = new FixtureException(cause);
+        converted.peelTopOfStackTrace();
+        throw converted;
+    }
 
 	/**
 	 * Ensures that the given exception is returned as a FixtureException (if it passes an instanceof check) or is wrapped

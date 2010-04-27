@@ -16,12 +16,25 @@
 
 package com.bigfatgun.fixjures;
 
-import com.bigfatgun.fixjures.handlers.*;
+import com.bigfatgun.fixjures.handlers.AbstractUnmarshaller;
+import com.bigfatgun.fixjures.handlers.ChainedUnmarshaller;
+import com.bigfatgun.fixjures.handlers.NoConversionUnmarshaller;
+import com.bigfatgun.fixjures.handlers.PrimitiveUnmarshaller;
+import com.bigfatgun.fixjures.handlers.Unmarshaller;
+import com.bigfatgun.fixjures.handlers.Unmarshallers;
+import com.bigfatgun.fixjures.handlers.UnmarshallingContext;
 import com.bigfatgun.fixjures.proxy.ObjectProxyData;
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -31,8 +44,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Abstract fixture source.
@@ -130,7 +141,9 @@ public abstract class FixtureSource implements Closeable, UnmarshallingContext {
 	}
 
 	protected final Charset getCharset() {
-		return preferredCharset;
+		return preferredCharset != null
+                ? preferredCharset
+                : Charsets.UTF_8;
 	}
 
 	protected final void installTypeHandler(final Unmarshaller<?> handler) {
