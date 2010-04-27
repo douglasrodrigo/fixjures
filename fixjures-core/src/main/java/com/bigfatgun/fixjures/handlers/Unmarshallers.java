@@ -276,7 +276,7 @@ public final class Unmarshallers {
 						if (helper.getOptions().contains(Fixjure.Option.SKIP_UNMAPPABLE)) {
 							continue;
 						} else {
-                            throw new FixtureException("Could not find type of method: " + methodName);
+                            throw new FixtureException("Could not find type of method for " + key);
                         }
 					}
 

@@ -1,11 +1,29 @@
-package com.bigfatgun.fixjures;
+/*
+ * Copyright (c) 2010 Steve Reed
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import com.bigfatgun.fixjures.yaml.YamlSource;
-import org.junit.Test;
+package com.bigfatgun.fixjures;
 
 import static com.bigfatgun.fixjures.Fixjure.of;
 import static com.bigfatgun.fixjures.yaml.YamlSource.newYamlString;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 public class FixtureIntegrationTest {
 
@@ -35,6 +53,21 @@ public class FixtureIntegrationTest {
         assertEquals(4L, obj.getL());
         assertEquals(5f, obj.getF(), 0.0f);
         assertEquals(6d, obj.getD(), 0.0d);
+    }
+
+    @Test(expected = FixtureException.class)
+    public void concretePublicStaticInnerClassFromYamlWithSomeUnmappableData() {
+        of(ConcreteBeanWithPrimitives.class).from(newYamlString("foobar: totally fubar\n")).create();
+    }
+
+    @Test
+    public void concretePublicStaticInnerClassFromYamlWithSomeUnmappableDataWithSkipUnmappable() {
+        ConcreteBeanWithPrimitives obj = of(ConcreteBeanWithPrimitives.class)
+                .from(newYamlString("foobar: totally fubar\n"))
+                .withOptions(Fixjure.Option.SKIP_UNMAPPABLE)
+                .create();
+        assertNotNull(obj);
+        assertNull(obj.getString());
     }
 
     @Test
